@@ -1,12 +1,9 @@
-import { useRef, useState } from 'react';
-import gsap from 'gsap';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useRef } from 'react';
 import { site } from '../content/portfolio';
-import SectionShell from './SectionShell';
-import Magnetic from '../ui/Magnetic';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { usePointerGlow } from '../hooks/usePointerGlow';
-import { useUniverse } from '../store/useUniverse';
+import Magnetic from '../ui/Magnetic';
+import SectionShell from './SectionShell';
 
 /**
  * The final section floats before the golden exit hole — just a
@@ -16,42 +13,41 @@ import { useUniverse } from '../store/useUniverse';
 export default function Contact() {
   const root = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const [sent, setSent] = useState(false);
-  const setContactCollapsed = useUniverse((s) => s.setContactCollapsed);
+  // const [sent, setSent] = useState(false);
   useGsapReveal(root);
   usePointerGlow(panel);
 
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const name = String(data.get('name') ?? '');
-    const message = String(data.get('message') ?? '');
-    const from = String(data.get('email') ?? '');
+  // const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   const data = new FormData(e.currentTarget);
+  //   const name = String(data.get('name') ?? '');
+  //   const message = String(data.get('message') ?? '');
+  //   const from = String(data.get('email') ?? '');
 
-    // collapse into the singularity, then hand off to the visitor's mail app
-    const el = panel.current;
-    const done = () => {
-      setSent(true);
-      setContactCollapsed(true);
-      const body = encodeURIComponent(`${message}\n\n— ${name}${from ? ` (${from})` : ''}`);
-      window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(
-        `Transmission from ${name || 'your portfolio'}`,
-      )}&body=${body}`;
-    };
+  //   // collapse into the singularity, then hand off to the visitor's mail app
+  //   const el = panel.current;
+  //   const done = () => {
+  //     setSent(true);
+  //     setContactCollapsed(true);
+  //     const body = encodeURIComponent(`${message}\n\n— ${name}${from ? ` (${from})` : ''}`);
+  //     window.location.href = `mailto:${site.email}?subject=${encodeURIComponent(
+  //       `Transmission from ${name || 'your portfolio'}`,
+  //     )}&body=${body}`;
+  //   };
 
-    if (el) {
-      gsap.to(el, {
-        scale: 0.001,
-        rotate: 30,
-        filter: 'blur(20px) brightness(3)',
-        duration: 0.9,
-        ease: 'power4.in',
-        onComplete: done,
-      });
-    } else {
-      done();
-    }
-  };
+  //   if (el) {
+  //     gsap.to(el, {
+  //       scale: 0.001,
+  //       rotate: 30,
+  //       filter: 'blur(20px) brightness(3)',
+  //       duration: 0.9,
+  //       ease: 'power4.in',
+  //       onComplete: done,
+  //     });
+  //   } else {
+  //     done();
+  //   }
+  // };
 
   return (
     <div ref={root}>
