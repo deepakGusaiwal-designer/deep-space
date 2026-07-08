@@ -1,10 +1,10 @@
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { starVertex, starFragment } from './shaders/glsl';
+import { starVertex, starFragment, dustVertex, dustFragment } from './shaders/glsl';
 import { useUniverse } from '../store/useUniverse';
-import { warpAmount, damp } from '../lib/flightPath';
-import { makeNebulaTexture, makeGlowSprite } from './textures';
+import { warpAmount, swallowAmount, damp } from '../lib/flightPath';
+import { makeNebulaTexture, makeGlowSprite, makeGalaxyTexture } from './textures';
 
 const WHITE = new THREE.Color('#ffffff');
 const WARMWHITE = new THREE.Color('#f2ede4');
@@ -72,6 +72,8 @@ export function Starfield({ count = 3800 }: { count?: number }) {
       uniforms: {
         uTime: { value: 0 },
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        uSwallow: { value: 0 },
+        uBirth: { value: 0 },
       },
     });
     return { geometry: geo, material: mat };
@@ -81,7 +83,10 @@ export function Starfield({ count = 3800 }: { count?: number }) {
     material.uniforms.uTime.value = state.clock.elapsedTime;
     const g = group.current;
     if (!g) return;
-    const { mouse, reducedMotion } = useUniverse.getState();
+    const { mouse, reducedMotion, progress, birth } = useUniverse.getState();
+    // the story bookends: born from one singularity, claimed by the other
+    material.uniforms.uSwallow.value = reducedMotion ? 0 : swallowAmount(progress);
+    material.uniforms.uBirth.value = reducedMotion ? 1 : birth;
     if (reducedMotion) return;
     // stars react to the cursor — the whole field leans, gently
     g.rotation.y = damp(g.rotation.y, mouse.x * 0.016, 1.3, delta);
@@ -92,6 +97,109 @@ export function Starfield({ count = 3800 }: { count?: number }) {
     <group ref={group}>
       <points geometry={geometry} material={material} frustumCulled={false} />
     </group>
+  );
+}
+
+/**
+ * Stardust — fine motes drifting through the whole corridor. They breathe
+ * with time and lean toward the cursor (uMouse feeds the vertex shader),
+ * which is what makes near-space feel like a medium instead of a vacuum.
+ */
+export function Stardust({ count = 900 }: { count?: number }) {
+  const { geometry, material } = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const phases = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 1.5 + Math.pow(Math.random(), 0.7) * 13;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = Math.sin(angle) * radius * 0.7;
+      positions[i * 3 + 2] = 30 - Math.random() * 300;
+      sizes[i] = 0.5 + Math.pow(Math.random(), 2) * 1.6;
+      phases[i] = Math.random();
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: dustVertex,
+      fragmentShader: dustFragment,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uTime: { value: 0 },
+        uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        uMouse: { value: new THREE.Vector2() },
+        uSwallow: { value: 0 },
+        uBirth: { value: 0 },
+      },
+    });
+    return { geometry: geo, material: mat };
+  }, [count]);
+
+  useFrame((state, delta) => {
+    material.uniforms.uTime.value = state.clock.elapsedTime;
+    const { mouse, reducedMotion, progress, birth } = useUniverse.getState();
+    material.uniforms.uSwallow.value = reducedMotion ? 0 : swallowAmount(progress);
+    material.uniforms.uBirth.value = reducedMotion ? 1 : birth;
+    const m = material.uniforms.uMouse.value as THREE.Vector2;
+    const k = reducedMotion ? 0 : 1;
+    m.x = damp(m.x, mouse.x * k, 1.8, delta);
+    m.y = damp(m.y, -mouse.y * k, 1.8, delta);
+  });
+
+  return <points geometry={geometry} material={material} frustumCulled={false} />;
+}
+
+/**
+ * Star trails — faint streaks parallel to the flight direction, running the
+ * full length of the corridor. Invisible at rest; they ignite with scroll
+ * velocity, so motion through space is something you *see*, not infer.
+ */
+export function StarTrails({ count = 320 }: { count?: number }) {
+  const matRef = useRef<THREE.LineBasicMaterial>(null);
+  const smoothed = useRef(0);
+
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(count * 6);
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 3 + Math.random() * 15;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius * 0.8;
+      const z = 30 - Math.random() * 290;
+      const len = 1.6 + Math.random() * 4.5;
+      positions.set([x, y, z, x, y, z - len], i * 6);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [count]);
+
+  useFrame((_, delta) => {
+    const m = matRef.current;
+    if (!m) return;
+    const { velocity, reducedMotion, enterWarp } = useUniverse.getState();
+    const target = reducedMotion ? 0 : Math.min(1, Math.abs(velocity) * 1.4 + enterWarp);
+    smoothed.current = damp(smoothed.current, target, 4, delta);
+    m.opacity = smoothed.current * 0.34;
+  });
+
+  return (
+    <lineSegments geometry={geometry} frustumCulled={false}>
+      <lineBasicMaterial
+        ref={matRef}
+        color="#dfe6f2"
+        transparent
+        opacity={0}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </lineSegments>
   );
 }
 
@@ -146,10 +254,14 @@ export function Nebulae() {
 
   const clouds = useMemo(() => {
     const defs = [
-      { inner: '#d6d6d6', outer: '#1c1c1e', pos: [-70, 26, -60], scale: 95, seed: 3 },
+      // whisper-tinted: violet, slate, teal and ember veils — color you feel
+      // more than see, so "black" reads as deep space instead of a void
+      { inner: '#b9a8d8', outer: '#171226', pos: [-70, 26, -60], scale: 95, seed: 3 },
       { inner: '#aab2bd', outer: '#131417', pos: [80, -20, -140], scale: 120, seed: 11 },
-      { inner: '#eaeaea', outer: '#191a1c', pos: [55, 34, -220], scale: 100, seed: 19 },
+      { inner: '#8fb8b4', outer: '#0e1a1a', pos: [55, 34, -220], scale: 100, seed: 19 },
       { inner: '#9aa1ad', outer: '#101114', pos: [-85, -30, -260], scale: 130, seed: 27 },
+      { inner: '#c9a68a', outer: '#1c1410', pos: [-40, -34, -180], scale: 85, seed: 35 },
+      { inner: '#a3aed0', outer: '#12141f', pos: [30, 40, -100], scale: 75, seed: 43 },
     ] as const;
     return defs.map((c) => ({ ...c, tex: makeNebulaTexture(c.inner, c.outer, c.seed) }));
   }, []);
@@ -157,13 +269,25 @@ export function Nebulae() {
   useFrame((_, delta) => {
     const g = group.current;
     if (!g) return;
-    const { mouse, reducedMotion } = useUniverse.getState();
+    const { mouse, reducedMotion, progress } = useUniverse.getState();
     if (reducedMotion) return;
     // even slower than the stars — deepest parallax layer
     g.rotation.y = damp(g.rotation.y, mouse.x * 0.006, 0.8, delta);
     g.rotation.x = damp(g.rotation.x, -mouse.y * 0.004, 0.8, delta);
+    // born after the stars condense; dragged in and darkened at the end
+    const { birth } = useUniverse.getState();
+    const sw = swallowAmount(progress);
     g.children.forEach((child, i) => {
-      child.rotation.z += delta * 0.004 * (i % 2 ? 1 : -1);
+      child.rotation.z += delta * (0.004 + sw * 0.12) * (i % 2 ? 1 : -1);
+      const c = clouds[i];
+      if (!c) return;
+      child.position.set(
+        c.pos[0] * (1 - sw),
+        c.pos[1] * (1 - sw),
+        c.pos[2] + (-248 - c.pos[2]) * sw,
+      );
+      child.scale.setScalar(c.scale * (1 - sw * 0.92));
+      ((child as THREE.Sprite).material as THREE.SpriteMaterial).opacity = 0.34 * birth * (1 - sw);
     });
   });
 
@@ -181,6 +305,113 @@ export function Nebulae() {
           />
         </sprite>
       ))}
+    </group>
+  );
+}
+
+const ANDROMEDA_POS = new THREE.Vector3(88, 40, -205);
+
+/**
+ * Andromeda — our neighbor galaxy, hanging tilted in the far field.
+ * Procedurally painted (spiral arms, dust lanes, warm core) and slowly
+ * turning. Born with the universe; taken with it at the end.
+ */
+export function Andromeda() {
+  const ref = useRef<THREE.Sprite>(null);
+  const tex = useMemo(() => makeGalaxyTexture(7), []);
+
+  useFrame((_, delta) => {
+    const s = ref.current;
+    if (!s) return;
+    const { progress, birth, reducedMotion } = useUniverse.getState();
+    const mat = s.material as THREE.SpriteMaterial;
+    if (reducedMotion) {
+      mat.opacity = 0.55;
+      return;
+    }
+    mat.rotation += delta * 0.0045;
+    const sw = swallowAmount(progress);
+    s.position.set(
+      ANDROMEDA_POS.x * (1 - sw),
+      ANDROMEDA_POS.y * (1 - sw),
+      ANDROMEDA_POS.z + (-248 - ANDROMEDA_POS.z) * sw,
+    );
+    const k = Math.max(0.02, 1 - sw * 0.96);
+    s.scale.set(120 * k, 68 * k, 1);
+    mat.opacity = 0.55 * birth * (1 - sw);
+  });
+
+  return (
+    <sprite ref={ref} position={ANDROMEDA_POS} scale={[120, 68, 1]}>
+      <spriteMaterial
+        map={tex}
+        transparent
+        depthWrite={false}
+        opacity={0}
+        rotation={-0.5}
+        blending={THREE.AdditiveBlending}
+        fog={false}
+      />
+    </sprite>
+  );
+}
+
+/**
+ * The deep field — a huge shell of barely-visible micro-stars far beyond
+ * the corridor. They add the black-on-black depth that makes near space
+ * feel near: a darkness with structure, not a backdrop.
+ */
+export function DeepStars({ count = 1600 }: { count?: number }) {
+  const group = useRef<THREE.Group>(null);
+  const matRef = useRef<THREE.PointsMaterial>(null);
+
+  const geometry = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      // a thick spherical shell centered mid-corridor
+      const u = Math.random() * Math.PI * 2;
+      const v = Math.acos(2 * Math.random() - 1);
+      const r = 170 + Math.random() * 160;
+      positions[i * 3] = Math.sin(v) * Math.cos(u) * r;
+      positions[i * 3 + 1] = Math.sin(v) * Math.sin(u) * r * 0.7;
+      positions[i * 3 + 2] = -140 + Math.cos(v) * r;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [count]);
+
+  useFrame((_, delta) => {
+    const g = group.current;
+    const m = matRef.current;
+    if (!g || !m) return;
+    const { progress, birth, reducedMotion } = useUniverse.getState();
+    if (reducedMotion) {
+      m.opacity = 0.4;
+      return;
+    }
+    g.rotation.y += delta * 0.0016;
+    const sw = swallowAmount(progress);
+    m.opacity = 0.4 * birth * (1 - sw);
+    g.scale.setScalar(Math.max(0.05, 1 - sw * 0.94));
+    g.position.z = -248 * sw * 0.7;
+  });
+
+  return (
+    <group ref={group}>
+      <points geometry={geometry} frustumCulled={false}>
+        <pointsMaterial
+          ref={matRef}
+          size={0.55}
+          sizeAttenuation
+          color="#7d8595"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          fog={false}
+        />
+      </points>
     </group>
   );
 }

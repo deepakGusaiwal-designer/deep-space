@@ -91,6 +91,12 @@ export const disciplines: Discipline[] = [
     hue: '#bfbfbf', emissive: '#f5f5f5',
     radius: 1.35, orbit: 10.0, speed: 0.07, tilt: -0.12,
   },
+  {
+    name: 'Animation & 3D',
+    tools: ['GSAP', 'Three.js', 'React Three Fiber', 'Framer Motion', 'WebGL Shaders', 'Lenis'],
+    hue: '#cbb8e8', emissive: '#d9c8ff',
+    radius: 1.1, orbit: 12.6, speed: 0.05, tilt: 0.26,
+  },
 ];
 
 export interface Testimonial {
