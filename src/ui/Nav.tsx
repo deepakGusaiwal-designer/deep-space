@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { nav, site } from '../content/portfolio';
 import Magnetic from './Magnetic';
+import Logo from '../assets/logo.svg';
 
 export default function Nav() {
   const ref = useRef<HTMLElement>(null);
@@ -25,8 +26,9 @@ export default function Nav() {
       }}
     >
       <Magnetic>
-        <a href="#top" className="lumen-link font-display text-sm font-bold tracking-[0.28em] uppercase" aria-label={site.name}>
-          Deepak&nbsp;Gusaiwal
+        <a href="#top" className="font-display text-sm font-bold tracking-[0.28em] uppercase" aria-label={site.name}>
+          <img src={Logo} alt="Logo" className="h-12 w-auto" />
+          {/* Deepak&nbsp;Gusaiwal */}
         </a>
       </Magnetic>
 
@@ -45,7 +47,7 @@ export default function Nav() {
           href={site.linkedin}
           target="_blank"
           rel="noreferrer"
-          className="lumen-link font-mono text-[0.68rem] tracking-[0.34em] uppercase"
+          className="lumen-link text-xs tracking-widest uppercase text-white"
         >
           LinkedIn ↗
         </a>

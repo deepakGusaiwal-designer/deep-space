@@ -8,7 +8,7 @@
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
   name: 'Deepak Gusaiwal',
-  scrollHint: 'Scroll to Explore ➊',
+  scrollHint: 'Scroll to Explore',
   linkedin: 'https://www.linkedin.com/in/deepakgusaiwal/',
   email: 'deepak.gusaiwal@outlook.com',
 } as const;

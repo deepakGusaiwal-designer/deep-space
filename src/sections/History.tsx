@@ -18,7 +18,7 @@ function StationPanel({ entry, index }: { entry: HistoryEntry; index: number }) 
       className={`holo pointer-events-auto relative w-full max-w-xl p-8 md:p-10 ${side}`}
     >
       <div className="flex items-baseline justify-between gap-6">
-        <span className="h-display text-4xl text-gold md:text-5xl">{entry.year}</span>
+        <span className="h-display text-4xl text-white md:text-5xl">{entry.year}</span>
         <span className="eyebrow">station {String(index + 1).padStart(2, '0')} / 04</span>
       </div>
       <div className="grav-line my-6" />
