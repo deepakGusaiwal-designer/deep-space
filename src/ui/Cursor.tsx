@@ -26,14 +26,19 @@ export default function Cursor() {
     const xHalo = gsap.quickTo(h, 'x', { duration: 0.45, ease: 'power3' });
     const yHalo = gsap.quickTo(h, 'y', { duration: 0.45, ease: 'power3' });
 
+    // world-space parallax (camera, starfield, black hole) reacts to the
+    // same pointer, but scaled well down from the cursor's own 1:1 tracking —
+    // full-strength -1..1 made the universe swing around too fast on hover
+    const WORLD_SENSITIVITY = 0.42;
+
     const move = (e: PointerEvent) => {
       xCore(e.clientX);
       yCore(e.clientY);
       xHalo(e.clientX);
       yHalo(e.clientY);
       setMouse(
-        (e.clientX / window.innerWidth) * 2 - 1,
-        (e.clientY / window.innerHeight) * 2 - 1,
+        ((e.clientX / window.innerWidth) * 2 - 1) * WORLD_SENSITIVITY,
+        ((e.clientY / window.innerHeight) * 2 - 1) * WORLD_SENSITIVITY,
       );
     };
 

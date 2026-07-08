@@ -21,15 +21,33 @@ export function Starfield({ count = 3800 }: { count?: number }) {
     const colors = new Float32Array(count * 3);
     const c = new THREE.Color();
 
+    // real starfields aren't uniform noise — a real galaxy reads as a dense
+    // band across the sky, with individually-fainter stars packed into it.
+    // ~40% of stars cluster into a tilted band wrapping the flight corridor;
+    // the rest stay scattered, so the band reads as texture, not a hard edge.
+    const BAND_ANGLE = 0.35;
+    const BAND_SHARE = 0.4;
+
     for (let i = 0; i < count; i++) {
-      // hollow corridor around the camera path
-      const angle = Math.random() * Math.PI * 2;
+      const inBand = Math.random() < BAND_SHARE;
+      let angle: number;
+      if (inBand) {
+        // sum-of-uniforms approximates a tight gaussian spread around the band
+        const spread = (Math.random() + Math.random() + Math.random() - 1.5) * 0.3;
+        angle = BAND_ANGLE + spread;
+      } else {
+        angle = Math.random() * Math.PI * 2;
+      }
       const radius = 10 + Math.pow(Math.random(), 0.6) * 130;
       positions[i * 3] = Math.cos(angle) * radius;
       positions[i * 3 + 1] = Math.sin(angle) * radius * 0.75;
       positions[i * 3 + 2] = 60 - Math.random() * 400;
 
-      sizes[i] = 0.6 + Math.pow(Math.random(), 2.2) * 2.6;
+      // band stars are numerous but individually smaller — a dense haze,
+      // not a scatter of bright points
+      sizes[i] = inBand
+        ? 0.4 + Math.pow(Math.random(), 3) * 1.3
+        : 0.6 + Math.pow(Math.random(), 2.2) * 2.6;
       phases[i] = Math.random();
 
       const roll = Math.random();
