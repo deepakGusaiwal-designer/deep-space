@@ -13,6 +13,7 @@ gsap.registerPlugin(ScrollTrigger);
  */
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   const setProgress = useUniverse((s) => s.setProgress);
+  const setVelocity = useUniverse((s) => s.setVelocity);
   const reducedMotion = useUniverse((s) => s.reducedMotion);
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       ScrollTrigger.update();
       const limit = Math.max(1, e.limit);
       setProgress(e.scroll / limit);
+      // normalized flight speed — the starfield reads this to draw trails
+      setVelocity(Math.max(-1, Math.min(1, e.velocity / 42)));
     });
 
     const raf = (time: number) => lenis.raf(time * 1000);
@@ -52,7 +55,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       gsap.ticker.remove(raf);
       lenis.destroy();
     };
-  }, [setProgress, reducedMotion]);
+  }, [setProgress, setVelocity, reducedMotion]);
 
   return <>{children}</>;
 }

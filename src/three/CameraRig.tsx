@@ -15,7 +15,7 @@ export default function CameraRig() {
   const smoothed = useRef({ p: 0, fov: 52, roll: 0, mx: 0, my: 0 });
 
   useFrame((state, delta) => {
-    const { progress, mouse, reducedMotion } = useUniverse.getState();
+    const { progress, mouse, reducedMotion, enterWarp } = useUniverse.getState();
     const cam = state.camera as THREE.PerspectiveCamera;
     const s = smoothed.current;
 
@@ -59,7 +59,10 @@ export default function CameraRig() {
     s.roll = damp(s.roll, barrel + sway, 2.2, delta);
     cam.rotation.z += s.roll;
 
-    s.fov = damp(s.fov, here.fov, 3.2, delta);
+    // the wormhole opening punches the fov wide + a touch of roll — the
+    // one-shot surge behind the "Enter the void" transition
+    s.fov = damp(s.fov, here.fov + enterWarp * 26, 2.2, delta);
+    cam.rotation.z += enterWarp * 0.22;
     if (Math.abs(cam.fov - s.fov) > 0.01) {
       cam.fov = s.fov;
       cam.updateProjectionMatrix();

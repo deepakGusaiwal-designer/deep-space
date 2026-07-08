@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
-import CameraRig from './CameraRig';
-import BlackHole, { ExitBlackHole } from './BlackHole';
-import { Starfield, WarpLines, Nebulae, ShootingStars } from './Starfield';
+import { Bloom, EffectComposer, Noise, Vignette } from '@react-three/postprocessing';
+import { Suspense, useEffect, useState } from 'react';
 import { useUniverse } from '../store/useUniverse';
+import BlackHole, { ExitBlackHole } from './BlackHole';
+import CameraRig from './CameraRig';
+import { SkillGalaxy } from './Planets';
+import { Andromeda, DeepStars, Nebulae, ShootingStars, Stardust, Starfield, StarTrails, WarpLines } from './Starfield';
 
 /** The fixed, full-screen universe behind everything. */
 export default function Experience() {
@@ -37,12 +38,20 @@ export default function Experience() {
       >
         <color attach="background" args={['#000000']} />
         <fog attach="fog" args={['#000000', 60, 240]} />
-        <ambientLight intensity={0.12} />
+        <ambientLight intensity={0.1} />
+        {/* one distant key light so planet surfaces show a day/night terminator */}
+        <directionalLight position={[18, 26, 10]} intensity={0.85} color="#f2ecdf" />
 
         <Suspense fallback={null}>
           <CameraRig />
+          <DeepStars count={isMobile ? 700 : 1600} />
+          <Andromeda />
           <Nebulae />
           <Starfield count={starCount} />
+          <Stardust count={isMobile ? 320 : 900} />
+          <StarTrails count={isMobile ? 140 : 320} />
+          {/* <SolarSystem /> */}
+          <SkillGalaxy />
           {!isMobile && <ShootingStars />}
           <BlackHole />
           {/* a distant sun for the testimonial orbit to circle */}
@@ -66,7 +75,7 @@ export default function Experience() {
               mipmapBlur
             />
             <Noise opacity={0.010} />
-            <Vignette eskil={false} offset={0.15} darkness={0.8} />
+            <Vignette eskil={false} offset={0.18} darkness={0.92} />
           </EffectComposer>
         )}
       </Canvas>

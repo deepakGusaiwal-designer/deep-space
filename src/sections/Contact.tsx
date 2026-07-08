@@ -46,9 +46,9 @@ export default function Contact() {
         </ul>
 
         <footer className="mt-[15vh] text-center">
-          <p className="text-sm tracking-[0.34em] text-slate-100 font-semibold uppercase">
+          <p className="text-md text-shadow-xl tracking-[0.34em] text-slate-100 font-bold uppercase animate-pulse">
             {/* {site.name} · Indore ·  */}
-            the journey ends at the second horizon
+            Sic mundus creatus est
           </p>
         </footer>
       </SectionShell>

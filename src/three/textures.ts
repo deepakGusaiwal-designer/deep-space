@@ -195,6 +195,75 @@ export function makeGlowSprite(color: string): THREE.CanvasTexture {
   return new THREE.CanvasTexture(canvas);
 }
 
+/**
+ * A spiral galaxy seen at a tilt — Andromeda. Warm elliptical core,
+ * two log-spiral arms in cool blue-white, fbm dust lanes cutting the
+ * arms, and a scatter of resolved foreground stars.
+ */
+export function makeGalaxyTexture(seed: number): THREE.CanvasTexture {
+  const S = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = S;
+  canvas.height = S;
+  const ctx = canvas.getContext('2d')!;
+  const img = ctx.createImageData(S, S);
+
+  const core = new THREE.Color('#ffe3ba');
+  const arm = new THREE.Color('#a9c2e8');
+  const edge = new THREE.Color('#3d4a63');
+
+  for (let y = 0; y < S; y++) {
+    for (let x = 0; x < S; x++) {
+      const dx = (x / S - 0.5) * 2;
+      const dy = (y / S - 0.5) * 2;
+      // squash y — we see the disk at ~68° inclination
+      const ex = dx;
+      const ey = dy * 2.7;
+      const r = Math.sqrt(ex * ex + ey * ey);
+      const theta = Math.atan2(ey, ex);
+
+      // two trailing log-spiral arms
+      const spiral = Math.cos(2 * theta - Math.log(r + 0.06) * 5.6);
+      const armMask = Math.pow(Math.max(0, spiral), 1.7);
+      const grain = fbm(x / S * 7, y / S * 7, seed, 4);
+
+      let bright =
+        Math.exp(-r * 6.5) * 1.6 + // the core
+        armMask * Math.exp(-r * 2.3) * (0.3 + grain * 0.55); // the arms
+
+      // dust lanes silhouetted against the disk
+      const lane = fbm(r * 8 + theta * 1.6, theta * 3.2, seed + 5, 3);
+      bright *= 1 - Math.max(0, Math.min(1, (lane - 0.6) * 3)) * 0.5 * Math.min(1, r * 3);
+
+      let col = lerpColor(core, arm, Math.min(1, r * 2.4));
+      col = lerpColor(col, edge, Math.max(0, r - 0.55) * 1.4);
+
+      const alpha = Math.min(1, bright) * Math.max(0, Math.min(1, (1 - r) * 2.2));
+      const i = (y * S + x) * 4;
+      img.data[i] = col.r * 255;
+      img.data[i + 1] = col.g * 255;
+      img.data[i + 2] = col.b * 255;
+      img.data[i + 3] = alpha * 235;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // a scatter of resolved stars inside the disk
+  for (let i = 0; i < 240; i++) {
+    const a = hash(i, 7, seed) * Math.PI * 2;
+    const rr = Math.pow(hash(i, 13, seed), 0.6) * 0.46;
+    const px = (0.5 + Math.cos(a) * rr) * S;
+    const py = (0.5 + (Math.sin(a) * rr) / 2.7) * S;
+    const al = 0.25 + hash(i, 29, seed) * 0.6;
+    ctx.fillStyle = `rgba(235,240,250,${al})`;
+    ctx.fillRect(px, py, 1, 1);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 /** Big soft nebula cloud with fbm alpha — billboarded far behind everything. */
 export function makeNebulaTexture(inner: string, outer: string, seed: number): THREE.CanvasTexture {
   const S = 256;

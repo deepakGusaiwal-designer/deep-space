@@ -5,7 +5,7 @@ import { useGsapReveal } from '../hooks/useGsapReveal';
 import { useUniverse } from '../store/useUniverse';
 
 /**
- * DOM layer for the skill galaxy. The four disciplines and their tools are
+ * DOM layer for the skill galaxy. The five disciplines and their tools are
  * always visible as cards; hovering a card highlights its planet in the 3D
  * scene, and hovering a planet highlights its card — one system, two layers.
  */
@@ -22,11 +22,11 @@ export default function WhatIDo() {
           What I do
         </h2>
         <p data-reveal className="mt-2 max-w-lg text-sm leading-relaxed text-slate-100">
-          Four disciplines, drifting through deep space between the horizon and the exit.
+          Five disciplines, drifting through deep space between the horizon and the exit.
         </p>
 
         {/* the galaxy occupies the middle of the viewport — cards sit below it */}
-        <ul className="mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        <ul className="mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {disciplines.map((disc, i) => {
             const active = hovered === i;
             return (

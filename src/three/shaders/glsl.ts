@@ -145,17 +145,49 @@ export const blackHoleFragment = /* glsl */ `
 export const starVertex = /* glsl */ `
   uniform float uTime;
   uniform float uPixelRatio;
+  uniform float uSwallow;   // 0..1 — the exit hole reels the universe in
+  uniform float uBirth;     // 0..1 — the big bang: stars fly out of the first singularity
   attribute float aSize;
   attribute float aPhase;
   attribute vec3 aColor;
   varying vec3 vColor;
   varying float vTwinkle;
 
+  // the exit black hole (world ≈ object space; the group barely rotates)
+  const vec3 HOLE = vec3(0.0, 0.0, -248.0);
+  // where it all began — the entrance singularity
+  const vec3 ORIGIN = vec3(0.0, 0.0, -2.0);
+
   void main() {
     vColor = aColor;
     vTwinkle = 0.65 + 0.35 * sin(uTime * (0.6 + aPhase * 1.7) + aPhase * 40.0);
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * uPixelRatio * (240.0 / max(1.0, -mv.z));
+
+    vec3 p = position;
+
+    // creation: staggered per-star expansion out of a single point
+    float birth = clamp(uBirth * (1.5 + aPhase) - aPhase, 0.0, 1.0);
+    birth = birth * birth * (3.0 - 2.0 * birth);
+    p = mix(ORIGIN, p, birth);
+
+    float fall = 0.0;
+    if (uSwallow > 0.001) {
+      // staggered per-star infall — nearer-phase stars let go first
+      fall = clamp(uSwallow * (1.5 + aPhase) - aPhase, 0.0, 1.0);
+      fall = fall * fall;
+      // spiral: the offset direction rotates around the hole axis on the way in
+      vec3 dir = p - HOLE;
+      float ang = fall * 2.6;
+      float ca = cos(ang);
+      float sa = sin(ang);
+      dir.xy = mat2(ca, -sa, sa, ca) * dir.xy;
+      vec3 target = HOLE + normalize(dir) * (2.0 + aPhase * 5.0);
+      p = mix(p, target, fall);
+    }
+
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_PointSize = aSize * uPixelRatio * (240.0 / max(1.0, -mv.z))
+      * (1.0 - fall * 0.7)
+      * (0.15 + 0.85 * birth);
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -177,17 +209,41 @@ export const dustVertex = /* glsl */ `
   uniform float uTime;
   uniform float uPixelRatio;
   uniform vec2 uMouse;
+  uniform float uSwallow;
+  uniform float uBirth;
   attribute float aSize;
   attribute float aPhase;
   varying float vAlpha;
+
+  const vec3 HOLE = vec3(0.0, 0.0, -248.0);
+  const vec3 ORIGIN = vec3(0.0, 0.0, -2.0);
 
   void main() {
     vec3 p = position;
     p.x += sin(uTime * 0.22 + aPhase * 6.28) * 0.9 + uMouse.x * 0.8;
     p.y += cos(uTime * 0.17 + aPhase * 6.28) * 0.7 + uMouse.y * 0.5;
     vAlpha = 0.35 + 0.3 * sin(uTime * 0.5 + aPhase * 12.0);
+
+    float birth = clamp(uBirth * (1.5 + aPhase) - aPhase, 0.0, 1.0);
+    birth = birth * birth * (3.0 - 2.0 * birth);
+    p = mix(ORIGIN, p, birth);
+
+    float fall = 0.0;
+    if (uSwallow > 0.001) {
+      fall = clamp(uSwallow * (1.5 + aPhase) - aPhase, 0.0, 1.0);
+      fall = fall * fall;
+      vec3 dir = p - HOLE;
+      float ang = fall * 3.2;
+      float ca = cos(ang);
+      float sa = sin(ang);
+      dir.xy = mat2(ca, -sa, sa, ca) * dir.xy;
+      p = mix(p, HOLE + normalize(dir) * (1.5 + aPhase * 4.0), fall);
+    }
+
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
-    gl_PointSize = aSize * uPixelRatio * (160.0 / max(1.0, -mv.z));
+    gl_PointSize = aSize * uPixelRatio * (160.0 / max(1.0, -mv.z))
+      * (1.0 - fall * 0.8)
+      * (0.15 + 0.85 * birth);
     gl_Position = projectionMatrix * mv;
   }
 `;
@@ -201,5 +257,109 @@ export const dustFragment = /* glsl */ `
     float a = smoothstep(0.5, 0.0, d) * vAlpha * 0.16;
     if (a < 0.004) discard;
     gl_FragColor = vec4(0.95, 0.88, 0.75, a);
+  }
+`;
+
+export const sunVertex = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vObj;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vObj = normalize(position);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+/**
+ * The Sun — boiling photosphere. 3D fbm granulation crawls across the
+ * surface; limb darkening (dimmer toward the edge) is what makes a star
+ * read as a glowing ball of plasma instead of a flat yellow sphere.
+ */
+export const sunFragment = /* glsl */ `
+  precision highp float;
+
+  uniform float uTime;
+  varying vec3 vNormal;
+  varying vec3 vObj;
+
+  float hash31(vec3 p) {
+    p = fract(p * vec3(127.1, 311.7, 74.7));
+    p += dot(p, p.yzx + 19.19);
+    return fract((p.x + p.y) * p.z);
+  }
+
+  float vnoise3(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash31(i);
+    float b = hash31(i + vec3(1.0, 0.0, 0.0));
+    float c = hash31(i + vec3(0.0, 1.0, 0.0));
+    float d = hash31(i + vec3(1.0, 1.0, 0.0));
+    float e = hash31(i + vec3(0.0, 0.0, 1.0));
+    float g = hash31(i + vec3(1.0, 0.0, 1.0));
+    float h = hash31(i + vec3(0.0, 1.0, 1.0));
+    float k = hash31(i + vec3(1.0, 1.0, 1.0));
+    float x1 = mix(a, b, f.x);
+    float x2 = mix(c, d, f.x);
+    float x3 = mix(e, g, f.x);
+    float x4 = mix(h, k, f.x);
+    return mix(mix(x1, x2, f.y), mix(x3, x4, f.y), f.z);
+  }
+
+  float fbm3(vec3 p) {
+    float v = 0.0;
+    float amp = 0.5;
+    for (int i = 0; i < 4; i++) {
+      v += vnoise3(p) * amp;
+      p *= 2.1;
+      amp *= 0.5;
+    }
+    return v;
+  }
+
+  void main() {
+    // two scales of convection cells, drifting at different speeds
+    float n = fbm3(vObj * 4.0 + vec3(0.0, 0.0, uTime * 0.05));
+    n += fbm3(vObj * 12.0 - vec3(uTime * 0.03)) * 0.4;
+
+    vec3 hot  = vec3(1.0, 0.97, 0.86);
+    vec3 mid  = vec3(1.0, 0.68, 0.26);
+    vec3 deep = vec3(0.82, 0.32, 0.05);
+    vec3 col = mix(deep, mid, smoothstep(0.28, 0.72, n));
+    col = mix(col, hot, smoothstep(0.68, 1.05, n));
+
+    // limb darkening: photosphere dims toward the edge
+    float facing = clamp(abs(vNormal.z), 0.0, 1.0);
+    col *= 0.5 + 0.5 * smoothstep(0.0, 0.8, facing);
+
+    gl_FragColor = vec4(col * 1.35, 1.0);
+  }
+`;
+
+export const atmosphereVertex = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vView;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+/** Thin fresnel rim — the atmosphere hugging a planet's limb. */
+export const atmosphereFragment = /* glsl */ `
+  precision highp float;
+
+  uniform vec3 uColor;
+  varying vec3 vNormal;
+  varying vec3 vView;
+
+  void main() {
+    float rim = pow(1.0 - abs(dot(vNormal, vView)), 2.8);
+    gl_FragColor = vec4(uColor, rim * 0.6);
   }
 `;

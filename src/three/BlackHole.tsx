@@ -21,7 +21,7 @@ interface HoleProps {
  * A billboarded quad running a photon-geodesic raymarch.
  * Cheap on geometry, expensive-looking on screen — one draw call.
  */
-function Hole({ center, size = 46, warm = 0, fade }: HoleProps) {
+function Hole({ center, size = 80, warm = 0, fade }: HoleProps) {
   const mesh = useRef<THREE.Mesh>(null);
   const m2 = useRef({ x: 0, y: 0 });
 
@@ -102,8 +102,8 @@ export function ExitBlackHole() {
     <Hole
       center={EXIT_HOLE_CENTER}
       size={52}
-      warm={1}
-      fade={(p, collapsed) => smoothstep(0.66, 0.8, p) * (collapsed ? 0.3 : 1)}
+      warm={1.2}
+      fade={(p, collapsed) => smoothstep(0.16, 0.8, p) * (collapsed ? 0.3 : 1)}
     />
   );
 }

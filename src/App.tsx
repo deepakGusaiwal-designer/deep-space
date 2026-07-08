@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import SmoothScroll from './scroll/SmoothScroll';
+import AudioToggle from './ui/AudioToggle';
 import Cursor from './ui/Cursor';
 import Nav from './ui/Nav';
 import Preloader from './ui/Preloader';
@@ -30,6 +31,7 @@ export default function App() {
       <Cursor />
       <Nav />
       <ScrollHint />
+      <AudioToggle />
 
       <main className="relative">
         <Hero />

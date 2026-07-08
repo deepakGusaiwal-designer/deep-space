@@ -28,7 +28,7 @@ export const PATH: PathKey[] = [
   { p: 0.72, x: 0,    y: 0.2,  z: -84,  fov: 56 }, // gliding through the skill field
   { p: 0.85, x: 0,    y: 0,    z: -116, fov: 70 }, // testimonial orbit
   { p: 0.92, x: 0,    y: 0,    z: -152, fov: 74 }, // final acceleration toward the exit hole
-  { p: 1.01,  x: 0,    y: 0,    z: -236, fov: 88 }, // through the singularity
+  { p: 1,  x: 0,    y: 0,   z: -236, fov: 88 }, // through the singularity
 ];
 
 function findSegment(p: number): number {
@@ -70,6 +70,14 @@ export function samplePath(p: number): { x: number; y: number; z: number; fov: n
 /** 0 → 1 how deep into the final rush we are */
 export function warpAmount(p: number): number {
   return smoothstep(0.86, 0.98, p);
+}
+
+/**
+ * 0 → 1 the final act: the exit black hole wins. Stars, dust, nebulae and
+ * worlds all spiral into it as the visitor crosses the second horizon.
+ */
+export function swallowAmount(p: number): number {
+  return smoothstep(0.84, 0.985, p);
 }
 
 /** 0 → 1 how strongly time dilates in the middle of the journey */
