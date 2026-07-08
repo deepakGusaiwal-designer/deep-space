@@ -1,0 +1,382 @@
+@import 'tailwindcss';
+
+/* ───────────────────────── Design tokens ───────────────────────── */
+@theme {
+  --color-void: #050505;
+  --color-abyss: #0a0b0d;
+  --color-graphite: #14161a;
+  --color-spacegray: #8a8f98;
+  --color-dim: #565b63;
+  --color-soft: #f5f3ee;
+  --color-gold: #e6e6e6;
+  --color-goldlight: #ffffff;
+  --color-nebula: #9aa1ad;
+
+  --font-display: 'DM Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+html {
+  background: var(--color-void);
+  scroll-behavior: auto; /* Lenis owns scrolling */
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-soft);
+  background: var(--color-void);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+  color: var(--color-soft);
+}
+
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+  a, button, [role='button'], input, textarea, label {
+    cursor: none;
+  }
+}
+
+/* ───────────────────────── Utilities ───────────────────────── */
+
+/* Holographic glass panel */
+.holo {
+  position: relative;
+  border-radius: 1.6rem;
+  background: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 0.10),
+    rgb(255 255 255 / 0.03) 45%,
+    rgb(255 255 255 / 0.07)
+  );
+  border: 1px solid rgb(255 255 255 / 0.16);
+  -webkit-backdrop-filter: blur(16px) saturate(200%) brightness(1.2);
+  backdrop-filter: blur(16px) saturate(180%) brightness(0.2);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.24),
+    inset 0 -1px 0 rgb(255 255 255 / 0.05),
+    inset 1px 0 0 rgb(255 255 255 / 0.07),
+    0 24px 70px -28px rgb(0 0 0 / 0.9);
+  transition:
+    border-color 0.6s var(--ease-cinematic),
+    box-shadow 0.6s var(--ease-cinematic),
+    transform 0.6s var(--ease-cinematic);
+  transform-style: preserve-3d;
+}
+/* the liquid — a specular sheen pooling along the top edge */
+.holo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.13), transparent 26%),
+    radial-gradient(120% 60% at 50% -20%, rgb(255 255 255 / 0.12), transparent 60%);
+}
+.holo:hover {
+  border-color: rgb(255 255 255 / 0.34);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 -1px 0 rgb(255 255 255 / 0.06),
+    0 0 60px -14px rgb(255 255 255 / 0.28),
+    0 24px 70px -28px rgb(0 0 0 / 0.9);
+}
+.holo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    420px circle at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--color-gold) 10%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.holo:hover::before {
+  opacity: 1;
+}
+
+/* Eyebrow label */
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* Section heading */
+.h-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.96;
+}
+
+/* Thin gold divider that "bends" */
+.grav-line {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-gold) 55%, transparent) 30%,
+    color-mix(in srgb, var(--color-nebula) 45%, transparent) 70%,
+    transparent
+  );
+}
+
+/* Link with light emission */
+.lumen-link {
+  position: relative;
+  transition: color 0.4s var(--ease-cinematic), text-shadow 0.4s var(--ease-cinematic);
+}
+.lumen-link:hover {
+  color: var(--color-goldlight);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--color-gold) 70%, transparent);
+}
+.lumen-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 1px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: right;
+  background: var(--color-gold);
+  transition: transform 0.5s var(--ease-cinematic);
+}
+.lumen-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Gravitational button */
+.grav-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-soft) 18%, transparent);
+  padding: 0.9rem 2rem;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-soft);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.04));
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+  transition:
+    border-color 0.5s var(--ease-cinematic),
+    box-shadow 0.5s var(--ease-cinematic),
+    color 0.5s var(--ease-cinematic);
+}
+.grav-btn::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--color-gold) 26%, transparent),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+.grav-btn:hover {
+  border-color: color-mix(in srgb, var(--color-gold) 55%, transparent);
+  box-shadow: 0 0 44px -8px color-mix(in srgb, var(--color-gold) 45%, transparent);
+  color: var(--color-goldlight);
+}
+.grav-btn:hover::before {
+  opacity: 1;
+}
+.grav-btn:focus-visible,
+.lumen-link:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 1px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+/* Form fields — floating inside the wormhole */
+.field {
+  width: 100%;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.03));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.9rem;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.85rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-soft);
+  transition: border-color 0.4s var(--ease-cinematic), box-shadow 0.4s var(--ease-cinematic);
+}
+.field::placeholder {
+  color: var(--color-dim);
+}
+.field:focus {
+  outline: none;
+  border-color: rgb(255 255 255 / 0.4);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 0 0 4px rgb(255 255 255 / 0.06),
+    0 14px 30px -22px rgb(255 255 255 / 0.5);
+}
+
+/* Wormhole frame — a swirling vortex that wraps the viewport edges,
+   always present, deepening gently as scroll progress rises */
+.wormhole-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  --wh-intensity: 0.32;
+  --wh-play: running;
+}
+
+.wormhole-frame__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 132vmax;
+  height: 132vmax;
+  animation: wormhole-float 10s ease-in-out infinite;
+  animation-play-state: var(--wh-play);
+}
+.wormhole-frame__ring--inner {
+  width: 104vmax;
+  height: 104vmax;
+  animation-duration: 7.5s;
+  animation-delay: -3s;
+}
+
+.wormhole-frame__spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: var(--wh-intensity);
+  animation: wormhole-spin 46s linear infinite;
+  animation-play-state: var(--wh-play);
+  filter: blur(1.5px);
+}
+.wormhole-frame__ring--outer .wormhole-frame__spin {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(255 184 97 / 0.4) 30deg,
+    transparent 75deg,
+    transparent 150deg,
+    rgb(107 140 224 / 0.34) 195deg,
+    transparent 245deg,
+    transparent 320deg,
+    rgb(255 184 97 / 0.3) 350deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(ellipse 60% 56% at center, transparent 56%, rgb(0 0 0 / 0.85) 80%, black 100%);
+  mask-image: radial-gradient(ellipse 60% 56% at center, transparent 56%, rgb(0 0 0 / 0.85) 80%, black 100%);
+}
+.wormhole-frame__ring--inner .wormhole-frame__spin {
+  background: conic-gradient(
+    from 180deg,
+    transparent 0deg,
+    rgb(107 140 224 / 0.3) 40deg,
+    transparent 100deg,
+    transparent 210deg,
+    rgb(255 184 97 / 0.26) 260deg,
+    transparent 310deg,
+    transparent 360deg
+  );
+  -webkit-mask-image: radial-gradient(ellipse 68% 64% at center, transparent 62%, rgb(0 0 0 / 0.85) 86%, black 100%);
+  mask-image: radial-gradient(ellipse 68% 64% at center, transparent 62%, rgb(0 0 0 / 0.85) 86%, black 100%);
+  animation-duration: 34s;
+  animation-direction: reverse;
+}
+
+/* a low band of drifting star-dust streaming along the bottom edge —
+   the "star trail" — always floating, independent of scroll */
+.wormhole-frame__dust {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.6px 1.6px at 6% 92%, rgb(255 255 255 / 0.95), transparent 60%),
+    radial-gradient(1.1px 1.1px at 18% 96%, rgb(255 184 97 / 0.9), transparent 60%),
+    radial-gradient(1.4px 1.4px at 31% 90%, rgb(255 255 255 / 0.8), transparent 60%),
+    radial-gradient(1px 1px at 44% 95%, rgb(107 140 224 / 0.9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 58% 91%, rgb(255 255 255 / 0.85), transparent 60%),
+    radial-gradient(1.1px 1.1px at 71% 96%, rgb(255 184 97 / 0.85), transparent 60%),
+    radial-gradient(1.3px 1.3px at 84% 90%, rgb(255 255 255 / 0.75), transparent 60%),
+    radial-gradient(1px 1px at 96% 94%, rgb(107 140 224 / 0.85), transparent 60%);
+  background-size: 220px 100%;
+  background-repeat: repeat-x;
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 5%, transparent 26%);
+  mask-image: linear-gradient(to top, black 0%, black 5%, transparent 26%);
+  opacity: calc(var(--wh-intensity) + 0.25);
+  animation: wormhole-drift 16s linear infinite;
+  animation-play-state: var(--wh-play);
+}
+
+@keyframes wormhole-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wormhole-float {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(1.6vmax);
+  }
+}
+
+@keyframes wormhole-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -220px 0;
+  }
+}
+
+/* Reduced motion — the story still reads, the universe holds still */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
