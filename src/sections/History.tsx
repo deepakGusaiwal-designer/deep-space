@@ -4,6 +4,7 @@ import SectionShell from './SectionShell';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { usePointerGlow } from '../hooks/usePointerGlow';
 import type { HistoryEntry } from '../content/portfolio';
+import { Satellite, SquareStack } from 'lucide-react';
 
 function StationPanel({ entry, index }: { entry: HistoryEntry; index: number }) {
   const ref = useRef<HTMLElement>(null);
@@ -19,7 +20,7 @@ function StationPanel({ entry, index }: { entry: HistoryEntry; index: number }) 
     >
       <div className="flex items-baseline justify-between gap-6">
         <span className="h-display text-4xl text-white md:text-5xl">{entry.year}</span>
-        <span className="eyebrow">station {String(index + 1).padStart(2, '0')} / 04</span>
+        <span className="eyebrow">station {String(index + 1).padStart(2, '0')} / 04 <Satellite className="inline size-5" /></span>
       </div>
       <div className="grav-line my-6" />
       <p className="text-[0.7rem] tracking-[0.3em] text-slate-100 uppercase">{entry.role}</p>
@@ -42,7 +43,8 @@ export default function History() {
   return (
     <div ref={root}>
       <SectionShell id="Work" eyebrow="flight log · descent through time" className="py-[16vh]">
-        <h2 data-reveal className="h-display mb-20 text-5xl text-soft md:text-7xl">
+        <h2 data-reveal className="h-display mb-20 text-5xl text-soft md:text-7xl flex items-center">
+          <SquareStack className="mr-3 inline md:size-15 size-8" />
           History
         </h2>
         <div className="flex flex-col gap-[22vh]">

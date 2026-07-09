@@ -3,6 +3,7 @@ import { disciplines } from '../content/portfolio';
 import SectionShell from './SectionShell';
 import { useGsapReveal } from '../hooks/useGsapReveal';
 import { useUniverse } from '../store/useUniverse';
+import { EarthLock } from 'lucide-react';
 
 /**
  * DOM layer for the skill galaxy. The five disciplines and their tools are
@@ -18,7 +19,8 @@ export default function WhatIDo() {
   return (
     <div ref={root}>
       <SectionShell id="Skill" eyebrow="skill system · field readout" className="min-h-[130vh] py-[16vh]">
-        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl">
+        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl flex items-center">
+          <EarthLock className="mr-3 inline md:size-15 size-8" />
           What I do
         </h2>
         <p data-reveal className="mt-2 max-w-lg text-sm leading-relaxed text-slate-100">

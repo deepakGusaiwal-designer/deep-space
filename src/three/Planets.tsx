@@ -124,11 +124,12 @@ function SkillPlanet({ index }: SkillPlanetProps) {
           <meshStandardMaterial
             map={map}
             bumpMap={bump}
-            bumpScale={0.6}
+            bumpScale={0.85}
+            roughnessMap={bump}
             emissive="#ffffff"
             emissiveMap={map}
             emissiveIntensity={0.46}
-            roughness={0.95}
+            roughness={1}
             metalness={0}
           />
         </mesh>
@@ -232,13 +233,14 @@ const SYSTEM_WORLDS = [
     seed: 57,
     spin: -0.02, // Venus turns backwards, slowly
   },
+  // (wider gaps between orbits — each world gets room to breathe)
   {
     name: 'Earth',
     // blue oceans, green-brown continents, white cloud streaks + caps
     style: 'terra' as PlanetStyle,
     palette: { deep: '#0a3060', base: '#3f6339', high: '#e9eef2', accent: '#2a6b8f' },
     atmosphere: '#5da6ff',
-    orbit: 9.5,
+    orbit: 11,
     radius: 1.25,
     speed: 0.034,
     phase: 2.8,
@@ -251,7 +253,7 @@ const SYSTEM_WORLDS = [
     style: 'banded' as PlanetStyle,
     palette: { deep: '#16307c', base: '#2a52c6', high: '#7fa6ee', accent: '#4a76e0' },
     atmosphere: '#4a7cff',
-    orbit: 14.5,
+    orbit: 19,
     radius: 2.1,
     speed: 0.02,
     phase: 4.6,
@@ -259,6 +261,57 @@ const SYSTEM_WORLDS = [
     spin: 0.06,
   },
 ] as const;
+
+/** The asteroid belt — a ring of tumbling rock between Earth and Neptune. */
+const BELT_INNER = 13.8;
+const BELT_OUTER = 16;
+
+function AsteroidBelt({ count = 850 }: { count?: number }) {
+  const mesh = useRef<THREE.InstancedMesh>(null);
+
+  const { geometry, material, transforms } = useMemo(() => {
+    const geo = new THREE.IcosahedronGeometry(1, 0); // rough, angular rock
+    const mat = new THREE.MeshStandardMaterial({
+      color: '#8d8478',
+      emissive: '#5c554b',
+      emissiveIntensity: 0.36,
+      roughness: 1,
+      metalness: 0,
+      flatShading: true,
+    });
+    const arr = Array.from({ length: count }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      radius: BELT_INNER + Math.random() * (BELT_OUTER - BELT_INNER),
+      y: (Math.random() - 0.5) * 0.7,
+      scale: 0.055 + Math.pow(Math.random(), 2.2) * 0.19,
+      speed: 0.02 + Math.random() * 0.012, // inner rocks orbit faster-ish
+      tumble: Math.random() * Math.PI * 2,
+      tumbleSpeed: (Math.random() - 0.5) * 1.4,
+    }));
+    return { geometry: geo, material: mat, transforms: arr };
+  }, [count]);
+
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useFrame((state) => {
+    const m = mesh.current;
+    if (!m) return;
+    const { reducedMotion } = useUniverse.getState();
+    const t = reducedMotion ? 0 : state.clock.elapsedTime;
+    for (let i = 0; i < transforms.length; i++) {
+      const a = transforms[i];
+      const ang = a.angle + t * a.speed;
+      dummy.position.set(Math.cos(ang) * a.radius, a.y, Math.sin(ang) * a.radius);
+      dummy.rotation.set(a.tumble + t * a.tumbleSpeed, a.tumble * 2, a.tumble * 3);
+      dummy.scale.setScalar(a.scale);
+      dummy.updateMatrix();
+      m.setMatrixAt(i, dummy.matrix);
+    }
+    m.instanceMatrix.needsUpdate = true;
+  });
+
+  return <instancedMesh ref={mesh} args={[geometry, material, count]} frustumCulled={false} />;
+}
 
 export function SolarSystem() {
   const group = useRef<THREE.Group>(null);
@@ -268,8 +321,9 @@ export function SolarSystem() {
     () =>
       SYSTEM_WORLDS.map((w) => ({
         ...w,
-        map: makePlanetTexture(w.style, w.palette, w.seed),
-        bump: makeBumpTexture(w.seed),
+        // our own worlds get the high-resolution treatment
+        map: makePlanetTexture(w.style, w.palette, w.seed, 1024),
+        bump: makeBumpTexture(w.seed, 512),
         atmoMat: new THREE.ShaderMaterial({
           vertexShader: atmosphereVertex,
           fragmentShader: atmosphereFragment,
@@ -343,19 +397,22 @@ export function SolarSystem() {
         </sprite>
         <pointLight color="#ffedd2" intensity={90} distance={70} decay={2} />
 
+        <AsteroidBelt />
+
         {worlds.map((w, i) => (
           <group key={w.name} ref={(el) => { planetRefs.current[i] = el; }}>
             <group rotation={[0.15 * (i % 2 ? -1 : 1), 0, i === 1 ? 0.41 : 0.1]}>
               <mesh>
-                <sphereGeometry args={[w.radius, 48, 32]} />
+                <sphereGeometry args={[w.radius, 64, 48]} />
                 <meshStandardMaterial
                   map={w.map}
                   bumpMap={w.bump}
-                  bumpScale={w.style === 'terra' ? 0.5 : 0.25}
+                  bumpScale={w.style === 'terra' ? 0.9 : 0.45}
+                  roughnessMap={w.bump}
                   emissive="#ffffff"
                   emissiveMap={w.map}
                   emissiveIntensity={0.4}
-                  roughness={0.95}
+                  roughness={1}
                   metalness={0}
                 />
               </mesh>

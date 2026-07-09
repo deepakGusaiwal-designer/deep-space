@@ -58,9 +58,14 @@ interface PlanetPalette {
  * ice    → pale marbled world with polar caps
  * terra  → continents + oceans + cloud streaks
  */
-export function makePlanetTexture(style: PlanetStyle, palette: PlanetPalette, seed: number): THREE.CanvasTexture {
-  const W = 512;
-  const H = 256;
+export function makePlanetTexture(
+  style: PlanetStyle,
+  palette: PlanetPalette,
+  seed: number,
+  detail = 512,
+): THREE.CanvasTexture {
+  const W = detail;
+  const H = detail / 2;
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
@@ -114,6 +119,11 @@ export function makePlanetTexture(style: PlanetStyle, palette: PlanetPalette, se
         if (cloud > 0.62) col = lerpColor(col, new THREE.Color('#f5f3ee'), (cloud - 0.62) * 1.6);
       }
 
+      // fine surface grain — the micro-texture that reads as "real"
+      // when the camera gets close
+      const grain = fbm(u * 34, v * 34, seed + 31, 3);
+      col = lerpColor(col, deep, (grain - 0.5) * 0.22);
+
       const i = (y * W + x) * 4;
       img.data[i] = col.r * 255;
       img.data[i + 1] = col.g * 255;
@@ -125,14 +135,15 @@ export function makePlanetTexture(style: PlanetStyle, palette: PlanetPalette, se
   ctx.putImageData(img, 0, 0);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
   return tex;
 }
 
-/** Slightly displaced grayscale copy — cheap bump map from the same noise. */
-export function makeBumpTexture(seed: number): THREE.CanvasTexture {
-  const W = 256;
-  const H = 128;
+/** Grayscale relief from the same noise family — doubles as bump map and
+ *  roughness map (rougher in the lowlands, smoother on the ridges). */
+export function makeBumpTexture(seed: number, detail = 256): THREE.CanvasTexture {
+  const W = detail;
+  const H = detail / 2;
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
@@ -140,7 +151,10 @@ export function makeBumpTexture(seed: number): THREE.CanvasTexture {
   const img = ctx.createImageData(W, H);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const g = fbm((x / W) * 9, (y / H) * 9, seed, 5) * 255;
+      // broad relief + a fine ridged octave for crater/crack texture
+      const broad = fbm((x / W) * 9, (y / H) * 9, seed, 5);
+      const ridge = Math.abs(fbm((x / W) * 26, (y / H) * 26, seed + 17, 3) - 0.5) * 2;
+      const g = (broad * 0.75 + (1 - ridge) * 0.25) * 255;
       const i = (y * W + x) * 4;
       img.data[i] = img.data[i + 1] = img.data[i + 2] = g;
       img.data[i + 3] = 255;
