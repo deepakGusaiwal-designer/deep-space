@@ -5,16 +5,14 @@ import Cursor from './ui/Cursor';
 import Nav from './ui/Nav';
 import Preloader from './ui/Preloader';
 import ScrollHint from './ui/ScrollHint';
-import WormholeFrame from './ui/WormholeFrame';
 import Hero from './sections/Hero';
 import History from './sections/History';
-import Interlude from './sections/Interlude';
-import WhatIDo from './sections/WhatIDo';
+import Skills from './sections/Skills';
 import Testimonials from './sections/Testimonials';
 import Contact from './sections/Contact';
 import { useReducedMotionSync } from './hooks/useReducedMotion';
 
-// the universe is heavy — code-split it so text paints instantly
+// the universe is heavy — code-split it so the text layer paints instantly
 const Experience = lazy(() => import('./three/Experience'));
 
 export default function App() {
@@ -23,11 +21,10 @@ export default function App() {
   return (
     <SmoothScroll>
       <Preloader />
-      <Suspense fallback={<div className="fixed inset-0 bg-void" />}>
+      <Suspense fallback={<div className="fixed inset-0 bg-black" />}>
         <Experience />
       </Suspense>
 
-      <WormholeFrame />
       <Cursor />
       <Nav />
       <ScrollHint />
@@ -36,8 +33,7 @@ export default function App() {
       <main className="relative">
         <Hero />
         <History />
-        <Interlude />
-        <WhatIDo />
+        <Skills />
         <Testimonials />
         <Contact />
       </main>

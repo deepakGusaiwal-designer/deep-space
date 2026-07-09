@@ -3,197 +3,201 @@ import gsap from 'gsap';
 import { useUniverse } from '../store/useUniverse';
 import { startSpaceAudio, playWormholeWhoosh } from '../audio/spaceAudio';
 
-const PHRASES = [
-  'Before time: a singularity…',
-  'Priming the big bang…',
-  'Forging the first stardust…',
-  'Condensing the nebulae…',
-  'Spinning up the galaxies…',
-  'Aligning the wormhole…',
-];
-
 const RING_COUNT = 6;
+const STAR_COUNT = 480;
+
+interface Star {
+  x: number;
+  y: number;
+  z: number;
+  pz: number;
+}
 
 /**
- * Approach sequence. A percentage counts up through a rotation of
- * space-themed status lines, then hands off to the visitor: their click
- * opens a wormhole — rings of light rush past, the veil turns transparent
- * mid-flight so the real universe is already warping underneath, and the
- * ambience fades up. One continuous motion from click to cosmos.
+ * The loading sequence, per the brief:
+ *   dark screen → tiny stars appear → stars stretch into hyperspace →
+ *   the camera accelerates → the wormhole opens → a bright flash →
+ *   the portfolio fades into view. ~4 seconds, then hands off to the site.
+ *
+ * The hyperspace is a self-contained 2-D canvas (fast, dependency-free);
+ * a GSAP timeline drives the `speed` variable so the stretch, the wormhole,
+ * and the flash all stay in lockstep.
  */
 export default function Preloader() {
   const [gone, setGone] = useState(false);
-  const [arrived, setArrived] = useState(false);
-  const [phrase, setPhrase] = useState(PHRASES[0]);
   const wrap = useRef<HTMLDivElement>(null);
-  const num = useRef<HTMLSpanElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
   const portal = useRef<HTMLDivElement>(null);
-  const entering = useRef(false);
+  const flash = useRef<HTMLDivElement>(null);
+  const num = useRef<HTMLSpanElement>(null);
   const setReady = useUniverse((s) => s.setReady);
 
   useEffect(() => {
-    const counter = { v: 0 };
     document.documentElement.classList.add('overflow-hidden');
+    const { reducedMotion, setEnterWarp, setAudioOn } = useUniverse.getState();
 
-    const tl = gsap.timeline({ onComplete: () => setArrived(true) });
-    tl.to(counter, {
-      v: 100,
-      duration: 2.6,
-      ease: 'power2.inOut',
-      onUpdate: () => {
-        if (num.current) num.current.textContent = `${Math.round(counter.v)}%`;
-        const idx = Math.min(PHRASES.length - 1, Math.floor((counter.v / 100) * PHRASES.length));
-        setPhrase((p) => (p === PHRASES[idx] ? p : PHRASES[idx]));
-      },
-    });
-
-    return () => {
-      tl.kill();
+    // ── ambience starts on the visitor's first gesture (browser policy) ──
+    const armAudio = () => {
+      startSpaceAudio();
+      setAudioOn(true);
+      window.removeEventListener('pointerdown', armAudio);
+      window.removeEventListener('keydown', armAudio);
+      window.removeEventListener('wheel', armAudio);
+      window.removeEventListener('touchstart', armAudio);
     };
-  }, []);
-
-  useEffect(() => {
-    if (!arrived) return;
-    gsap.fromTo(
-      '[data-arrive]',
-      { opacity: 0, y: 14, filter: 'blur(6px)' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.9, ease: 'power3.out', stagger: 0.08 },
-    );
-  }, [arrived]);
-
-  const enter = () => {
-    if (entering.current) return;
-    entering.current = true;
-    const { reducedMotion, setEnterWarp, setBirth, setAudioOn } = useUniverse.getState();
-
-    // the click is our user gesture — light the ambience here
-    startSpaceAudio();
-    setAudioOn(true);
+    window.addEventListener('pointerdown', armAudio, { once: true });
+    window.addEventListener('keydown', armAudio, { once: true });
+    window.addEventListener('wheel', armAudio, { once: true, passive: true });
+    window.addEventListener('touchstart', armAudio, { once: true, passive: true });
 
     const finish = () => {
       setGone(true);
       setEnterWarp(0);
-      setBirth(1);
       document.documentElement.classList.remove('overflow-hidden');
     };
 
+    // reduced motion — skip the ride, reveal calmly
     if (reducedMotion) {
       setReady(true);
-      setBirth(1);
-      gsap.to(wrap.current, { opacity: 0, duration: 0.4, onComplete: finish });
-      return;
+      gsap.to(wrap.current, { opacity: 0, duration: 0.5, delay: 0.3, onComplete: finish });
+      return () => {
+        armAudio();
+      };
     }
 
-    playWormholeWhoosh();
+    // ── hyperspace canvas ──
+    const cvs = canvas.current!;
+    const ctx = cvs.getContext('2d')!;
+    let w = 0;
+    let h = 0;
+    const dpr = Math.min(window.devicePixelRatio, 2);
+    const resize = () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      cvs.width = w * dpr;
+      cvs.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const stars: Star[] = Array.from({ length: STAR_COUNT }, () => ({
+      x: (Math.random() - 0.5) * w,
+      y: (Math.random() - 0.5) * h,
+      z: Math.random() * w,
+      pz: 0,
+    }));
+
+    const state = { speed: 0, alpha: 0 };
+    let raf = 0;
+    const render = () => {
+      const cx = w / 2;
+      const cy = h / 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalAlpha = state.alpha;
+
+      for (const s of stars) {
+        s.pz = s.z;
+        s.z -= state.speed;
+        if (s.z < 1) {
+          s.z = w;
+          s.pz = w;
+          s.x = (Math.random() - 0.5) * w;
+          s.y = (Math.random() - 0.5) * h;
+        }
+        const sx = cx + (s.x / s.z) * w;
+        const sy = cy + (s.y / s.z) * w;
+        const px = cx + (s.x / s.pz) * w;
+        const py = cy + (s.y / s.pz) * w;
+        const size = (1 - s.z / w) * 2.4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = Math.max(0.4, size);
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(render);
+    };
+    raf = requestAnimationFrame(render);
 
     const rings = portal.current?.querySelectorAll<HTMLElement>('.wormhole-portal__ring') ?? [];
     const core = portal.current?.querySelector<HTMLElement>('.wormhole-portal__core');
-    const warp = { v: 0 };
-    const bang = { v: 0 };
+    const counter = { v: 0 };
 
     const tl = gsap.timeline({ onComplete: finish });
 
-    // 1 · the copy dissolves
-    tl.to('[data-arrive], [data-count]', {
-      opacity: 0,
-      y: -12,
-      filter: 'blur(8px)',
-      duration: 0.3,
+    // 1 · tiny stars appear
+    tl.to(state, { alpha: 1, duration: 0.6, ease: 'power1.out' }, 0);
+    tl.to(state, { speed: 6, duration: 0.9, ease: 'power1.in' }, 0);
+
+    // 2 · stretch into hyperspace + the camera accelerates (fov punch)
+    tl.to(state, { speed: 46, duration: 1.7, ease: 'power3.in' }, 0.9);
+    tl.to(counter, {
+      v: 100,
+      duration: 2.6,
       ease: 'power2.in',
-    });
-
-    // 2 · the universe behind starts surging (fov punch + star trails)
-    tl.to(
-      warp,
-      {
-        v: 1,
-        duration: 0.9,
-        ease: 'power2.in',
-        onUpdate: () => setEnterWarp(warp.v),
+      onUpdate: () => {
+        if (num.current) num.current.textContent = String(Math.round(counter.v)).padStart(3, '0');
       },
-      '<',
-    );
+    }, 0);
+    const warp = { v: 0 };
+    tl.to(warp, { v: 1, duration: 1.7, ease: 'power2.in', onUpdate: () => useUniverse.getState().setEnterWarp(warp.v) }, 0.9);
 
-    // 3 · wormhole rings rush past — flying down the throat of the tunnel
+    // 3 · the wormhole opens — rings rush outward past the camera
+    tl.call(() => playWormholeWhoosh(), undefined, 2.2);
     rings.forEach((ring, i) => {
-      const at = 0.18 + i * 0.13;
+      const at = 2.2 + i * 0.1;
       tl.fromTo(
         ring,
-        { scale: 0.04, rotate: i * 63, opacity: 0 },
-        { scale: 8.5, rotate: i * 63 + 140, duration: 1.15, ease: 'power3.in' },
+        { scale: 0.05, rotate: i * 60, opacity: 0 },
+        { scale: 9, rotate: i * 60 + 150, opacity: 0.95, duration: 1.0, ease: 'power3.in' },
         at,
       );
-      tl.to(ring, { opacity: 0.9, duration: 0.35, ease: 'power1.in' }, at);
-      tl.to(ring, { opacity: 0, duration: 0.68, ease: 'power1.out' }, at + 0.45);
+      tl.to(ring, { opacity: 0, duration: 0.5, ease: 'power1.out' }, at + 0.5);
     });
-
-    // 4 · the veil lifts mid-flight — and behind it, the big bang:
-    //     every star of the universe erupts out of the first singularity
-    tl.call(() => setReady(true), undefined, 0.55);
-    tl.to(wrap.current, { backgroundColor: 'rgba(5,5,5,0)', duration: 0.8, ease: 'power1.inOut' }, 0.5);
-    tl.to(
-      bang,
-      {
-        v: 1,
-        duration: 2.6,
-        ease: 'power2.out',
-        onUpdate: () => setBirth(bang.v),
-      },
-      0.7,
-    );
-
-    // 5 · a soft core flash as the wormhole collapses behind you
     if (core) {
-      tl.fromTo(
-        core,
-        { opacity: 0, scale: 0.3 },
-        { opacity: 1, scale: 2.2, duration: 0.4, ease: 'power2.in' },
-        1.05,
-      ).to(core, { opacity: 0, scale: 3.6, duration: 0.5, ease: 'power2.out' }, 1.45);
+      tl.fromTo(core, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 2.4, duration: 0.5, ease: 'power2.in' }, 2.9);
     }
 
-    // 6 · warp releases, everything settles
-    tl.to(
-      warp,
-      {
-        v: 0,
-        duration: 0.9,
-        ease: 'power3.out',
-        onUpdate: () => setEnterWarp(warp.v),
-      },
-      1.15,
-    );
-    tl.to(wrap.current, { opacity: 0, duration: 0.45, ease: 'power1.out' }, 1.5);
-  };
+    // 4 · bright flash — the universe is revealed behind it
+    tl.call(() => setReady(true), undefined, 3.15);
+    tl.to(flash.current, { opacity: 1, duration: 0.28, ease: 'power2.in' }, 3.1);
+    tl.to(state, { alpha: 0, duration: 0.3 }, 3.1);
+    tl.to(flash.current, { opacity: 0, duration: 0.7, ease: 'power2.out' }, 3.4);
+
+    // 5 · warp releases, the veil lifts onto the portfolio
+    tl.to(warp, { v: 0, duration: 0.9, ease: 'power3.out', onUpdate: () => useUniverse.getState().setEnterWarp(warp.v) }, 3.3);
+    tl.to(wrap.current, { opacity: 0, duration: 0.6, ease: 'power1.out' }, 3.5);
+
+    return () => {
+      tl.kill();
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', resize);
+    };
+  }, [setReady]);
 
   if (gone) return null;
   return (
-    <div ref={wrap} className="fixed inset-0 z-[90] flex items-center justify-center overflow-hidden bg-void">
+    <div ref={wrap} className="fixed inset-0 z-[90] overflow-hidden bg-black">
+      <canvas ref={canvas} className="absolute inset-0 h-full w-full" />
       <div ref={portal} className="wormhole-portal" aria-hidden="true">
         {Array.from({ length: RING_COUNT }, (_, i) => (
           <div key={i} className="wormhole-portal__ring" />
         ))}
         <div className="wormhole-portal__core" />
       </div>
-      <div className="relative text-center">
-        <span ref={num} data-count className="h-display block text-6xl text-soft md:text-8xl">
-          0%
-        </span>
-        <p data-count className="eyebrow mt-6 min-h-[1em]">
-          {arrived ? 'the wormhole is open' : phrase}
-        </p>
 
-        {arrived && (
-          <button
-            type="button"
-            data-arrive
-            onClick={enter}
-            className="grav-btn pointer-events-auto mt-10 inline-block"
-          >
-            Enter the void
-          </button>
-        )}
+      <div className="pointer-events-none absolute inset-x-0 bottom-10 flex flex-col items-center gap-3">
+        <span ref={num} className="font-mono text-xs tracking-[0.4em] text-soft">
+          000
+        </span>
+        <span className="eyebrow text-dim">Entering deep space</span>
       </div>
+
+      <div ref={flash} className="pointer-events-none absolute inset-0 bg-white opacity-0" />
     </div>
   );
 }

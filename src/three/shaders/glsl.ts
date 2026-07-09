@@ -338,6 +338,85 @@ export const sunFragment = /* glsl */ `
   }
 `;
 
+/**
+ * The wormhole — a billboarded quad running a swirling energy vortex.
+ * Concentric rings rush inward toward a dark throat, a bright photon mouth
+ * rings the eye, and the whole thing breathes (uPulse). One draw call.
+ */
+export const wormholeVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+export const wormholeFragment = /* glsl */ `
+  precision highp float;
+
+  uniform float uTime;
+  uniform float uFade;    // global visibility
+  uniform float uPulse;   // gentle breathing, 0..1
+  uniform float uAccent;  // red-accent mix at the rim, 0..1
+  varying vec2 vUv;
+
+  float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    for (int i = 0; i < 5; i++) { v += vnoise(p) * a; p *= 2.05; a *= 0.5; }
+    return v;
+  }
+
+  void main() {
+    vec2 uv = vUv - 0.5;
+    float r = length(uv) * 2.0;
+    float ang = atan(uv.y, uv.x);
+
+    // spiral coordinate: matter flows inward while rotating
+    float spin = ang * 3.0 + uTime * 0.55 - 1.4 / max(r, 0.06);
+    float swirl = fbm(vec2(spin * 0.4, r * 3.5 - uTime * 0.5));
+
+    // concentric rings rushing toward the throat
+    float rings = 0.5 + 0.5 * sin(r * 26.0 - uTime * 3.0 + swirl * 4.0);
+
+    float throat = smoothstep(0.0, 0.34, r);       // dark eye in the middle
+    float outer = 1.0 - smoothstep(0.7, 1.15, r);   // fade to transparent
+
+    float energy = pow(rings, 2.2) * (0.35 + swirl * 0.9) * throat * outer;
+    energy *= 0.7 + 0.6 * uPulse;
+
+    vec3 core = vec3(0.85, 0.90, 1.0);
+    vec3 blue = vec3(0.34, 0.45, 0.78);
+    vec3 red  = vec3(1.0, 0.23, 0.23);
+    vec3 col = mix(core, blue, smoothstep(0.2, 0.7, r));
+    col = mix(col, red, smoothstep(0.55, 1.0, r) * uAccent);
+
+    // bright photon mouth ringing the throat
+    float mouth = smoothstep(0.42, 0.30, r) * smoothstep(0.20, 0.34, r);
+    col += vec3(0.9, 0.94, 1.0) * mouth * 1.4;
+    energy += mouth * 0.8 * outer;
+
+    float alpha = clamp(energy, 0.0, 1.0) * uFade;
+    if (alpha < 0.004) discard;
+    gl_FragColor = vec4(col * energy * 1.6, alpha);
+  }
+`;
+
 export const atmosphereVertex = /* glsl */ `
   varying vec3 vNormal;
   varying vec3 vView;

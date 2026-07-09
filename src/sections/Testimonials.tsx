@@ -86,9 +86,9 @@ export default function Testimonials() {
 
   return (
     <div ref={root}>
-      <SectionShell id="Testimonial" eyebrow="signals received · three transmissions" className="py-[16vh]">
-        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl">
-          Testimonials
+      <SectionShell id="Testimonial" eyebrow="03 — Voices in orbit" className="py-[20vh]">
+        <h2 data-reveal className="h-display text-4xl text-soft md:text-6xl">
+          Signals received.
         </h2>
 
         <div
@@ -104,19 +104,19 @@ export default function Testimonials() {
             className="absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
               background: '#ffffff',
-              boxShadow: '0 0 40px 14px rgba(232,176,106,0.45), 0 0 120px 50px rgba(232,176,106,0.12)',
+              boxShadow: '0 0 40px 14px rgba(255,255,255,0.35), 0 0 120px 50px rgba(255,59,59,0.08)',
             }}
           />
           {testimonials.map((t) => (
             <figure
               key={t.name}
               data-orbit
-              className="holo absolute top-1/2 left-1/2 w-[19rem] p-7 will-change-transform md:w-[23rem]"
+              className="absolute top-1/2 left-1/2 w-[19rem] rounded-lg border border-white/14 bg-void/80 p-7 backdrop-blur-[2px] will-change-transform md:w-[23rem]"
             >
-              <blockquote className="text-sm leading-relaxed text-white">“{t.quote}”</blockquote>
+              <blockquote className="text-sm leading-relaxed text-soft">“{t.quote}”</blockquote>
               <figcaption className="mt-6">
-                <p className="h-display text-base text-goldlight">{t.name}</p>
-                <p className="mt-1 font-mono text-[0.62rem] tracking-[0.18em] text-white uppercase">
+                <p className="h-display text-base text-white">{t.name}</p>
+                <p className="mt-1 font-mono text-[0.62rem] tracking-[0.18em] text-spacegray uppercase">
                   {t.position}
                 </p>
               </figcaption>

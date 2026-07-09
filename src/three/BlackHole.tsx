@@ -3,25 +3,19 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { blackHoleVertex, blackHoleFragment } from './shaders/glsl';
 import { useUniverse } from '../store/useUniverse';
-import { smoothstep, damp } from '../lib/flightPath';
+import { damp, WORLDS } from '../lib/flightPath';
 
-export const HOLE_CENTER = new THREE.Vector3(0, 0, -2);
-export const EXIT_HOLE_CENTER = new THREE.Vector3(0, 0, -248);
-
-interface HoleProps {
-  center: THREE.Vector3;
-  size?: number;
-  /** 0 = monochrome white-hot disk, 1 = golden Gargantua */
-  warm?: number;
-  /** returns target visibility 0..1 for the current scroll progress */
-  fade: (progress: number, contactCollapsed: boolean) => number;
-}
+const CENTER = WORLDS.blackHole.clone();
 
 /**
- * A billboarded quad running a photon-geodesic raymarch.
- * Cheap on geometry, expensive-looking on screen — one draw call.
+ * The Gargantua. A billboarded quad running a photon-geodesic raymarch:
+ * rays bend around the singularity and the accretion disk is sampled on
+ * every plane crossing, producing the Interstellar arc of light above and
+ * below the horizon plus the photon ring. One draw call, sits upper-right
+ * of the hero tableau and becomes a lensing flyby mid-journey. The cursor
+ * orbits the viewpoint so the lensing responds to the pointer.
  */
-function Hole({ center, size = 80, warm = 0, fade }: HoleProps) {
+export default function BlackHole({ size = 46 }: { size?: number }) {
   const mesh = useRef<THREE.Mesh>(null);
   const m2 = useRef({ x: 0, y: 0 });
 
@@ -34,76 +28,46 @@ function Hole({ center, size = 80, warm = 0, fade }: HoleProps) {
         depthWrite: false,
         uniforms: {
           uTime: { value: 0 },
-          uCenter: { value: center.clone() },
+          uCenter: { value: CENTER.clone() },
           uCamLocal: { value: new THREE.Vector3() },
           uFade: { value: 0 },
-          uWarm: { value: warm },
+          uWarm: { value: 0.55 }, // restrained golden disk
         },
       }),
-    [center, warm],
+    [],
   );
 
   useFrame((state, delta) => {
     const m = mesh.current;
     if (!m) return;
-    const { progress, mouse, reducedMotion, contactCollapsed } = useUniverse.getState();
+    const { mouse, reducedMotion, ready } = useUniverse.getState();
 
-    // billboard toward the camera
-    m.quaternion.copy(state.camera.quaternion);
-
+    m.quaternion.copy(state.camera.quaternion); // billboard
     material.uniforms.uTime.value = state.clock.elapsedTime;
 
-    // the cursor orbits your viewpoint around the hole — the lensing,
-    // photon ring and disk all respond because the raymarch origin moves
+    // the cursor swings the raymarch origin around the hole → live lensing
     const k = reducedMotion ? 0 : 1;
     const mm = m2.current;
     mm.x = damp(mm.x, mouse.x * k, 1.6, delta);
     mm.y = damp(mm.y, mouse.y * k, 1.6, delta);
-    material.uniforms.uCamLocal.value.copy(state.camera.position).sub(center);
-    const dist = material.uniforms.uCamLocal.value.length();
-    material.uniforms.uCamLocal.value.x += mm.x * dist * 0.1;
-    material.uniforms.uCamLocal.value.y += -mm.y * dist * 0.07;
+    const local = material.uniforms.uCamLocal.value as THREE.Vector3;
+    local.copy(state.camera.position).sub(CENTER);
+    const dist = local.length();
+    local.x += mm.x * dist * 0.1;
+    local.y += -mm.y * dist * 0.07;
 
     material.uniforms.uFade.value = damp(
       material.uniforms.uFade.value,
-      fade(progress, contactCollapsed),
-      4,
+      ready ? 1 : 0,
+      3,
       delta,
     );
     m.visible = material.uniforms.uFade.value > 0.01;
   });
 
   return (
-    <mesh ref={mesh} position={center} material={material} renderOrder={5} frustumCulled={false}>
+    <mesh ref={mesh} position={CENTER} material={material} renderOrder={5} frustumCulled={false}>
       <planeGeometry args={[size, size]} />
     </mesh>
-  );
-}
-
-/** The entrance: a golden Gargantua, fades as the visitor crosses the horizon. */
-export default function BlackHole() {
-  return (
-    <Hole
-      center={HOLE_CENTER}
-      warm={1}
-      fade={(p) => 1 - smoothstep(0.16, 0.26, p)}
-    />
-  );
-}
-
-/**
- * The exit: a second, GOLDEN black hole waiting at the end of the journey.
- * Color returns to the universe just before you leave it. It rises behind
- * the testimonial orbit and hosts the contact form; submitting the form
- * (contactCollapsed) calms it to an ember.
- */
-export function ExitBlackHole() {
-  return (
-    <Hole
-      center={EXIT_HOLE_CENTER}
-      size={52}
-      warm={1.2}
-      fade={(p, collapsed) => smoothstep(0.16, 0.8, p) * (collapsed ? 0.3 : 1)}
-    />
   );
 }

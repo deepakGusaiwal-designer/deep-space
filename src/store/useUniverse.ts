@@ -1,58 +1,49 @@
 import { create } from 'zustand';
 
+/**
+ * The single source of truth the whole universe reads from each frame.
+ * Scroll drives `progress`; the pointer drives `mouse`; the loader drives
+ * `ready` / `enterWarp`. Everything cinematic keys off these.
+ */
 interface UniverseState {
-  /** 0 → 1 across the whole journey (Lenis-driven) */
+  /** 0 → 1 across the whole flight (Lenis-driven) */
   progress: number;
-  /** signed scroll velocity, roughly -1 → 1 (Lenis-driven) — powers star trails */
+  /** signed scroll velocity, roughly -1 → 1 — powers star trails */
   velocity: number;
-  /** normalized pointer, -1 → 1 */
+  /** normalized pointer, -1 → 1 (used for cinematic parallax) */
   mouse: { x: number; y: number };
-  /** discipline planet currently hovered (index into content) or null */
-  hoveredPlanet: number | null;
-  /** user-drag rotation offset of the skill galaxy */
-  galaxySpin: number;
-  /** 0 → 1 → 0 one-shot warp surge while the wormhole opens on "Enter the void" */
+  /** which journey world is hovered ('earth' | 'mars' | 'saturn') or null */
+  hoveredWorld: string | null;
+  /** 0 → 1 → 0 one-shot warp surge as the loader's wormhole opens */
   enterWarp: number;
-  /** 0 → 1 the big bang: the universe expands out of the first singularity */
-  birth: number;
   ready: boolean;
   reducedMotion: boolean;
   audioOn: boolean;
-  contactCollapsed: boolean;
   setProgress: (p: number) => void;
   setVelocity: (v: number) => void;
   setMouse: (x: number, y: number) => void;
-  setHoveredPlanet: (i: number | null) => void;
-  addGalaxySpin: (d: number) => void;
+  setHoveredWorld: (id: string | null) => void;
   setEnterWarp: (w: number) => void;
-  setBirth: (b: number) => void;
   setReady: (r: boolean) => void;
   setReducedMotion: (r: boolean) => void;
   setAudioOn: (a: boolean) => void;
-  setContactCollapsed: (c: boolean) => void;
 }
 
 export const useUniverse = create<UniverseState>((set) => ({
   progress: 0,
   velocity: 0,
   mouse: { x: 0, y: 0 },
-  hoveredPlanet: null,
-  galaxySpin: 0,
+  hoveredWorld: null,
   enterWarp: 0,
-  birth: 0,
   ready: false,
   reducedMotion: false,
   audioOn: false,
-  contactCollapsed: false,
   setProgress: (progress) => set({ progress }),
   setVelocity: (velocity) => set({ velocity }),
   setMouse: (x, y) => set({ mouse: { x, y } }),
-  setHoveredPlanet: (hoveredPlanet) => set({ hoveredPlanet }),
-  addGalaxySpin: (d) => set((s) => ({ galaxySpin: s.galaxySpin + d })),
+  setHoveredWorld: (hoveredWorld) => set({ hoveredWorld }),
   setEnterWarp: (enterWarp) => set({ enterWarp }),
-  setBirth: (birth) => set({ birth }),
   setReady: (ready) => set({ ready }),
   setReducedMotion: (reducedMotion) => set({ reducedMotion }),
   setAudioOn: (audioOn) => set({ audioOn }),
-  setContactCollapsed: (contactCollapsed) => set({ contactCollapsed }),
 }));

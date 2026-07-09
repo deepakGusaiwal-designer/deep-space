@@ -8,27 +8,36 @@
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
   name: 'Deepak Gusaiwal',
-  scrollHint: 'Scroll to Explore',
+  scrollHint: 'Scroll to travel',
   linkedin: 'https://www.linkedin.com/in/deepakgusaiwal/',
   email: 'deepak.gusaiwal@outlook.com',
 } as const;
 
+/** Section anchors — also used by the vertical navigation on the left edge. */
 export const nav = [
-  { label: 'History', href: '#Work' },
-  { label: 'Skill', href: '#Skill' },
-  { label: 'Testimonials', href: '#Testimonial' },
+  { label: 'Home', href: '#top' },
+  { label: 'Journey', href: '#Work' },
+  { label: 'Craft', href: '#Skill' },
+  { label: 'Voices', href: '#Testimonial' },
   { label: 'Contact', href: '#Contact' },
 ] as const;
 
-/** Hero copy — exact original sentence, split into animatable lines. */
-export const heroLines = [
-  'Hi! My name is Deepak Gusaiwal,',
-  'An UI/UX Designer and Developer from India.',
-  'I am passionate about creating',
-  'visually stunning and innovative',
-  'websites that not only look great but',
-  'also provide exceptional user experiences.',
+/** Social links for the right edge of the viewport. */
+export const socials = [
+  { label: 'LinkedIn', short: 'In', href: 'https://www.linkedin.com/in/deepakgusaiwal/' },
+  { label: 'Email', short: '✉', href: 'mailto:deepak.gusaiwal@outlook.com' },
+  { label: 'Dribbble', short: 'Dr', href: 'https://dribbble.com/' },
 ] as const;
+
+/** Hero — small subtitle, large bold headline (per line), short description, CTAs. */
+export const hero = {
+  subtitle: 'UI/UX Designer & Developer — India',
+  headline: ['Exploring the space', 'between design & code.'],
+  description:
+    'I craft visually stunning, immersive web experiences — where cinematic motion meets exceptional usability, and every interaction feels like piloting through the universe.',
+  primary: { label: 'Begin the journey', href: '#Work' },
+  secondary: { label: 'Contact', href: '#Contact' },
+} as const;
 
 export interface HistoryEntry {
   year: string;

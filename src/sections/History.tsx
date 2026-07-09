@@ -2,54 +2,39 @@ import { useRef } from 'react';
 import { history } from '../content/portfolio';
 import SectionShell from './SectionShell';
 import { useGsapReveal } from '../hooks/useGsapReveal';
-import { usePointerGlow } from '../hooks/usePointerGlow';
-import type { HistoryEntry } from '../content/portfolio';
-
-function StationPanel({ entry, index }: { entry: HistoryEntry; index: number }) {
-  const ref = useRef<HTMLElement>(null);
-  usePointerGlow(ref);
-
-  const side = index % 2 === 0 ? 'md:mr-auto' : 'md:ml-auto';
-
-  return (
-    <article
-      ref={ref}
-      data-reveal
-      className={`holo pointer-events-auto relative w-full max-w-xl p-8 md:p-10 ${side}`}
-    >
-      <div className="flex items-baseline justify-between gap-6">
-        <span className="h-display text-4xl text-white md:text-5xl">{entry.year}</span>
-        <span className="eyebrow">station {String(index + 1).padStart(2, '0')} / 04</span>
-      </div>
-      <div className="grav-line my-6" />
-      <p className="text-[0.7rem] tracking-[0.3em] text-slate-100 uppercase">{entry.role}</p>
-      <h3 className="mt-3 text-2xl text-soft font-semibold md:text-3xl">{entry.title}</h3>
-      <p className="mt-4 text-sm tracking-[0.14em] text-slate-100 uppercase">{entry.company}</p>
-    </article>
-  );
-}
 
 /**
- * Not a timeline — a flight plan. Each company is a station along the
- * descent; the 3D scene lights each one up as the camera passes.
- * Original order preserved: Current → 2016, so scrolling deeper into the
- * black hole is scrolling deeper into time.
+ * The journey so far — a clean Swiss timeline. Deeper scroll = deeper in
+ * time; the 3D camera is sweeping past Earth and Mars as this reveals.
  */
 export default function History() {
   const root = useRef<HTMLDivElement>(null);
-  useGsapReveal(root, { y: 90, blur: 18, once: false, start: 'top 82%', perElement: true });
+  useGsapReveal(root, { y: 70, blur: 14, once: false, start: 'top 82%', perElement: true });
+
+  // original order runs Current → 2016; show most recent first
+  const rows = [...history].reverse();
 
   return (
     <div ref={root}>
-      <SectionShell id="Work" eyebrow="flight log · descent through time" className="py-[16vh]">
-        <h2 data-reveal className="h-display mb-20 text-5xl text-soft md:text-7xl">
-          History
+      <SectionShell id="Work" eyebrow="01 — Flight log" className="py-[22vh]">
+        <h2 data-reveal className="h-display max-w-3xl text-4xl text-soft md:text-6xl">
+          Years spent charting new systems.
         </h2>
-        <div className="flex flex-col gap-[22vh]">
-          {history.map((entry, i) => (
-            <StationPanel key={entry.company} entry={entry} index={i} />
+
+        <ol className="mt-20 border-t border-white/12">
+          {rows.map((entry) => (
+            <li
+              key={entry.company}
+              data-reveal
+              className="grid grid-cols-1 gap-2 border-b border-white/12 py-8 md:grid-cols-12 md:items-baseline md:gap-8"
+            >
+              <span className="font-mono text-sm text-accent md:col-span-2">{entry.year}</span>
+              <span className="text-xl text-soft md:col-span-5">{entry.title}</span>
+              <span className="text-spacegray md:col-span-3">{entry.role}</span>
+              <span className="text-spacegray md:col-span-2 md:text-right">{entry.company}</span>
+            </li>
           ))}
-        </div>
+        </ol>
       </SectionShell>
     </div>
   );
