@@ -381,10 +381,10 @@ export default function Preloader() {
 
     // beat 1 — nothing, then a point of light
     tl.call(() => setLine(LINES[0]), undefined, 0.2);
-    tl.fromTo(line, { opacity: 0, filter: 'blur(6px)' }, { opacity: 0.9, filter: 'blur(0px)', duration: 0.8 }, 0.3);
+    tl.fromTo(line, { opacity: 0, filter: 'blur(6px)' }, { opacity: 0.9, filter: 'blur(0px)', duration: 1.1 }, 0.3);
     tl.to({}, { duration: 0.01 }, 0); // anchor
     tl.to(fxTween(fx, 'singularity'), { value: 0.65, duration: 1.4, ease: 'power2.out' }, 0.5);
-    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.5 }, 1.7);
+    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.7 }, 2.35);
 
     // beat 2 — destabilize, then detonate
     tl.to(fxTween(fx, 'pulse'), { value: 1, duration: 0.9, ease: 'power2.in' }, 1.5);
@@ -403,8 +403,8 @@ export default function Preloader() {
     tl.to(fxTween(fx, 'singularity'), { value: 0, duration: 0.4 }, 2.5);
     tl.to(fxTween(fx, 'pulse'), { value: 0, duration: 0.4 }, 2.5);
     tl.call(() => setLine(LINES[1]), undefined, 2.75);
-    tl.fromTo(line, { opacity: 0 }, { opacity: 1, filter: 'blur(0px)', duration: 0.6 }, 2.8);
-    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.5 }, 3.9);
+    tl.fromTo(line, { opacity: 0 }, { opacity: 1, filter: 'blur(0px)', duration: 0.9 }, 2.8);
+    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.7 }, 4.6);
 
     // beat 3 — expansion cools; stars and nebulae condense
     tl.to(fxTween(fx, 'cool'), { value: 1, duration: 2.4, ease: 'power1.inOut' }, 2.8);
@@ -420,9 +420,9 @@ export default function Preloader() {
       5.2,
     );
     tl.call(() => setLine(LINES[2]), undefined, 4.45);
-    tl.fromTo(line, { opacity: 0 }, { opacity: 1, filter: 'blur(0px)', duration: 0.7 }, 4.5);
-    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.55 }, 5.75);
-    tl.to({}, { duration: 0.01 }, 6.3); // hold the settled cosmos a breath
+    tl.fromTo(line, { opacity: 0 }, { opacity: 1, filter: 'blur(0px)', duration: 1.0 }, 4.5);
+    tl.to(line, { opacity: 0, filter: 'blur(4px)', duration: 0.7 }, 6.1);
+    tl.to({}, { duration: 1.3 }, 6.8); // give readers a calm pause before the portal appears
 
     // a click anywhere hurries creation along
     const hurry = () => {
@@ -434,7 +434,7 @@ export default function Preloader() {
     // the visitor in the primordial era — fast-forward creation
     const failsafe = window.setTimeout(() => {
       if (tl.progress() < 0.9) tl.timeScale(6);
-    }, 9500);
+    }, 12500);
 
     return () => {
       fx.alive = false;
