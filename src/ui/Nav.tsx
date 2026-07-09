@@ -40,13 +40,11 @@ export default function Nav() {
           </a>
         </Magnetic>
         {nav.map((item) => (
-          <>
-            <Magnetic key={item.href} strength={0.25}>
-              <a href={item.href} className="text-xs tracking-widest uppercase text-white">
-                {item.label}
-              </a>
-            </Magnetic>
-          </>
+          <Magnetic key={item.href} strength={0.25}>
+            <a href={item.href} className="text-xs tracking-widest uppercase text-white">
+              {item.label}
+            </a>
+          </Magnetic>
         ))}
       </nav>
 

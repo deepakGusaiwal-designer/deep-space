@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useUniverse } from '../store/useUniverse';
 import BlackHole, { ExitBlackHole } from './BlackHole';
 import CameraRig from './CameraRig';
+import EventHorizon from './EventHorizon';
 import { SkillGalaxy, SolarSystem } from './Planets';
 import { Andromeda, DeepStars, Nebulae, ShootingStars, Stardust, Starfield, StarTrails, WarpLines } from './Starfield';
 
@@ -64,6 +65,8 @@ export default function Experience() {
           </group>
           <WarpLines />
           <ExitBlackHole />
+          {/* last: the crossing veil draws over the whole universe */}
+          <EventHorizon />
         </Suspense>
 
         {!reducedMotion && !isMobile && (

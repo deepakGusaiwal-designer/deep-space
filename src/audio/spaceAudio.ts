@@ -145,6 +145,37 @@ export function startSpaceAudio(): void {
   master.gain.linearRampToValueAtTime(MASTER_LEVEL, ctx.currentTime + 4);
 }
 
+/**
+ * Wake the ambience on whatever the visitor does first.
+ *
+ * The cinematic opening has no button, and a browser will not let an
+ * AudioContext start without a user gesture — so there is no moment we can
+ * simply call startSpaceAudio() and expect sound. Instead we listen once for
+ * any real interaction (a click, a key, a wheel, a touch) and light it then.
+ *
+ * Returns a disarm function; calling it after the audio has started is a
+ * no-op, so it is safe to fire from a React cleanup.
+ */
+export function startAudioOnFirstGesture(): () => void {
+  const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
+
+  const wake = () => {
+    disarm();
+    startSpaceAudio();
+    // reflect it in the toggle, which otherwise shows the ambience as muted
+    void import('../store/useUniverse').then(({ useUniverse }) => {
+      useUniverse.getState().setAudioOn(true);
+    });
+  };
+
+  const disarm = () => {
+    for (const e of events) window.removeEventListener(e, wake);
+  };
+
+  for (const e of events) window.addEventListener(e, wake, { once: false, passive: true });
+  return disarm;
+}
+
 export function pauseSpaceAudio(): void {
   if (!ctx || !master) return;
   running = false;

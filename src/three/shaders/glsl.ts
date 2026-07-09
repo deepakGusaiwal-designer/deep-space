@@ -142,6 +142,137 @@ export const blackHoleFragment = /* glsl */ `
   }
 `;
 
+export const horizonVertex = /* glsl */ `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+/**
+ * The event horizon, crossed.
+ *
+ * A screen-space veil locked to the camera for the few hundred milliseconds
+ * either side of the horizon. Four things happen at once, all keyed off the
+ * crossing envelope (uCross) and the monotonic depth (uDepth):
+ *
+ *   · the photon ring — the last light that ever orbited the hole — expands
+ *     out of the center and sweeps past the viewer exactly once
+ *   · light smears into radial streaks as tidal forces stretch the frame
+ *   · the rim of vision crushes to black as the horizon closes over
+ *   · color slides blue (infalling, blueshifted) → amber → red (redshifted)
+ */
+export const horizonFragment = /* glsl */ `
+  precision highp float;
+
+  uniform float uTime;
+  uniform float uCross;   // 0..1..0 — presence of the crossing
+  uniform float uDepth;   // 0..1     — monotonic progress through it
+  uniform float uAspect;
+  uniform vec2  uCenter;  // the hole's own position on screen, in NDC
+  uniform float uRing;    // the ring's radius, in NDC-height units
+  varying vec2 vUv;
+
+  float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+
+  float vnoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + vec2(1.0, 0.0));
+    float c = hash21(i + vec2(0.0, 1.0));
+    float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
+  // a soft ring of light at radius rr
+  float ring(float r, float rr, float w) {
+    float d = (r - rr) / w;
+    return exp(-d * d);
+  }
+
+  void main() {
+    // everything is measured from the hole, not from the middle of the
+    // viewport — the flight path slips past it off-center
+    vec2 uv = (vUv - 0.5) * 2.0 - uCenter;
+    uv.x *= uAspect;
+    float r = length(uv);
+    float ang = atan(uv.y, uv.x);
+
+    // ── the photon ring sweeping outward past the viewer ──
+    // slightly different radius per channel — the ring tears into a
+    // chromatic smear as it passes, the way a real lens would show it
+    // the radius is handed to us: it starts on the hole's real photon ring
+    // and expands from there, so the effect grows out of the hole you can
+    // actually see rather than out of an arbitrary point
+    float rr = uRing;
+    // a thin band, not a halo. The channels are split by a small *absolute*
+    // offset — scaling the split with the radius pulls them apart until they
+    // stop overlapping and the ring reads as a literal rainbow
+    float w = 0.032 + rr * 0.03;
+    float off = 0.014 + uDepth * 0.022;
+    vec3 ringCol = vec3(
+      ring(r, rr - off, w),
+      ring(r, rr,       w),
+      ring(r, rr + off, w)
+    );
+    // it has to fade *in* as the hole behind it fades out, or it reads as a
+    // glow pasted over a hole you can still see. Kept under 1 so Bloom lifts
+    // it rather than clipping the frame to white.
+    ringCol *= smoothstep(0.0, 0.16, uDepth) * (1.0 - smoothstep(0.58, 0.95, uDepth)) * 0.85;
+
+    // ── tidal streaks: light stretched along the radius ──
+    // high angular frequency on purpose: at low frequency these are fat
+    // wedges that read as grey smears, not as light drawn out into threads.
+    // Strictly clamped to 0..1 — they sit behind the darkness and must never
+    // be bright enough to wash the crush out.
+    float n = vnoise(vec2(ang * 30.0, r * 1.5 - uTime * 0.8));
+    n += vnoise(vec2(ang * 62.0, r * 2.6 - uTime * 1.3)) * 0.4;
+    // a high threshold and a steep curve keep these sparse — a few threads,
+    // not a starburst filter over the whole frame
+    float streak = pow(clamp((n - 0.72) * 2.8, 0.0, 1.0), 3.0);
+    // only out in the periphery, only while crossing, and gone before we
+    // surface — they must not still be raking the frame on the way out
+    streak *= smoothstep(0.25, 1.3, r) * uCross * 0.16;
+    streak *= 1.0 - smoothstep(0.30, 0.62, uDepth);
+    vec3 streakCol = vec3(0.74, 0.76, 0.84) * streak;
+
+    // ── the color of falling in ──
+    // it inherits the hole's own light — hot amber-white — and redshifts as
+    // the last of it climbs away from us. No blue phase: a cool halo fights
+    // the golden disk it is supposed to be emerging from. The only cool cast
+    // is the chromatic split on the ring's leading edge, above.
+    vec3 shift = mix(
+      vec3(1.0, 0.88, 0.66),
+      vec3(1.0, 0.33, 0.15),
+      smoothstep(0.28, 0.95, uDepth)
+    );
+    vec3 col = ringCol * shift + streakCol;
+
+    // ── the horizon closing over the rim of vision ──
+    // the clear aperture shrinks toward the center as we sink in: black at
+    // the rim, still open at the center, closing as uCross rises
+    float aperture = mix(2.4, 0.16, uCross);
+    float crush = smoothstep(aperture * 0.35, aperture, r) * uCross;
+
+    // opaque wherever the horizon has closed OR the ring is burning; the
+    // color there is black in the crush and bright on the ring, so the ring
+    // rides over the darkness without being dimmed by it
+    float lum = max(max(col.r, col.g), col.b);
+    float alpha = clamp(lum + crush, 0.0, 1.0);
+
+    gl_FragColor = vec4(col, alpha * smoothstep(0.0, 0.06, uCross));
+    if (gl_FragColor.a < 0.004) discard;
+  }
+`;
+
 export const starVertex = /* glsl */ `
   uniform float uTime;
   uniform float uPixelRatio;

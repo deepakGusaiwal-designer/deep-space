@@ -21,7 +21,7 @@ export default function CameraRig() {
 
     // time dilation: near the middle, the camera responds slower — heavier
     const dilation = dilationAmount(progress);
-    const lambda = 2.6 - dilation * 1.8;
+    const lambda = 1.6 - dilation * 1;
     s.p = damp(s.p, progress, lambda, delta);
 
     const here = samplePath(s.p);

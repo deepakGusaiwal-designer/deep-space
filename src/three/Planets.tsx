@@ -1,15 +1,15 @@
+import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
-import { sunVertex, sunFragment, atmosphereVertex, atmosphereFragment } from './shaders/glsl';
 import { disciplines } from '../content/portfolio';
-import { useUniverse } from '../store/useUniverse';
 import { damp, swallowAmount } from '../lib/flightPath';
+import { useUniverse } from '../store/useUniverse';
+import { sunFragment, sunVertex } from './shaders/glsl';
 import {
-  makePlanetTexture,
   makeBumpTexture,
-  makeRingTexture,
   makeGlowSprite,
+  makePlanetTexture,
+  makeRingTexture,
   type PlanetStyle,
 } from './textures';
 
@@ -317,24 +317,24 @@ export function SolarSystem() {
   const group = useRef<THREE.Group>(null);
   const planetRefs = useRef<Array<THREE.Group | null>>([]);
 
-  const worlds = useMemo(
-    () =>
-      SYSTEM_WORLDS.map((w) => ({
-        ...w,
-        // our own worlds get the high-resolution treatment
-        map: makePlanetTexture(w.style, w.palette, w.seed, 1024),
-        bump: makeBumpTexture(w.seed, 512),
-        atmoMat: new THREE.ShaderMaterial({
-          vertexShader: atmosphereVertex,
-          fragmentShader: atmosphereFragment,
-          transparent: true,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending,
-          uniforms: { uColor: { value: new THREE.Color(w.atmosphere) } },
-        }),
-      })),
-    [],
-  );
+  // const worlds = useMemo(
+  //   () =>
+  //     SYSTEM_WORLDS.map((w) => ({
+  //       ...w,
+  //       // our own worlds get the high-resolution treatment
+  //       map: makePlanetTexture(w.style, w.palette, w.seed, 1024),
+  //       bump: makeBumpTexture(w.seed, 512),
+  //       atmoMat: new THREE.ShaderMaterial({
+  //         vertexShader: atmosphereVertex,
+  //         fragmentShader: atmosphereFragment,
+  //         transparent: true,
+  //         depthWrite: false,
+  //         blending: THREE.AdditiveBlending,
+  //         uniforms: { uColor: { value: new THREE.Color(w.atmosphere) } },
+  //       }),
+  //     })),
+  //   [],
+  // );
 
   const sunMat = useMemo(
     () =>
@@ -345,7 +345,7 @@ export function SolarSystem() {
       }),
     [],
   );
-  const sunGlow = useMemo(() => makeGlowSprite('#ffd9a0'), []);
+  // const sunGlow = useMemo(() => makeGlowSprite('#ffd9a0'), []);
 
   useFrame((state, delta) => {
     const g = group.current;
@@ -382,10 +382,10 @@ export function SolarSystem() {
       {/* one shared ecliptic plane, gently inclined toward the corridor */}
       <group rotation={[0.42, 0, 0.1]}>
         {/* the Sun — live boiling photosphere */}
-        <mesh material={sunMat}>
-          <sphereGeometry args={[1.6, 48, 32]} />
-        </mesh>
-        <sprite scale={11}>
+        {/* <mesh material={sunMat}>
+          <sphereGeometry args={[0, 48, 32]} />
+        </mesh> */}
+        {/* <sprite scale={11}>
           <spriteMaterial
             map={sunGlow}
             transparent
@@ -394,12 +394,12 @@ export function SolarSystem() {
             blending={THREE.AdditiveBlending}
             fog={false}
           />
-        </sprite>
+        </sprite> */}
         <pointLight color="#ffedd2" intensity={90} distance={70} decay={2} />
 
         <AsteroidBelt />
 
-        {worlds.map((w, i) => (
+        {/* {worlds.map((w, i) => (
           <group key={w.name} ref={(el) => { planetRefs.current[i] = el; }}>
             <group rotation={[0.15 * (i % 2 ? -1 : 1), 0, i === 1 ? 0.41 : 0.1]}>
               <mesh>
@@ -416,13 +416,12 @@ export function SolarSystem() {
                   metalness={0}
                 />
               </mesh>
-              {/* fresnel atmosphere hugging the limb */}
               <mesh material={w.atmoMat} scale={1.05}>
                 <sphereGeometry args={[w.radius, 48, 32]} />
               </mesh>
             </group>
           </group>
-        ))}
+        ))} */}
       </group>
     </group>
   );
