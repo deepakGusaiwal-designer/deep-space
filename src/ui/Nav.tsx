@@ -34,12 +34,19 @@ export default function Nav() {
       </Magnetic>
 
       <nav className="hidden items-center gap-10 md:flex" aria-label="Primary">
+        <Magnetic strength={0.25}>
+          <a href="https://www.deepakgusaiwal.com/2025/" target="_blank" rel="noopener noreferrer" className="text-xs tracking-widest uppercase text-white">
+            2025
+          </a>
+        </Magnetic>
         {nav.map((item) => (
-          <Magnetic key={item.href} strength={0.25}>
-            <a href={item.href} className="lumen-link text-xs tracking-widest uppercase text-white">
-              {item.label}
-            </a>
-          </Magnetic>
+          <>
+            <Magnetic key={item.href} strength={0.25}>
+              <a href={item.href} className="text-xs tracking-widest uppercase text-white">
+                {item.label}
+              </a>
+            </Magnetic>
+          </>
         ))}
       </nav>
 
@@ -48,7 +55,7 @@ export default function Nav() {
           href={site.linkedin}
           target="_blank"
           rel="noreferrer"
-          className="lumen-link text-xs tracking-widest uppercase text-white"
+          className="text-xs tracking-widest uppercase text-white"
         >
           <Telescope className="mr-2 inline size-5" />
           LinkedIn 
