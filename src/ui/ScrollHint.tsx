@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { site } from '../content/portfolio';
 import { useUniverse } from '../store/useUniverse';
+import { WavesArrowDown } from 'lucide-react';
 
 /** The original "Scroll to Explore ➊" — now orbiting the bottom edge. */
 export default function ScrollHint() {
@@ -24,7 +25,7 @@ export default function ScrollHint() {
       className="pointer-events-none fixed inset-x-0 bottom-8 z-40 flex justify-center"
       aria-hidden="true"
     >
-      <span className="animate-pulse text-slate-100">{site.scrollHint}</span>
+      <span className="animate-pulse text-slate-100">{site.scrollHint} <WavesArrowDown className="inline size-5 animate-bounce" /></span>
     </div>
   );
 }

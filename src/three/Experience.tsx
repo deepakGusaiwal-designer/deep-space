@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useUniverse } from '../store/useUniverse';
 import BlackHole, { ExitBlackHole } from './BlackHole';
 import CameraRig from './CameraRig';
-import { SkillGalaxy } from './Planets';
+import { SkillGalaxy, SolarSystem } from './Planets';
 import { Andromeda, DeepStars, Nebulae, ShootingStars, Stardust, Starfield, StarTrails, WarpLines } from './Starfield';
 
 /** The fixed, full-screen universe behind everything. */
@@ -50,7 +50,7 @@ export default function Experience() {
           <Starfield count={starCount} />
           <Stardust count={isMobile ? 320 : 900} />
           <StarTrails count={isMobile ? 140 : 320} />
-          {/* <SolarSystem /> */}
+          <SolarSystem />
           <SkillGalaxy />
           {!isMobile && <ShootingStars />}
           <BlackHole />

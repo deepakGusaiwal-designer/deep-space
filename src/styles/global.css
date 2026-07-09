@@ -321,6 +321,34 @@ button:focus-visible {
   filter: blur(3px);
 }
 
+/* Big-bang narration — subtitle beats in the lower third */
+.cosmic-line {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 34%;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #fff;
+  opacity: 0;
+  text-shadow: 0 0 26px rgb(255 214 165 / 0.28);
+  pointer-events: none;
+}
+
+/* quiet mono progress readout, bottom center */
+.cosmic-progress {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 7%;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: color-mix(in srgb, var(--color-soft) 42%, transparent);
+  pointer-events: none;
+}
+
 /* Audio toggle — a tiny equalizer breathing in the corner */
 .audio-toggle {
   position: fixed;

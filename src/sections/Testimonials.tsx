@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { testimonials } from '../content/portfolio';
 import SectionShell from './SectionShell';
 import { useGsapReveal } from '../hooks/useGsapReveal';
+import { Radio } from 'lucide-react';
 
 const RADIUS = 340;
 
@@ -87,7 +88,8 @@ export default function Testimonials() {
   return (
     <div ref={root}>
       <SectionShell id="Testimonial" eyebrow="signals received · three transmissions" className="py-[16vh]">
-        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl">
+        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl flex items-center">
+          <Radio className="mr-3 inline md:size-15 size-8" />
           Testimonials
         </h2>
 

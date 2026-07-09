@@ -4,6 +4,7 @@ import { useGsapReveal } from '../hooks/useGsapReveal';
 import { usePointerGlow } from '../hooks/usePointerGlow';
 import Magnetic from '../ui/Magnetic';
 import SectionShell from './SectionShell';
+import { Rocket } from 'lucide-react';
 
 /**
  * The final section floats before the golden exit hole — just a
@@ -23,7 +24,8 @@ export default function Contact() {
         <p data-reveal className="eyebrow mb-6 text-center">
           the far singularity · transmission
         </p>
-        <h2 data-reveal className="h-display text-center text-5xl text-soft md:text-7xl">
+        <h2 data-reveal className="h-display text-center text-5xl text-soft md:text-7xl flex items-center">
+          <Rocket className="mr-3 inline md:size-15 size-8" />
           Contact
         </h2>
 

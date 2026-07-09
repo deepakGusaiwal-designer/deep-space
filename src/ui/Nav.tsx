@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { nav, site } from '../content/portfolio';
 import Magnetic from './Magnetic';
 import Logo from '../assets/logo.svg';
+import { Telescope } from 'lucide-react';
 
 export default function Nav() {
   const ref = useRef<HTMLElement>(null);
@@ -49,7 +50,8 @@ export default function Nav() {
           rel="noreferrer"
           className="lumen-link text-xs tracking-widest uppercase text-white"
         >
-          LinkedIn ↗
+          <Telescope className="mr-2 inline size-5" />
+          LinkedIn 
         </a>
       </Magnetic>
     </header>

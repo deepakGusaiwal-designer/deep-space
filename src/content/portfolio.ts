@@ -77,25 +77,25 @@ export const disciplines: Discipline[] = [
     name: 'Vidéo & Motion',
     tools: ['After Effects', 'Adobe Premiere Pro'],
     hue: '#b3b3b3', emissive: '#ffffff',
-    radius: 1.0, orbit: 6.0, speed: 0.12, tilt: -0.24,
+    radius: 1.0, orbit: 6.8, speed: 0.12, tilt: -0.24,
   },
   {
     name: 'UX Design',
     tools: ['Adobe XD', 'Figma', 'Sketch', 'Adobe Photoshop'],
     hue: '#a8a8a8', emissive: '#dcdcdc',
-    radius: 1.2, orbit: 7.9, speed: 0.09, tilt: 0.3,
+    radius: 1.2, orbit: 9.4, speed: 0.09, tilt: 0.3,
   },
   {
     name: 'Development',
     tools: ['HTML/CSS/JAVASCRIPT', 'Wordpress', 'Webflow', 'Shopify', 'React JS'],
     hue: '#bfbfbf', emissive: '#f5f5f5',
-    radius: 1.35, orbit: 10.0, speed: 0.07, tilt: -0.12,
+    radius: 1.35, orbit: 12.2, speed: 0.07, tilt: -0.12,
   },
   {
     name: 'Animation & 3D',
     tools: ['GSAP', 'Three.js', 'React Three Fiber', 'Framer Motion', 'WebGL Shaders', 'Lenis'],
     hue: '#cbb8e8', emissive: '#d9c8ff',
-    radius: 1.1, orbit: 12.6, speed: 0.05, tilt: 0.26,
+    radius: 1.1, orbit: 15.2, speed: 0.05, tilt: 0.26,
   },
 ];
 
