@@ -17,7 +17,7 @@ export interface PathKey {
 
 export const PATH: PathKey[] = [
   { p: 0.0,  x: 0,    y: 0.4,  z: 15,   fov: 52 }, // outside the event horizon
-  { p: 0.1,  x: 0,    y: 0.2,  z: 11,   fov: 52 }, // hero hold — slow drift in
+  { p: 0.1,  x: 0,    y: 0.3,  z: 11,   fov: 52 }, // hero hold — slow drift in
   { p: 0.18, x: 2.4,  y: 0.4,  z: 2,    fov: 55 }, // slip past the disk
   { p: 0.26, x: 4.2,  y: 0.2,  z: -16,  fov: 56 }, // station I  (Linkites)
   { p: 0.34, x: -4.0, y: -0.3, z: -30,  fov: 56 }, // station II (Videoverse)
@@ -83,6 +83,27 @@ export function swallowAmount(p: number): number {
 /** 0 → 1 how strongly time dilates in the middle of the journey */
 export function dilationAmount(p: number): number {
   return smoothstep(0.5, 0.56, p) * (1 - smoothstep(0.62, 0.7, p));
+}
+
+/**
+ * 0 → 1 → 0 the crossing of the first event horizon.
+ *
+ * Deliberately held back until p ≈ 0.17, where BlackHole's entrance fade
+ * (0.16 → 0.26) has begun to let go: the veil takes the hole's light over
+ * from it rather than glowing on top of a hole you can still plainly see.
+ * Peaks at p ≈ 0.235, just past HOLE_CENTER.
+ */
+export function horizonAmount(p: number): number {
+  return smoothstep(0.17, 0.235, p) * (1 - smoothstep(0.245, 0.31, p));
+}
+
+/**
+ * 0 → 1 monotonic depth through that same crossing. The envelope above
+ * comes back down; this does not — the photon ring has to expand past the
+ * viewer exactly once and never rewind.
+ */
+export function horizonDepth(p: number): number {
+  return smoothstep(0.17, 0.35, p);
 }
 
 export function smoothstep(a: number, b: number, x: number): number {

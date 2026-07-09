@@ -321,32 +321,90 @@ button:focus-visible {
   filter: blur(3px);
 }
 
-/* Big-bang narration — subtitle beats in the lower third */
-.cosmic-line {
+/* ── The cinematic opening ─────────────────────────────────────────────
+   Five scenes over eight seconds. No chrome, no loading bar: the picture
+   carries it, and the type only names what you are already looking at. */
+.cine {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  background: #000;
+}
+
+.cine__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* the copy sits in the lower third, clear of the vanishing point */
+.cine__copy {
   position: absolute;
   inset-inline: 0;
-  bottom: 34%;
-  text-align: center;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: #fff;
-  opacity: 0;
-  text-shadow: 0 0 26px rgb(255 214 165 / 0.28);
+  bottom: 16%;
+  display: grid;
+  /* every beat occupies the same cell, so they cross-fade in place
+     instead of nudging each other around */
+  grid-template-areas: 'beat';
+  place-items: center;
+  padding-inline: 24px;
   pointer-events: none;
 }
 
-/* quiet mono progress readout, bottom center */
-.cosmic-progress {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 7%;
+.cine__beat {
+  grid-area: beat;
+  opacity: 0;
   text-align: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  color: color-mix(in srgb, var(--color-soft) 42%, transparent);
+  max-width: 34ch;
+}
+
+/* the closing title sits centred over the live hero */
+.cine__outro {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-areas: 'beat';
+  place-items: center;
+  padding-inline: 24px;
   pointer-events: none;
+}
+
+/* a soft well of shadow so the hero's own copy does not fight the title */
+.cine__beat--final {
+  padding: 3rem 3.5rem;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.82), rgb(0 0 0 / 0.55) 60%, transparent 100%);
+}
+
+.cine__title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(22px, 4.4vw, 46px);
+  letter-spacing: 0.18em;
+  /* uppercase tracking pads the right edge; pull the block back to centre */
+  text-indent: 0.18em;
+  line-height: 1.2;
+  color: #fff;
+  text-shadow: 0 0 40px rgb(255 255 255 / 0.25);
+}
+
+/* the one spot of red in the whole sequence */
+.cine__rule {
+  display: block;
+  width: 46px;
+  height: 1px;
+  margin: 1.15rem auto;
+  background: var(--color-gold);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--color-gold) 80%, transparent);
+}
+
+.cine__caption {
+  font-family: var(--font-display);
+  font-size: clamp(12px, 1.5vw, 15px);
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--color-soft) 62%, transparent);
 }
 
 /* Audio toggle — a tiny equalizer breathing in the corner */
