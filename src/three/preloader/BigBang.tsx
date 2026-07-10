@@ -81,9 +81,10 @@ export function BigBangField({ count }: { count: number }) {
       dir[i * 3 + 2] = u;
       // most matter is slow; a few shards are violent. Capped so the shell
       // stays ahead of the camera and the fireball is a thing we watch,
-      // not a dust storm we are inside of. Halved (with the drag K in the
-      // vertex shader) so the eruption unfurls instead of detonating past.
-      speed[i] = 0.3 + Math.pow(Math.random(), 0.6) * 2.2;
+      // not a dust storm we are inside of. Kept low (with the drag K in the
+      // vertex shader) so the eruption is seen leaving the single point —
+      // the first beat of the blast is the point itself swelling open.
+      speed[i] = 0.18 + Math.pow(Math.random(), 0.6) * 1.32;
       phase[i] = Math.random();
     }
     // position is unused (the vertex shader builds it) but three wants one

@@ -108,8 +108,9 @@ export const particleVertex = /* glsl */ `
 
   // drag. Terminal radius is aSpeed/K, so this tracks the launch speeds in
   // BigBangField: halve one, halve the other, and the shell ends up the same
-  // size having taken twice as long to get there.
-  const float K = 0.18;
+  // size having taken twice as long to get there. Tuned low so the eruption
+  // is watched growing out of the point, not discovered already open.
+  const float K = 0.11;
 
   void main() {
     float t = max(uT, 0.0);
@@ -119,7 +120,7 @@ export const particleVertex = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
 
     float speed = aSpeed * exp(-K * t);
-    vHeat = clamp(speed / 2.9, 0.0, 1.0);
+    vHeat = clamp(speed / 1.6, 0.0, 1.0);
 
     // a hard edge at t=0 would pop; the ignition is a beat of its own
     float born = smoothstep(0.0, 0.45, uT);
