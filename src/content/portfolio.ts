@@ -39,10 +39,10 @@ export interface HistoryEntry {
 
 /** "History" — original order (Current → 2016). Deeper scroll = deeper in time. */
 export const history: HistoryEntry[] = [
-  { year: '2016', role: 'Web Designer', title: 'Regular Web Designer', company: 'CCW' },
-  { year: '2018', role: 'UI/UX Designer', title: 'Crafting Myself', company: 'Exactink' },
-  { year: '2024', role: 'UI/UX Developer', title: 'Advance UI/UX Developer', company: 'Videoverse' },
   { year: 'Current', role: 'UI/UX Developer', title: 'Super UI/UX Developer', company: 'Linkites' },
+  { year: '2024', role: 'UI/UX Developer', title: 'Advance UI/UX Developer', company: 'Videoverse' },
+  { year: '2018', role: 'UI/UX Designer', title: 'Crafting Myself', company: 'Exactink' },
+  { year: '2016', role: 'Web Designer', title: 'Regular Web Designer', company: 'CCW' },
 ];
 
 /** Mid-journey interlude — original tagline. */

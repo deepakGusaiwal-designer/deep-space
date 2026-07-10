@@ -62,8 +62,10 @@ function SkillPlanet({ index }: SkillPlanetProps) {
 
   const { map, bump, glowTex, ringTex } = useMemo(
     () => ({
-      map: makePlanetTexture(look.style, look, 40 + index * 17),
-      bump: makeBumpTexture(40 + index * 17),
+      // 768px color with heavier grain, 512px rugged relief: these are the
+      // worlds the camera actually visits, so they get the close-up budget
+      map: makePlanetTexture(look.style, look, 40 + index * 17, 768, 0.4),
+      bump: makeBumpTexture(40 + index * 17, 512, true),
       glowTex: makeGlowSprite(disc.emissive),
       ringTex: look.style === 'banded' ? makeRingTexture('#cdbfa8', 8 + index) : null,
     }),
@@ -120,11 +122,11 @@ function SkillPlanet({ index }: SkillPlanetProps) {
           }}
           onPointerOut={() => setHoveredPlanet(null)}
         >
-          <sphereGeometry args={[disc.radius, 48, 32]} />
+          <sphereGeometry args={[disc.radius, 80, 56]} />
           <meshStandardMaterial
             map={map}
             bumpMap={bump}
-            bumpScale={0.85}
+            bumpScale={1.5}
             roughnessMap={bump}
             emissive="#ffffff"
             emissiveMap={map}

@@ -25,7 +25,7 @@ export const PATH: PathKey[] = [
   { p: 0.5,  x: -3.2, y: -0.2, z: -58,  fov: 56 }, // station IV (CCW)
   { p: 0.56, x: 0,    y: 0,    z: -66,  fov: 50 }, // ── time dilation: near-stop
   { p: 0.62, x: 0,    y: 0,    z: -70,  fov: 48 }, // "From DESIGN to Code"
-  { p: 0.72, x: 0,    y: 0.2,  z: -84,  fov: 56 }, // gliding through the skill field
+  { p: 0.72, x: 0,    y: 0.2,  z: -84,  fov: 40 }, // gliding through the skill field
   { p: 0.85, x: 0,    y: 0,    z: -116, fov: 70 }, // testimonial orbit
   { p: 0.92, x: 0,    y: 0,    z: -152, fov: 74 }, // final acceleration toward the exit hole
   { p: 1,  x: 0,    y: 0,   z: -236, fov: 88 }, // through the singularity

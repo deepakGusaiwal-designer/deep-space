@@ -309,16 +309,32 @@ export function Nebulae() {
   );
 }
 
-const ANDROMEDA_POS = new THREE.Vector3(88, 40, -205);
+interface GalaxySpec {
+  pos: [number, number, number];
+  /** sprite width/height — the squash is the disk's apparent inclination */
+  scale: [number, number];
+  /** feeds makeGalaxyTexture, so every disk grows its own arms and lanes */
+  seed: number;
+  /** initial roll, so the disks don't all lean the same way */
+  rot0: number;
+  /** rad/s — sign flips the turning direction */
+  spin: number;
+  opacity: number;
+}
 
-/**
- * Andromeda — our neighbor galaxy, hanging tilted in the far field.
- * Procedurally painted (spiral arms, dust lanes, warm core) and slowly
- * turning. Born with the universe; taken with it at the end.
- */
-export function Andromeda() {
+const GALAXIES: GalaxySpec[] = [
+  // Andromeda herself, high in the far field
+  { pos: [88, 40, -205], scale: [120, 68], seed: 7, rot0: -0.5, spin: 0.0045, opacity: 0.55 },
+  // her neighbors flanking the corridor, one to port and one to starboard,
+  // nearer and dimmer so they read as depth rather than decoration
+  { pos: [-95, 18, -110], scale: [88, 50], seed: 13, rot0: 0.7, spin: -0.003, opacity: 0.42 },
+  { pos: [96, -14, -160], scale: [76, 42], seed: 21, rot0: 2.1, spin: 0.0035, opacity: 0.4 },
+];
+
+/** One tilted spiral, slowly turning. Born with the universe; taken at the end. */
+function GalaxySprite({ spec }: { spec: GalaxySpec }) {
   const ref = useRef<THREE.Sprite>(null);
-  const tex = useMemo(() => makeGalaxyTexture(7), []);
+  const tex = useMemo(() => makeGalaxyTexture(spec.seed), [spec.seed]);
 
   useFrame((_, delta) => {
     const s = ref.current;
@@ -326,33 +342,47 @@ export function Andromeda() {
     const { progress, birth, reducedMotion } = useUniverse.getState();
     const mat = s.material as THREE.SpriteMaterial;
     if (reducedMotion) {
-      mat.opacity = 0.55;
+      mat.opacity = spec.opacity;
       return;
     }
-    mat.rotation += delta * 0.0045;
+    mat.rotation += delta * spec.spin;
     const sw = swallowAmount(progress);
     s.position.set(
-      ANDROMEDA_POS.x * (1 - sw),
-      ANDROMEDA_POS.y * (1 - sw),
-      ANDROMEDA_POS.z + (-248 - ANDROMEDA_POS.z) * sw,
+      spec.pos[0] * (1 - sw),
+      spec.pos[1] * (1 - sw),
+      spec.pos[2] + (-248 - spec.pos[2]) * sw,
     );
     const k = Math.max(0.02, 1 - sw * 0.96);
-    s.scale.set(120 * k, 68 * k, 1);
-    mat.opacity = 0.55 * birth * (1 - sw);
+    s.scale.set(spec.scale[0] * k, spec.scale[1] * k, 1);
+    mat.opacity = spec.opacity * birth * (1 - sw);
   });
 
   return (
-    <sprite ref={ref} position={ANDROMEDA_POS} scale={[120, 68, 1]}>
+    <sprite ref={ref} position={spec.pos} scale={[spec.scale[0], spec.scale[1], 1]}>
       <spriteMaterial
         map={tex}
         transparent
         depthWrite={false}
         opacity={0}
-        rotation={-0.5}
+        rotation={spec.rot0}
         blending={THREE.AdditiveBlending}
         fog={false}
       />
     </sprite>
+  );
+}
+
+/**
+ * Andromeda and her neighbors — procedurally painted spirals (arms, dust
+ * lanes, warm cores) hanging tilted around the corridor.
+ */
+export function Andromeda() {
+  return (
+    <>
+      {GALAXIES.map((spec, i) => (
+        <GalaxySprite key={i} spec={spec} />
+      ))}
+    </>
   );
 }
 

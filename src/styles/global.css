@@ -376,12 +376,10 @@ button:focus-visible {
 }
 
 .cine__title {
-  font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: clamp(22px, 4.4vw, 46px);
-  letter-spacing: 0.18em;
-  /* uppercase tracking pads the right edge; pull the block back to centre */
+  font-size: 20px;
+  letter-spacing: 2px;
   text-indent: 0.18em;
   line-height: 1.2;
   color: #fff;
@@ -399,12 +397,18 @@ button:focus-visible {
 }
 
 .cine__caption {
-  font-family: var(--font-display);
-  font-size: clamp(12px, 1.5vw, 15px);
+  font-size: 16px;
   font-weight: 300;
-  font-style: italic;
   letter-spacing: 0.06em;
   color: color-mix(in srgb, var(--color-soft) 62%, transparent);
+}
+
+/* the door into the site. Its layer is pointer-events: none so the copy
+   never blocks clicks; the button itself has to opt back in. */
+.cine__enter {
+  pointer-events: auto;
+  margin-top: 2.2rem;
+  cursor: pointer;
 }
 
 /* Audio toggle — a tiny equalizer breathing in the corner */

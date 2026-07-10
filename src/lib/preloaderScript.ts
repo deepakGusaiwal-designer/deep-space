@@ -7,25 +7,28 @@
  * a timeScale change on that one tween.
  */
 
-export const DURATION = 8.0;
+export const DURATION = 12.0;
 
 /** Scene boundaries, in seconds. */
 export const T = {
-  /** the singularity hangs alone in the dark */
+  /** 01 · the singularity hangs alone in the dark */
   beforeTime: 0.0,
-  /** it draws inward on itself */
-  collapse: 1.2,
-  /** and detonates */
-  bang: 1.45,
-  /** expansion slows; stars and galaxies condense */
-  universe: 2.8,
-  /** a black hole gathers ahead */
-  hole: 5.0,
-  /** the throat opens */
-  wormhole: 6.5,
-  /** white-out, and the site is behind it */
-  flash: 7.55,
-  end: 8.0,
+  /** it abruptly draws inward on itself */
+  collapse: 1.4,
+  /** 02 · and detonates. The camera is kicked at this exact beat. An
+   * explosion that is over before the eye has resolved it reads as a
+   * single white frame, so the fireball keeps a generous stretch. */
+  bang: 1.55,
+  /** 03 · expansion slows; stars condense, galaxies turn, a world sweeps past */
+  universe: 4.6,
+  /** 04 · a black hole gathers ahead — the longest act: the hole is the
+   * whole site's premise, so it gets time to be actually looked at */
+  hole: 6.8,
+  /** 05 · the horizon opens into a throat and we commit */
+  wormhole: 10.2,
+  /** white-out — it bleeds off into black, and the welcome sits on that */
+  flash: 10.8,
+  end: 12.0,
 } as const;
 
 /** Where the hole sits, and so where the whole descent is aimed. */

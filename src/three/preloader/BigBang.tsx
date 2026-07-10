@@ -34,20 +34,20 @@ export function Singularity() {
     const t = stage.t;
 
     // it exists only until it detonates
-    const alpha = smoothstep(0.05, 0.7, t) * (1 - smoothstep(T.bang - 0.02, T.bang + 0.06, t));
+    const alpha = smoothstep(0.04, 0.5, t) * (1 - smoothstep(T.bang - 0.02, T.bang + 0.05, t));
     material.uniforms.uAlpha.value = alpha;
     material.uniforms.uTime.value = t;
-    // trembling builds through Scene 01 and peaks as it collapses
-    material.uniforms.uPulse.value = smoothstep(0.6, T.bang, t);
+    // the trembling builds through Scene 01 and peaks as it goes
+    material.uniforms.uPulse.value = smoothstep(0.55, T.bang, t);
 
     m.visible = alpha > 0.004;
     if (!m.visible) return;
 
     m.quaternion.copy(state.camera.quaternion);
-    // it draws inward on itself just before it goes
+    // the abrupt inward draw in the last tenth of a second
     const collapse = smoothstep(T.collapse, T.bang, t);
     const jitter = smoothstep(0.8, T.bang, t);
-    m.scale.setScalar(THREE.MathUtils.lerp(2.4, 1.15, collapse));
+    m.scale.setScalar(THREE.MathUtils.lerp(2.4, 0.9, collapse * collapse));
     m.position.set(
       (Math.random() - 0.5) * 0.05 * jitter,
       (Math.random() - 0.5) * 0.05 * jitter,
@@ -80,9 +80,10 @@ export function BigBangField({ count }: { count: number }) {
       dir[i * 3 + 1] = s * Math.sin(th);
       dir[i * 3 + 2] = u;
       // most matter is slow; a few shards are violent. Capped so the shell
-      // stays ahead of the camera — at 12 the fastest motes overtook it and
-      // Scene 02 became a dust storm instead of a fireball.
-      speed[i] = 0.9 + Math.pow(Math.random(), 0.5) * 8.0;
+      // stays ahead of the camera and the fireball is a thing we watch,
+      // not a dust storm we are inside of. Halved (with the drag K in the
+      // vertex shader) so the eruption unfurls instead of detonating past.
+      speed[i] = 0.3 + Math.pow(Math.random(), 0.6) * 2.2;
       phase[i] = Math.random();
     }
     // position is unused (the vertex shader builds it) but three wants one
@@ -114,8 +115,8 @@ export function BigBangField({ count }: { count: number }) {
     material.uniforms.uT.value = t - T.bang;
     material.uniforms.uPixelRatio.value = state.viewport.dpr;
     // the debris dims as stars take over the storytelling — it has to be
-    // gone well before Scene 04, not still boiling over the black hole
-    material.uniforms.uFade.value = 1 - smoothstep(T.universe, T.hole - 0.6, t);
+    // gone before the hole gathers, not still boiling over it
+    material.uniforms.uFade.value = 1 - smoothstep(T.universe + 0.4, T.hole - 0.4, t);
     p.visible = t > T.bang - 0.05 && material.uniforms.uFade.value > 0.01;
   });
 
@@ -125,7 +126,7 @@ export function BigBangField({ count }: { count: number }) {
 }
 
 interface WaveSpec {
-  /** when it leaves the singularity */
+  /** when it leaves the singularity, seconds after the bang */
   at: number;
   /** how fast it opens, in NDC-ish units per second */
   rate: number;
@@ -134,9 +135,9 @@ interface WaveSpec {
 }
 
 const WAVES: WaveSpec[] = [
-  { at: 0.0, rate: 0.95, width: 0.05, peak: 1.0 },
-  { at: 0.09, rate: 0.62, width: 0.09, peak: 0.6 },
-  { at: 0.26, rate: 0.4, width: 0.15, peak: 0.32 },
+  { at: 0.0, rate: 0.36, width: 0.05, peak: 1.0 },
+  { at: 0.3, rate: 0.25, width: 0.09, peak: 0.6 },
+  { at: 0.8, rate: 0.16, width: 0.15, peak: 0.32 },
 ];
 
 /** Scene 02 — shells of compressed light rippling out across space. */
@@ -170,7 +171,7 @@ export function Shockwaves() {
     const g = group.current;
     if (!g) return;
     const since = stage.t - T.bang;
-    g.visible = since > -0.05 && since < 2.6;
+    g.visible = since > -0.05 && since < 6.0;
     if (!g.visible) return;
     g.quaternion.copy(state.camera.quaternion);
 
@@ -182,10 +183,10 @@ export function Shockwaves() {
         return;
       }
       child.visible = true;
-      // opens fast, then coasts; fades on a curve so it never just vanishes
-      const r = (1 - Math.exp(-w.rate * life * 1.6)) * 1.35;
+      // opens, then coasts; fades on a curve so it never just vanishes
+      const r = (1 - Math.exp(-w.rate * life)) * 1.35;
       mat.uniforms.uRadius.value = r;
-      mat.uniforms.uAlpha.value = w.peak * Math.exp(-life * 1.35);
+      mat.uniforms.uAlpha.value = w.peak * Math.exp(-life * 0.5);
     });
   });
 
