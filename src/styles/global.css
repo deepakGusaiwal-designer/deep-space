@@ -355,7 +355,7 @@ button:focus-visible {
   grid-area: beat;
   opacity: 0;
   text-align: center;
-  max-width: 34ch;
+  max-width: 40ch;
 }
 
 /* the closing title sits centred over the live hero */
