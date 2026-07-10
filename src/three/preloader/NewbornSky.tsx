@@ -3,8 +3,14 @@ import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { stage, T } from '../../lib/preloaderScript';
 import { smoothstep, lerp } from '../../lib/flightPath';
-import { atmosphereVertex, atmosphereFragment } from '../shaders/glsl';
-import { quadVertex, nebulaFragment, sparkVertex, sparkFragment } from './shaders';
+import {
+  quadVertex,
+  nebulaFragment,
+  sparkVertex,
+  sparkFragment,
+  atmoVertex,
+  atmoFragment,
+} from './shaders';
 
 const STAR_TINTS = [
   [1.0, 0.96, 0.9],
@@ -74,7 +80,7 @@ export function Sparks({ count }: { count: number }) {
     material.uniforms.uTime.value = t;
     material.uniforms.uPixelRatio.value = state.viewport.dpr;
     // stars condense out of the cooling debris
-    material.uniforms.uReveal.value = smoothstep(T.universe - 0.3, T.universe + 1.6, t);
+    material.uniforms.uReveal.value = smoothstep(T.universe - 0.3, T.universe + 1.5, t);
     // and are drawn into threads once we are falling
     material.uniforms.uStretch.value = smoothstep(T.wormhole, T.flash, t);
     p.visible = material.uniforms.uReveal.value > 0.01;
@@ -95,18 +101,24 @@ interface CloudSpec {
 }
 
 const CLOUDS: CloudSpec[] = [
-  { pos: [-16, 5, -26], scale: 44, a: '#3a1220', b: '#7c2740', seed: 1.7, alpha: 0.5 },
-  { pos: [18, -7, -34], scale: 54, a: '#141a34', b: '#3d5a92', seed: 5.2, alpha: 0.44 },
-  { pos: [2, 10, -46], scale: 62, a: '#2a1430', b: '#5a3570', seed: 9.4, alpha: 0.34 },
+  // the palette leans on the one accent the sequence allows: deep cosmic red
+  { pos: [-16, 5, -26], scale: 44, a: '#2e0a12', b: '#8B0000', seed: 1.7, alpha: 0.5 },
+  { pos: [18, -7, -34], scale: 54, a: '#121830', b: '#3d5a92', seed: 5.2, alpha: 0.44 },
+  { pos: [2, 10, -46], scale: 62, a: '#241028', b: '#5a3570', seed: 9.4, alpha: 0.34 },
+  { pos: [-28, -10, -52], scale: 58, a: '#301016', b: '#a03040', seed: 3.3, alpha: 0.3 },
+  { pos: [30, 9, -64], scale: 66, a: '#0e1c2a', b: '#2e6f8a', seed: 7.1, alpha: 0.28 },
+  { pos: [-6, -15, -40], scale: 48, a: '#1c0f2e', b: '#7a4ea0', seed: 11.8, alpha: 0.3 },
 ];
 
 /** Scene 02 → 03 — volumetric haze precipitating out of the fireball. */
-export function Nebulae() {
+export function Nebulae({ lite }: { lite: boolean }) {
+  // each cloud is a full-screen-ish fbm quad; half of them is plenty on a phone
+  const clouds = lite ? CLOUDS.slice(0, 3) : CLOUDS;
   const group = useRef<THREE.Group>(null);
 
   const mats = useMemo(
     () =>
-      CLOUDS.map(
+      clouds.map(
         (c) =>
           new THREE.ShaderMaterial({
             vertexShader: quadVertex,
@@ -123,7 +135,7 @@ export function Nebulae() {
             },
           }),
       ),
-    [],
+    [clouds],
   );
 
   useFrame((state) => {
@@ -138,7 +150,7 @@ export function Nebulae() {
 
     mats.forEach((m, i) => {
       m.uniforms.uTime.value = t;
-      m.uniforms.uAlpha.value = CLOUDS[i].alpha * rise * fall;
+      m.uniforms.uAlpha.value = clouds[i].alpha * rise * fall;
     });
     // always face the lens; they are flat, and must never look it
     g.children.forEach((c) => c.quaternion.copy(state.camera.quaternion));
@@ -146,7 +158,7 @@ export function Nebulae() {
 
   return (
     <group ref={group} visible={false}>
-      {CLOUDS.map((c, i) => (
+      {clouds.map((c, i) => (
         <mesh key={i} position={c.pos} material={mats[i]} renderOrder={2} frustumCulled={false}>
           <planeGeometry args={[c.scale, c.scale]} />
         </mesh>
@@ -155,10 +167,31 @@ export function Nebulae() {
   );
 }
 
-/** Scene 03 — a young spiral, turning. */
-export function Galaxy({ count }: { count: number }) {
+interface GalaxySpec {
+  pos: [number, number, number];
+  rot: [number, number, number];
+  scale: number;
+  /** rad/s around its own axis; sign flips the sense of rotation */
+  spin: number;
+  arms: number;
+  count: number;
+  core: string;
+  edge: string;
+  /** reveal stagger after T.universe, so they don't all switch on together */
+  delay: number;
+}
+
+const GALAXIES: GalaxySpec[] = [
+  { pos: [-19, 7, -44], rot: [0.5, 0.2, 0.35], scale: 1.0, spin: 0.11, arms: 3, count: 7000, core: '#ffe6c2', edge: '#6f86c9', delay: 0 },
+  { pos: [24, -6, -58], rot: [-0.7, 0.4, -0.2], scale: 0.62, spin: -0.16, arms: 2, count: 3200, core: '#ffd9d0', edge: '#b06a8a', delay: 0.5 },
+  { pos: [7, 15, -70], rot: [1.1, -0.3, 0.5], scale: 0.8, spin: 0.08, arms: 4, count: 3200, core: '#fff2da', edge: '#5a7ec9', delay: 0.9 },
+];
+
+/** One young spiral, turning slowly. */
+function Galaxy({ spec, lite }: { spec: GalaxySpec; lite: boolean }) {
   const group = useRef<THREE.Group>(null);
   const points = useRef<THREE.Points>(null);
+  const count = lite ? Math.floor(spec.count * 0.4) : spec.count;
 
   const geometry = useMemo(() => {
     const g = new THREE.BufferGeometry();
@@ -166,12 +199,11 @@ export function Galaxy({ count }: { count: number }) {
     const size = new Float32Array(count);
     const phase = new Float32Array(count);
     const color = new Float32Array(count * 3);
-    const ARMS = 3;
-    const core = new THREE.Color('#ffe6c2');
-    const edge = new THREE.Color('#6f86c9');
+    const core = new THREE.Color(spec.core);
+    const edge = new THREE.Color(spec.edge);
     for (let i = 0; i < count; i++) {
       const r = Math.pow(Math.random(), 0.62) * 11;
-      const arm = (i % ARMS) * ((Math.PI * 2) / ARMS);
+      const arm = (i % spec.arms) * ((Math.PI * 2) / spec.arms);
       // logarithmic sweep, with matter scattered around each arm
       const angle = arm + r * 0.44 + (Math.random() - 0.5) * 0.5;
       const spread = (1 - r / 11) * 0.5 + 0.22;
@@ -190,7 +222,7 @@ export function Galaxy({ count }: { count: number }) {
     g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
     g.setAttribute('aColor', new THREE.BufferAttribute(color, 3));
     return g;
-  }, [count]);
+  }, [count, spec]);
 
   const material = useMemo(
     () =>
@@ -216,30 +248,42 @@ export function Galaxy({ count }: { count: number }) {
     const t = stage.t;
     material.uniforms.uTime.value = t;
     material.uniforms.uPixelRatio.value = state.viewport.dpr;
-    const reveal = smoothstep(T.universe, T.universe + 1.5, t);
+    const reveal = smoothstep(T.universe + spec.delay, T.universe + spec.delay + 1.5, t);
     material.uniforms.uReveal.value = reveal;
     // it is drawn into the hole with everything else
     const swallow = 1 - smoothstep(T.hole + 0.4, T.wormhole, t);
     g.visible = reveal > 0.01 && swallow > 0.01;
     if (!g.visible) return;
     material.uniforms.uStretch.value = 0;
-    points.current.rotation.y += delta * 0.11;
-    g.scale.setScalar(swallow);
+    points.current.rotation.y += delta * spec.spin;
+    g.scale.setScalar(spec.scale * swallow);
   });
 
   return (
-    <group ref={group} position={[-19, 7, -44]} rotation={[0.5, 0.2, 0.35]} visible={false}>
+    <group ref={group} position={spec.pos} rotation={spec.rot} visible={false}>
       <points ref={points} geometry={geometry} material={material} frustumCulled={false} />
     </group>
+  );
+}
+
+/** Scene 03 — the newborn spirals, scattered through the deep field. */
+export function Galaxies({ lite }: { lite: boolean }) {
+  return (
+    <>
+      {GALAXIES.map((spec, i) => (
+        <Galaxy key={i} spec={spec} lite={lite} />
+      ))}
+    </>
   );
 }
 
 /**
  * Scene 03 — a world sweeping past the lens.
  *
- * It flies from far ahead to just behind the camera between `from` and `to`,
- * which is what sells the sense that the camera is moving through somewhere
- * rather than watching a backdrop.
+ * It flies from far ahead to just behind the camera between `from` and `to`.
+ * The key light sits behind it relative to us, so it crosses the frame
+ * mostly as a dark silhouette with a lit terminator — that near pass is what
+ * sells the sense of moving through somewhere, not watching a backdrop.
  */
 export function PassingPlanet() {
   const group = useRef<THREE.Group>(null);
@@ -248,8 +292,8 @@ export function PassingPlanet() {
   const air = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        vertexShader: atmosphereVertex,
-        fragmentShader: atmosphereFragment,
+        vertexShader: atmoVertex,
+        fragmentShader: atmoFragment,
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,

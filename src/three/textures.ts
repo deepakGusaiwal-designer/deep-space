@@ -63,6 +63,7 @@ export function makePlanetTexture(
   palette: PlanetPalette,
   seed: number,
   detail = 512,
+  grainStrength = 0.22,
 ): THREE.CanvasTexture {
   const W = detail;
   const H = detail / 2;
@@ -122,7 +123,7 @@ export function makePlanetTexture(
       // fine surface grain — the micro-texture that reads as "real"
       // when the camera gets close
       const grain = fbm(u * 34, v * 34, seed + 31, 3);
-      col = lerpColor(col, deep, (grain - 0.5) * 0.22);
+      col = lerpColor(col, deep, (grain - 0.5) * grainStrength);
 
       const i = (y * W + x) * 4;
       img.data[i] = col.r * 255;
@@ -140,8 +141,10 @@ export function makePlanetTexture(
 }
 
 /** Grayscale relief from the same noise family — doubles as bump map and
- *  roughness map (rougher in the lowlands, smoother on the ridges). */
-export function makeBumpTexture(seed: number, detail = 256): THREE.CanvasTexture {
+ *  roughness map (rougher in the lowlands, smoother on the ridges).
+ *  `rugged` folds in a second, much finer ridged octave: cracked, beaten
+ *  terrain instead of gentle hills. */
+export function makeBumpTexture(seed: number, detail = 256, rugged = false): THREE.CanvasTexture {
   const W = detail;
   const H = detail / 2;
   const canvas = document.createElement('canvas');
@@ -154,9 +157,13 @@ export function makeBumpTexture(seed: number, detail = 256): THREE.CanvasTexture
       // broad relief + a fine ridged octave for crater/crack texture
       const broad = fbm((x / W) * 9, (y / H) * 9, seed, 5);
       const ridge = Math.abs(fbm((x / W) * 26, (y / H) * 26, seed + 17, 3) - 0.5) * 2;
-      const g = (broad * 0.75 + (1 - ridge) * 0.25) * 255;
+      let g = broad * 0.75 + (1 - ridge) * 0.25;
+      if (rugged) {
+        const fine = Math.abs(fbm((x / W) * 52, (y / H) * 52, seed + 29, 3) - 0.5) * 2;
+        g = broad * 0.55 + (1 - ridge) * 0.27 + (1 - fine) * 0.18;
+      }
       const i = (y * W + x) * 4;
-      img.data[i] = img.data[i + 1] = img.data[i + 2] = g;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = g * 255;
       img.data[i + 3] = 255;
     }
   }

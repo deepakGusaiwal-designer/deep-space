@@ -207,22 +207,18 @@ export const horizonFragment = /* glsl */ `
     float ang = atan(uv.y, uv.x);
 
     // ── the photon ring sweeping outward past the viewer ──
-    // slightly different radius per channel — the ring tears into a
-    // chromatic smear as it passes, the way a real lens would show it
     // the radius is handed to us: it starts on the hole's real photon ring
     // and expands from there, so the effect grows out of the hole you can
-    // actually see rather than out of an arbitrary point
+    // actually see rather than out of an arbitrary point.
+    // One band for all three channels — an earlier per-channel radius split
+    // pulled the ring apart into visible R/G/B bands that read as a rainbow.
     float rr = uRing;
-    // a thin band, not a halo. The channels are split by a small *absolute*
-    // offset — scaling the split with the radius pulls them apart until they
-    // stop overlapping and the ring reads as a literal rainbow
-    float w = 0.032 + rr * 0.03;
-    float off = 0.014 + uDepth * 0.022;
-    vec3 ringCol = vec3(
-      ring(r, rr - off, w),
-      ring(r, rr,       w),
-      ring(r, rr + off, w)
-    );
+    // a soft gaussian band with a faint wide halo breathing around it, so
+    // the sweep reads as light, not as a hard drawn circle
+    float w = 0.05 + rr * 0.04;
+    float band = ring(r, rr, w);
+    float halo = ring(r, rr, w * 3.2) * 0.28;
+    vec3 ringCol = vec3(band + halo);
     // it has to fade *in* as the hole behind it fades out, or it reads as a
     // glow pasted over a hole you can still see. Kept under 1 so Bloom lifts
     // it rather than clipping the frame to white.
@@ -247,8 +243,7 @@ export const horizonFragment = /* glsl */ `
     // ── the color of falling in ──
     // it inherits the hole's own light — hot amber-white — and redshifts as
     // the last of it climbs away from us. No blue phase: a cool halo fights
-    // the golden disk it is supposed to be emerging from. The only cool cast
-    // is the chromatic split on the ring's leading edge, above.
+    // the golden disk it is supposed to be emerging from.
     vec3 shift = mix(
       vec3(1.0, 0.88, 0.66),
       vec3(1.0, 0.33, 0.15),
