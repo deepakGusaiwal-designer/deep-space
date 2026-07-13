@@ -47,35 +47,39 @@ export class Materials {
     this.animated = []; // shader materials that need uTime updates
   }
 
-  /** Concrete — matte, mottled, finely speckled. */
+  /** Concrete — dark brutalist stone, mottled, finely speckled. */
   concrete() {
     return this._get('concrete', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0x9ba1a6, roughness: 0.94, metalness: 0.0, envMapIntensity: 0.35,
+        color: 0x33363b, roughness: 0.9, metalness: 0.0, envMapIntensity: 0.55,
       });
       return extendSurface(m, 'mon-concrete', /* glsl */ `
         float patches = mFbm(wp * 0.33);
         float speckle = mNoise(wp * 14.0);
-        float pores = smoothstep(0.72, 0.95, mNoise(wp * 7.0));
-        diffuseColor.rgb *= 0.88 + patches * 0.22 + speckle * 0.06 - pores * 0.10;
+        float grit = mNoise(wp * 38.0);                            // fine grain
+        float pores = smoothstep(0.66, 0.95, mNoise(wp * 7.0));
+        float cracks = smoothstep(0.10, 0.015, mRidge(wp * 0.9));  // hairline cracks
+        diffuseColor.rgb *= 0.82 + patches * 0.3 + speckle * 0.08 + grit * 0.09
+                          - pores * 0.16 - cracks * 0.28;
       `, /* glsl */ `
-        roughnessFactor = clamp(roughnessFactor - mFbm(wp * 0.5) * 0.12, 0.0, 1.0);
+        float grit = mNoise(wp * 38.0);
+        roughnessFactor = clamp(roughnessFactor - mFbm(wp * 0.5) * 0.12 + (grit - 0.5) * 0.2, 0.0, 1.0);
       `);
     });
   }
 
-  /** Marble — pale stone with ridged veining. */
+  /** Marble — dark polished graphite stone with pale veining. */
   marble() {
     return this._get('marble', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0xe9e7e2, roughness: 0.24, metalness: 0.0, envMapIntensity: 0.7,
-        clearcoat: 0.35, clearcoatRoughness: 0.3,
+        color: 0x2b2e33, roughness: 0.3, metalness: 0.0, envMapIntensity: 0.9,
+        clearcoat: 0.45, clearcoatRoughness: 0.25,
       });
       return extendSurface(m, 'mon-marble', /* glsl */ `
         float vein = mRidge(wp * 0.55 + mFbm(wp * 0.25) * 1.6);
         float veins = smoothstep(0.16, 0.02, vein);
-        float tone = mFbm(wp * 0.8) * 0.06;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.45, 0.5), veins * 0.55);
+        float tone = mFbm(wp * 0.8) * 0.04;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.48, 0.44), veins * 0.4);
         diffuseColor.rgb += tone;
       `, /* glsl */ `
         float vv = smoothstep(0.16, 0.02, mRidge(wp * 0.55 + mFbm(wp * 0.25) * 1.6));
@@ -88,24 +92,27 @@ export class Materials {
   metal() {
     return this._get('metal', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0xb9bfc4, roughness: 0.38, metalness: 1.0, envMapIntensity: 1.0,
+        color: 0x4a4f56, roughness: 0.36, metalness: 1.0, envMapIntensity: 1.05,
       });
       return extendSurface(m, 'mon-metal', /* glsl */ `
         float brush = mNoise(wp * vec3(0.35, 22.0, 22.0));
-        diffuseColor.rgb *= 0.92 + brush * 0.12;
+        float scratches = smoothstep(0.86, 0.99, mNoise(wp * vec3(0.9, 55.0, 55.0)));
+        float dents = mFbm(wp * 1.3);
+        diffuseColor.rgb *= 0.88 + brush * 0.14 + scratches * 0.18 + dents * 0.06;
       `, /* glsl */ `
         float streak = mNoise(wp * vec3(0.35, 22.0, 22.0));
-        roughnessFactor = clamp(roughnessFactor + (streak - 0.5) * 0.22, 0.05, 1.0);
+        float dents = mFbm(wp * 1.3);
+        roughnessFactor = clamp(roughnessFactor + (streak - 0.5) * 0.26 + (dents - 0.5) * 0.18, 0.05, 1.0);
       `);
     });
   }
 
-  /** Chrome — near-mirror finish for the player sphere and trims. */
+  /** Black chrome — the player sphere: dark mirror with warm reflections. */
   chrome() {
     return this._get('chrome', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0xffffff, roughness: 0.06, metalness: 1.0, envMapIntensity: 1.35,
-        clearcoat: 1.0, clearcoatRoughness: 0.04,
+        color: 0x1b1d21, roughness: 0.1, metalness: 1.0, envMapIntensity: 1.5,
+        clearcoat: 1.0, clearcoatRoughness: 0.05,
       });
       return extendSurface(m, 'mon-chrome', /* glsl */ `
         diffuseColor.rgb *= 0.985 + mNoise(wp * 40.0) * 0.03;
@@ -117,8 +124,8 @@ export class Materials {
   glass() {
     return this._get('glass', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0xd6e8ee, roughness: 0.55, metalness: 0.0, envMapIntensity: 1.1,
-        transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false,
+        color: 0x22262a, roughness: 0.5, metalness: 0.0, envMapIntensity: 1.2,
+        transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false,
       });
       return extendSurface(m, 'mon-glass', /* glsl */ `
         diffuseColor.rgb += (mFbm(wp * 2.0) - 0.5) * 0.05;
@@ -132,11 +139,67 @@ export class Materials {
   basalt() {
     return this._get('basalt', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0x2a2e33, roughness: 0.85, metalness: 0.1, envMapIntensity: 0.4,
+        color: 0x1a1c1f, roughness: 0.88, metalness: 0.1, envMapIntensity: 0.35,
       });
       return extendSurface(m, 'mon-basalt', /* glsl */ `
-        diffuseColor.rgb *= 0.85 + mFbm(wp * 0.6) * 0.3;
+        float pits = smoothstep(0.7, 0.98, mNoise(wp * 5.0));
+        diffuseColor.rgb *= 0.82 + mFbm(wp * 0.6) * 0.34 + mNoise(wp * 30.0) * 0.07 - pits * 0.18;
+      `, /* glsl */ `
+        roughnessFactor = clamp(roughnessFactor + (mNoise(wp * 30.0) - 0.5) * 0.16, 0.0, 1.0);
       `);
+    });
+  }
+
+  /** Warm gold light strips — recessed platform lighting, tower bands. */
+  gold() {
+    return this._get('gold', () => new THREE.MeshStandardMaterial({
+      color: 0x140b03,
+      emissive: new THREE.Color(0xffb763),
+      emissiveIntensity: 2.6,
+      roughness: 0.4,
+      metalness: 0.2,
+    }));
+  }
+
+  /** Red hazard beams — bloom catches these hard. */
+  laserBeam() {
+    return this._get('laser', () => new THREE.MeshStandardMaterial({
+      color: 0x1a0302,
+      emissive: new THREE.Color(0xff2618),
+      emissiveIntensity: 3.4,
+      roughness: 0.5,
+      metalness: 0,
+    }));
+  }
+
+  /** Space-station facades — a procedural grid of warm lit windows. */
+  windows() {
+    return this._get('windows', () => {
+      const m = new THREE.MeshPhysicalMaterial({
+        color: 0x14171c, roughness: 0.55, metalness: 0.4,
+        emissive: new THREE.Color(0xffc36b), emissiveIntensity: 1.7,
+        envMapIntensity: 0.6,
+      });
+      m.onBeforeCompile = (shader) => {
+        shader.vertexShader = shader.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vMonPos;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvMonPos = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+        shader.fragmentShader = shader.fragmentShader
+          .replace('#include <common>', `#include <common>\nvarying vec3 vMonPos;\n${NOISE_GLSL}`)
+          .replace('#include <emissivemap_fragment>', /* glsl */ `#include <emissivemap_fragment>
+          {
+            vec3 wp = vMonPos;
+            vec2 grid = vec2(wp.x + wp.z, wp.y) * vec2(1.45, 1.2);
+            vec2 id = floor(grid);
+            vec2 f = fract(grid);
+            float win = step(0.3, f.x) * step(f.x, 0.72) * step(0.25, f.y) * step(f.y, 0.68);
+            float lit = step(0.45, mHash(vec3(id, 7.0)));      // some homes are dark
+            float warmth = 0.45 + mHash(vec3(id, 13.0)) * 0.8; // per-window brightness
+            totalEmissiveRadiance *= win * lit * warmth;
+          }`);
+      };
+      m.customProgramCacheKey = () => 'mon-windows';
+      return m;
     });
   }
 

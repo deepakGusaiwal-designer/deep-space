@@ -1,5 +1,5 @@
 /**
- * MONUMENT — a procedural Three.js showcase game.
+ * GRAVITY — a Three.js game experience.
  * Entry point: boots the Game state machine against the DOM shell.
  *
  * Everything on screen is generated at runtime — no textures, no

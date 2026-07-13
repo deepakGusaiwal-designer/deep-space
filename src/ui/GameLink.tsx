@@ -4,7 +4,7 @@ import { Gamepad2 } from 'lucide-react';
 import { useUniverse } from '../store/useUniverse';
 
 /**
- * Entry to MONUMENT — the mini game. A small glass button in the
+ * Entry to GRAVITY — the mini game. A small glass button in the
  * bottom-left corner, twin of the audio toggle on the right.
  */
 export default function GameLink() {
@@ -27,8 +27,8 @@ export default function GameLink() {
       ref={ref}
       href="/game/"
       className="game-link pointer-events-auto"
-      aria-label="Play MONUMENT — a mini game inside this universe"
-      title="Play MONUMENT"
+      aria-label="Play GRAVITY — a mini game inside this universe"
+      title="Play GRAVITY"
     >
       <Gamepad2 size={18} strokeWidth={1.6} aria-hidden="true" />
     </a>

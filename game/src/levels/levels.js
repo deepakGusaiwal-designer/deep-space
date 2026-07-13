@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Level definitions — pure data consumed by World.
  *
  * Design language: floating modern architecture. Tuning numbers assume
@@ -11,10 +11,11 @@ export const LEVELS = [
   /* ================================================================ */
   {
     name: 'Atrium',
-    accent: 0x9be8ff,
-    palette: { top: 0x4fc3ff, horizon: 0x1a3a66, fog: 0x04060c, sunColor: 0xdfefff, sunIntensity: 3.2 },
+    accent: 0xffc36b,
+    palette: { top: 0x14110c, horizon: 0x8a5a24, fog: 0x080605, sunColor: 0xffc07a, sunIntensity: 3.0 },
     spawn: [0, 1.5, 0],
     objects: [
+      { type: 'skyline', seed: 11, radius: 80, count: 60 },
       // spawn plaza
       { type: 'platform', pos: [0, -0.5, 0], size: [10, 1, 10], mat: 'concrete', skirtDepth: 8 },
       { type: 'pillar', pos: [4.2, 2, 4.2], size: [0.7, 5, 0.7], mat: 'marble', solid: true },
@@ -62,10 +63,11 @@ export const LEVELS = [
   /* ================================================================ */
   {
     name: 'Suspension',
-    accent: 0xffc487,
-    palette: { top: 0xffb066, horizon: 0x59261c, fog: 0x080405, sunColor: 0xffd9b0, sunIntensity: 2.7 },
+    accent: 0xffb055,
+    palette: { top: 0x181008, horizon: 0x94501f, fog: 0x0a0604, sunColor: 0xffab55, sunIntensity: 3.0 },
     spawn: [0, 1.5, 0],
     objects: [
+      { type: 'skyline', seed: 23, radius: 90, count: 64, center: [35, 0, 0] },
       { type: 'platform', pos: [0, -0.5, 0], size: [8, 1, 8], mat: 'concrete', skirtDepth: 8 },
 
       // rotating beam — time the hop
@@ -114,10 +116,11 @@ export const LEVELS = [
   /* ================================================================ */
   {
     name: 'Metronome',
-    accent: 0xc9a6ff,
-    palette: { top: 0xc17fff, horizon: 0x241a4d, fog: 0x060410, sunColor: 0xe8ddff, sunIntensity: 2.4 },
+    accent: 0xffc36b,
+    palette: { top: 0x0f1319, horizon: 0x4a5668, fog: 0x07080b, sunColor: 0xcfd9ec, sunIntensity: 2.6 },
     spawn: [0, 1.5, 0],
     objects: [
+      { type: 'skyline', seed: 37, radius: 85, count: 60, center: [0, 0, -40] },
       { type: 'platform', pos: [0, -0.5, 0], size: [8, 1, 8], mat: 'concrete', skirtDepth: 8 },
 
       // corridor with counter-sliding walls
@@ -126,6 +129,10 @@ export const LEVELS = [
       { type: 'slider', pos: [1.6, 1.5, -17], to: [-1.6, 1.5, -17], size: [2.8, 3, 0.8], duration: 1.7, delay: 0.85, mat: 'metal' },
       { type: 'checkpoint', pos: [0, 0.07, -21.5] },
 
+      // laser tripwires — jump them
+      { type: 'laser', from: [-3.2, 0.6, -6.8], to: [3.2, 0.6, -6.8] },
+      { type: 'laser', from: [-3.7, 0.6, -25.2], to: [3.7, 0.6, -25.2] },
+
       // sweeping bar — jump over it
       { type: 'platform', pos: [0, -0.5, -28], size: [7, 1, 7], mat: 'marble' },
       { type: 'rotator', pos: [0, 0.9, -28], size: [7.5, 0.7, 0.7], axis: 'y', duration: 3.4, mat: 'metal' },
@@ -133,6 +140,7 @@ export const LEVELS = [
       // sprint gap (~7 m — hold shift)
       { type: 'platform', pos: [0, -0.5, -41.5], size: [6, 1, 6], mat: 'concrete', skirtDepth: 10 },
       { type: 'checkpoint', pos: [0, 0.07, -41.5] },
+      { type: 'laser', from: [-3.1, 0.75, -44.2], to: [3.1, 0.75, -44.2] },
 
       // pendulum bridge
       { type: 'platform', pos: [0, -0.5, -52], size: [3, 1, 14], mat: 'metal', skirt: false },
@@ -150,7 +158,7 @@ export const LEVELS = [
       { type: 'portal', pos: [0, 9.9, -77.5] },
 
       // scenery — a giant sleeping monster on the horizon
-      { type: 'blackhole', pos: [-30, 24, -100], scale: 7, spin: 0.4, color: 0xc9a6ff },
+      { type: 'blackhole', pos: [-30, 24, -100], scale: 7, spin: 0.4, color: 0x9db4d9 },
       { type: 'decor', pos: [7, 3, -18], size: [3, 0.3, 2], mat: 'glass' },
       { type: 'decor', pos: [-7.5, 5, -34], size: [2.6, 0.3, 2.6], mat: 'glass' },
       { type: 'decor', pos: [6, 8, -60], size: [3, 0.4, 2], mat: 'glass' },

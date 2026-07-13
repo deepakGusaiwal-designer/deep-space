@@ -38,6 +38,7 @@ export class Player {
     this.cameraYaw = 0;      // fed by CameraRig each frame
     this.frozen = true;      // no control during menus/cinematics
     this.paused = false;     // full physics freeze (pause menu)
+    this.sprintAllowed = true; // gated by the energy system
     this.onLand = null;
     this.onJump = null;
     this.onFall = null;
@@ -92,7 +93,7 @@ export class Player {
     // ---------------- steering ---------------------------------------
     if (!this.frozen) {
       const move = this.input.moveVector();
-      const sprint = this.input.sprinting;
+      const sprint = this.input.sprinting && this.sprintAllowed;
       const maxSpeed = sprint ? P.sprintSpeed : P.maxSpeed;
 
       // camera-relative wish direction
@@ -158,6 +159,12 @@ export class Player {
         { x: 1 + impact * 0.35, y: 1 - impact * 0.4, z: 1 + impact * 0.35 },
         { x: 1, y: 1, z: 1, duration: 0.45, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
       this.onLand?.(this._fallSpeed);
+
+      // restitution: hard impacts rebound like a real steel ball
+      if (this._fallSpeed > P.bounceMin && !this.frozen) {
+        b.velocity.y = Math.max(b.velocity.y, this._fallSpeed * P.restitution);
+        b.grounded = false;
+      }
     }
     this._wasGrounded = b.grounded;
 

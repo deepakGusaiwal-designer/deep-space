@@ -24,6 +24,7 @@ export class Game {
     this.levelIndex = 0;
     this.levelTime = 0;
     this.totalTime = 0;
+    this.energy = 100; // sprint fuel — drains while sprinting, regenerates
 
     // --- subsystems ---------------------------------------------------
     this.engine = new Engine(canvas);
@@ -81,6 +82,7 @@ export class Game {
       // the void takes you — the checkpoint wormhole spits you back out
       this.audio.fall();
       this.ui.toast('Warped to checkpoint');
+      this.energy = Math.max(0, this.energy - 8);
       this.player.respawn();
       this.audio.warp();
       this.bursts.emit(this.player.spawn, 20, {
@@ -125,7 +127,10 @@ export class Game {
     });
     this.input.on('mute', () => {
       const muted = this.audio.toggleMute();
-      if (muted !== undefined) this.ui.toast(muted ? 'Audio muted' : 'Audio on');
+      if (muted !== undefined) {
+        this.ui.setAudioLabel(muted);
+        this.ui.toast(muted ? 'Audio muted' : 'Audio on');
+      }
     });
 
     // UI buttons
@@ -134,6 +139,15 @@ export class Game {
     this.ui.onClick('restartLevel', () => { this.ui.hidePause(); this._restartLevel(); });
     this.ui.onClick('continue', () => this.state === 'complete' && this._continue());
     this.ui.onClick('again', () => this.state === 'end' && this._replay());
+    this.ui.onClick('mainMenu', () => this.state === 'pause' && this._toMainMenu());
+    this.ui.onClick('settingsAudio', () => {
+      const muted = this.audio.toggleMute();
+      if (muted !== undefined) this.ui.setAudioLabel(muted);
+    });
+    this.ui.onClick('fullscreen', () => {
+      if (document.fullscreenElement) document.exitFullscreen?.();
+      else document.documentElement.requestFullscreen?.();
+    });
 
     // clicking the canvas re-locks the pointer during play
     this.engine.canvas.addEventListener('click', () => {
@@ -190,6 +204,7 @@ export class Game {
     this.state = 'transition';
     this.input.enabled = false;
     await this.ui.veilTransition(() => {
+      this.energy = 100;
       this._loadLevel(this.levelIndex, { instant: true });
     });
     this._enterPlay();
@@ -201,7 +216,7 @@ export class Game {
     this._warpBlocked = true; // released once clear of every mouth
 
     this.audio.warp();
-    const c = new THREE.Color(0x8bffd9);
+    const c = new THREE.Color(0xffce8a);
     this.bursts.emit(from, 22, { color: c, speed: 3.5, up: 2, spread: 1.6, life: 1.1 });
 
     this.player.body.position.copy(pos);
@@ -237,8 +252,30 @@ export class Game {
       this.state = 'end';
       this.ui.showEnd(this.totalTime);
     } else {
-      this.ui.showComplete(LEVELS[this.levelIndex].name, this.levelTime);
+      this.ui.showComplete(LEVELS[this.levelIndex].name, this.levelTime, this.energy);
     }
+  }
+
+  /** Leave the run and return to the title screen. */
+  async _toMainMenu() {
+    this.audio.click();
+    this.state = 'transition';
+    this.input.enabled = false;
+    this.ui.hidePause();
+    this.ui.hideHUD();
+
+    await this.ui.veilTransition(() => {
+      this.totalTime = 0;
+      this.energy = 100;
+      this._loadLevel(0, { instant: true });
+    });
+
+    this.state = 'start';
+    this.player.frozen = true;
+    this.player.paused = false;
+    this.rig.endOrbit();
+    this.rig.orbit(this.player.position, { dist: 16, h: 8 });
+    this.ui.showStart();
   }
 
   async _continue() {
@@ -264,6 +301,7 @@ export class Game {
     this.ui.hideEnd();
     this.rig.endOrbit();
     this.totalTime = 0;
+    this.energy = 100;
 
     await this.ui.veilTransition(() => {
       this._loadLevel(0, { instant: true });
@@ -294,6 +332,15 @@ export class Game {
     if (playing) {
       this.levelTime += dt;
       this.ui.setTimer(this.levelTime);
+
+      // --- energy: sprint drains it, easing off restores it ------------
+      const v = this.player.velocity;
+      const speed = Math.hypot(v.x, v.z);
+      const sprinting = this.input.sprinting && speed > 2 && this.player.sprintAllowed;
+      this.energy = Math.min(100, Math.max(0, this.energy + (sprinting ? -7 : 3.2) * dt));
+      this.player.sprintAllowed = this.energy > 1;
+      this.ui.setEnergy(this.energy);
+      this.ui.setSpeed(speed * 3.6);
     }
 
     // re-arm wormholes only after the player rolls clear of every mouth

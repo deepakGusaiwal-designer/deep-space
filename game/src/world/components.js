@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { BoxCollider, Trigger } from '../core/Physics.js';
+import { seededRandom } from '../utils/math.js';
 
 const _euler = new THREE.Euler();
 const _quat = new THREE.Quaternion();
@@ -71,6 +72,16 @@ export const builders = {
       pushStaticBox(ctx, 'basalt',
         [def.pos[0], def.pos[1] - def.size[1] / 2 - h / 2 + 0.05, def.pos[2]],
         [w * 0.55, h, d * 0.55], [0, 0, 0], 0.04);
+    }
+    // recessed gold rim lighting under the deck edge (axis-aligned only)
+    if (def.glow !== false && !def.rot) {
+      const [w, h, d] = def.size;
+      const y = def.pos[1] - h / 2 + 0.12;
+      const t = 0.07;
+      pushStaticBox(ctx, 'gold', [def.pos[0], y, def.pos[2] + d / 2 - 0.1], [w - 0.3, t, t], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0], y, def.pos[2] - d / 2 + 0.1], [w - 0.3, t, t], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0] + w / 2 - 0.1, y, def.pos[2]], [t, t, d - 0.3], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0] - w / 2 + 0.1, y, def.pos[2]], [t, t, d - 0.3], [0, 0, 0], 0.02);
     }
   },
 
@@ -332,6 +343,77 @@ export const builders = {
     ctx.portalPos = p;
   },
 
+  /**
+   * Procedural city skyline — a ring of dark monolithic towers around
+   * the level, with warm lit bands. Deterministic per seed; merged into
+   * two draw calls (basalt towers + gold bands).
+   */
+  skyline(ctx, def) {
+    const rnd = seededRandom(def.seed ?? 7);
+    const [cx, , cz] = def.center ?? [0, 0, 0];
+    const R = def.radius ?? 85;
+    const count = def.count ?? 56;
+    const baseY = def.baseY ?? -30;
+
+    for (let i = 0; i < count; i++) {
+      const ang = rnd() * Math.PI * 2;
+      const r = R * (0.8 + rnd() * 0.7);
+      const w = 4 + rnd() * 9;
+      const dpt = 4 + rnd() * 9;
+      const h = 20 + rnd() * 55;
+      const x = cx + Math.cos(ang) * r;
+      const z = cz + Math.sin(ang) * r;
+
+      // non-indexed to stay merge-compatible with the RoundedBox batches
+      const tower = new THREE.BoxGeometry(w, h, dpt).toNonIndexed();
+      _mat4.makeTranslation(x, baseY + h / 2, z);
+      tower.applyMatrix4(_mat4);
+      (ctx.batches.basalt ??= []).push(tower);
+
+      // one or two glowing floor bands per tower
+      const bands = rnd() < 0.75 ? 1 + Math.floor(rnd() * 2) : 0;
+      for (let b = 0; b < bands; b++) {
+        const band = new THREE.BoxGeometry(w + 0.12, 0.12, dpt + 0.12).toNonIndexed();
+        _mat4.makeTranslation(x, baseY + h * (0.25 + rnd() * 0.65), z);
+        band.applyMatrix4(_mat4);
+        (ctx.batches.gold ??= []).push(band);
+      }
+    }
+  },
+
+  /**
+   * Laser hazard — a red beam between two points. Touching it warps the
+   * player back to the checkpoint (hazard collider, no resolution).
+   */
+  laser(ctx, def) {
+    const a = vec3(def.from);
+    const b = vec3(def.to);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    const len = a.distanceTo(b);
+    const dir = b.clone().sub(a).normalize();
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+
+    const beam = new THREE.Mesh(
+      new THREE.BoxGeometry(0.07, 0.07, len),
+      ctx.materials.laserBeam(),
+    );
+    beam.position.copy(mid);
+    beam.quaternion.copy(q);
+    ctx.group.add(beam);
+
+    // emitter caps
+    for (const p of [a, b]) {
+      pushStaticBox(ctx, 'metal', [p.x, p.y, p.z], [0.34, 0.34, 0.34], [0, 0, 0], 0.03);
+    }
+
+    const c = new BoxCollider(
+      new THREE.Vector3(0.1, 0.1, len / 2),
+      { hazard: true },
+    );
+    c.setStatic(mid, q);
+    ctx.physics.addCollider(c);
+  },
+
   /* ---- cosmic bodies ------------------------------------------------- */
 
   /**
@@ -398,7 +480,7 @@ export const builders = {
    * player to the other (handled by Game via world.onWormhole).
    */
   wormhole(ctx, def) {
-    const color = def.color ?? 0x8bffd9;
+    const color = def.color ?? 0xffce8a;
     const a = vec3(def.a);
     const b = vec3(def.b);
 

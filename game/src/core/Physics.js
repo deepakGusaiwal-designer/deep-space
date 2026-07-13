@@ -27,6 +27,7 @@ export class BoxCollider {
     this.half = halfExtents.clone();
     this.mesh = opts.mesh ?? null;   // present → dynamic collider
     this.id = opts.id ?? null;
+    this.hazard = opts.hazard ?? false; // touching it kills instead of resolving
     this.enabled = true;
 
     this.center = new THREE.Vector3();
@@ -190,10 +191,12 @@ export class Physics {
     body.groundNormal = null;
 
     // Two resolution iterations handle corners/wedges cleanly.
+    let killed = false;
     for (let iter = 0; iter < 2; iter++) {
       for (const c of this.colliders) {
         const n = c.resolveSphere(body.position, body.radius);
         if (!n) continue;
+        if (c.hazard) { killed = true; continue; }
         const into = body.velocity.dot(n);
         if (into < 0) body.velocity.addScaledVector(n, -into);
         if (n.y > 0.55) {
@@ -206,6 +209,6 @@ export class Physics {
 
     for (const t of this.triggers) t.test(body.position, body.radius);
 
-    return body.position.y < this.killPlaneY; // true → fell out of the world
+    return killed || body.position.y < this.killPlaneY; // true → player is lost
   }
 }

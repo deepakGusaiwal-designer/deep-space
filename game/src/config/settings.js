@@ -31,6 +31,8 @@ export const SETTINGS = {
     jumpVelocity: 13.2,
     coyoteTime: 0.12,          // grace window after leaving a ledge
     jumpBuffer: 0.12,          // grace window for early jump presses
+    restitution: 0.3,          // rebound kept after a hard landing
+    bounceMin: 11,             // fall speed above which the ball bounces
   },
 
   camera: {

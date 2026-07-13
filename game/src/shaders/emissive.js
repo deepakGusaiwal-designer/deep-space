@@ -176,27 +176,25 @@ export const SkyShader = {
     void main() {
       vec3 d = normalize(vDir);
 
-      /* pitch-black space, barely tinted toward the void below */
-      vec3 col = vec3(0.0015, 0.002, 0.0035) + uGround * max(0.0, -d.y) * 0.12;
+      /* pitch-black vault, faint tint upward, void below */
+      vec3 col = vec3(0.003, 0.0025, 0.002)
+               + uTop * pow(clamp(d.y, 0.0, 1.0), 1.4) * 0.16
+               + uGround * max(0.0, -d.y) * 0.1;
 
-      /* sparse, dim nebula wisps — the sky stays near-black */
-      float n1 = mFbm(d * 2.2 + vec3(3.1));
-      float n2 = mFbm(d * 4.7 + vec3(n1 * 1.8, 7.7, 1.3));
-      float mask = smoothstep(0.55, 0.95, mFbm(d * 1.4 + vec3(11.0)));
-      col += mix(uHorizon, uTop, n2) * (n1 * n1) * mask * 0.55;
+      /* warm dust haze hugging the horizon — thin, so the black stays black */
+      float hz = exp(-abs(d.y + 0.03) * 4.4);
+      col += uHorizon * hz * (0.16 + 0.07 * mFbm(d * 3.0 + vec3(5.0)));
 
-      /* whisper of a tilted galaxy band */
-      float band = exp(-abs(dot(d, normalize(vec3(0.25, 1.0, 0.2)))) * 5.0);
-      col += vec3(0.22, 0.26, 0.38) * band * (0.04 + 0.16 * mFbm(d * 6.0));
-
-      /* two star layers, denser inside the band */
-      float s1 = starLayer(d, 90.0, 0.994);
-      float s2 = starLayer(d, 170.0, 0.997);
-      col += vec3(0.9, 0.95, 1.0) * (s1 * 0.9 + s2 * 0.55) * (0.55 + band);
-
-      /* one distant star-sun (matches the key light direction) */
+      /* golden sun: hot core, restrained cinematic bloom */
       float sun = clamp(dot(d, normalize(uSunDir)), 0.0, 1.0);
-      col += uSunColor * (pow(sun, 900.0) * 4.0 + pow(sun, 24.0) * 0.10);
+      col += uSunColor * (pow(sun, 700.0) * 3.2 + pow(sun, 10.0) * 0.2 + pow(sun, 2.4) * 0.05);
+
+      /* sparse dim stars, swallowed by the haze near the horizon */
+      float s1 = starLayer(d, 110.0, 0.996);
+      col += vec3(0.8, 0.82, 0.9) * s1 * 0.5 * smoothstep(0.08, 0.4, d.y);
+
+      /* break up the black so it never posterizes */
+      col += (mFbm(d * 3.0) - 0.5) * 0.006;
 
       gl_FragColor = vec4(col, 1.0);
     }

@@ -13,8 +13,8 @@ export class Lighting {
     this.engine = engine;
     const scene = engine.scene;
 
-    // --- sun ---------------------------------------------------------
-    this.sun = new THREE.DirectionalLight(0xfff2e0, 3.2);
+    // --- sun: low warm key light, GRAVITY's golden hour ----------------
+    this.sun = new THREE.DirectionalLight(0xffc07a, 3.0);
     this.sun.position.set(18, 30, 12);
     this.sun.castShadow = true;
     const size = SETTINGS.renderer.shadowMapSize;
@@ -30,8 +30,8 @@ export class Lighting {
     this.sun.shadow.normalBias = 0.03;
     scene.add(this.sun, this.sun.target);
 
-    // --- fill: cool starlight from above, void below -------------------
-    this.hemi = new THREE.HemisphereLight(0x8fa3c8, 0x0d1018, 0.6);
+    // --- fill: warm dusk from above, near-black void below -------------
+    this.hemi = new THREE.HemisphereLight(0x4a3d2c, 0x070605, 0.55);
     scene.add(this.hemi);
 
     // --- sky dome ----------------------------------------------------
@@ -39,11 +39,11 @@ export class Lighting {
       vertexShader: SkyShader.vertex,
       fragmentShader: SkyShader.fragment,
       uniforms: {
-        uTop: { value: new THREE.Color(0x4fc3ff) },     // nebula tint A
-        uHorizon: { value: new THREE.Color(0x1a3a66) }, // nebula tint B
-        uGround: { value: new THREE.Color(0x02030a) },  // void below
+        uTop: { value: new THREE.Color(0x14110c) },     // upper vault tint
+        uHorizon: { value: new THREE.Color(0x8a5a24) }, // warm dust haze
+        uGround: { value: new THREE.Color(0x030202) },  // void below
         uSunDir: { value: this.sun.position.clone().normalize() },
-        uSunColor: { value: new THREE.Color(0xdfefff) },
+        uSunColor: { value: new THREE.Color(0xffc07a) },
       },
       side: THREE.BackSide,
       depthWrite: false,
@@ -53,8 +53,8 @@ export class Lighting {
     this.skyDome.frustumCulled = false;
     scene.add(this.skyDome);
 
-    // --- fog: thin near-black haze for depth cueing in the void --------
-    scene.fog = new THREE.FogExp2(0x04060c, 0.0075);
+    // --- fog: warm smoky haze, denser for the cinematic depth ----------
+    scene.fog = new THREE.FogExp2(0x080605, 0.008);
 
     this._buildEnvironment();
   }
