@@ -13,6 +13,8 @@ export class Input {
     this._listeners = new Map(); // event name -> Set<fn>
 
     addEventListener('keydown', (e) => {
+      // arrows shouldn't scroll the page while steering the sphere
+      if (e.code.startsWith('Arrow')) e.preventDefault();
       if (e.repeat) return;
       this.keys.add(e.code);
       if (e.code === 'Space') { e.preventDefault(); this._emit('jump'); }
@@ -45,11 +47,15 @@ export class Input {
     if (this.pointerLocked) document.exitPointerLock?.();
   }
 
-  /** Camera-relative move intent: x = strafe, z = forward, in [-1, 1]. */
+  /** Camera-relative move intent: x = strafe, z = forward, in [-1, 1].
+   *  WASD and the arrow keys both steer. */
   moveVector() {
     if (!this.enabled) return { x: 0, z: 0 };
-    const x = (this.keys.has('KeyD') ? 1 : 0) - (this.keys.has('KeyA') ? 1 : 0);
-    const z = (this.keys.has('KeyW') ? 1 : 0) - (this.keys.has('KeyS') ? 1 : 0);
+    const k = this.keys;
+    const x = (k.has('KeyD') || k.has('ArrowRight') ? 1 : 0)
+            - (k.has('KeyA') || k.has('ArrowLeft') ? 1 : 0);
+    const z = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0)
+            - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0);
     const len = Math.hypot(x, z) || 1;
     return { x: x / len, z: z / len };
   }

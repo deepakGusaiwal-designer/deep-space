@@ -150,7 +150,7 @@ const MOTES_FRAG = /* glsl */ `
   varying float vA;
   void main() {
     float d = length(gl_PointCoord - 0.5) * 2.0;
-    gl_FragColor = vec4(vec3(0.75, 0.83, 0.9), smoothstep(1.0, 0.1, d) * vA * 0.16);
+    gl_FragColor = vec4(vec3(0.92, 0.8, 0.6), smoothstep(1.0, 0.1, d) * vA * 0.12);
   }
 `;
 

@@ -118,6 +118,8 @@ export class World {
       portal: (c) => m.portal(c),
       halo: (c) => m.halo(c),
       blackholeDisk: (c) => m.blackholeDisk(c),
+      gold: () => m.gold(),
+      laserBeam: () => m.laserBeam(),
     };
   }
 }
