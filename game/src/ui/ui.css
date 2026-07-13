@@ -71,7 +71,7 @@ html, body {
 .screen--start { background: radial-gradient(120% 90% at 50% 30%, rgba(11, 12, 14, 0) 0%, rgba(11, 12, 14, 0.55) 100%); }
 
 .kicker {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.55em;
   text-transform: uppercase;
   color: var(--ink-dim);
@@ -88,12 +88,6 @@ html, body {
 
 .title .thin { font-weight: 100; color: var(--ink-dim); }
 
-.subtitle {
-  font-size: 13px;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
 
 .prompt {
   margin-top: 26px;

@@ -13,8 +13,7 @@ export class UI {
 
       <section class="screen screen--start" data-el="start">
         <div class="kicker">Deepak Gusaiwal — Creative Development</div>
-        <h1 class="title">MONU<span class="thin">MENT</span></h1>
-        <div class="subtitle">A Three.js Technical Showcase</div>
+        <h1 class="title">DEEP<span class="thin">SPACE</span></h1>
         <button class="prompt glass" data-el="begin">Press <span class="key">Enter</span> to begin</button>
         <div class="controls-hint">
           <span><b>WASD</b> move</span><span><b>Mouse</b> camera</span>
