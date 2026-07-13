@@ -1,0 +1,286 @@
+/* ------------------------------------------------------------------
+   MONUMENT — UI stylesheet
+   Typography-only, glassmorphism. No images, no icons.
+   All entrance/exit motion is driven by GSAP; CSS holds resting state.
+------------------------------------------------------------------- */
+
+:root {
+  --ink: #eef1f4;
+  --ink-dim: rgba(238, 241, 244, 0.55);
+  --ink-faint: rgba(238, 241, 244, 0.28);
+  --glass: rgba(11, 11, 11, 0.42);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --accent: #f5f3ee;
+  --font-display: 'DM Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0c0e;
+  color: var(--ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#game-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+}
+
+#ui-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ---------- shared glass panel ---------- */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- full-screen overlay screens ---------- */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  pointer-events: auto;
+  visibility: hidden; /* GSAP autoAlpha toggles this */
+  opacity: 0;
+}
+
+.screen--start { background: radial-gradient(120% 90% at 50% 30%, rgba(11, 12, 14, 0) 0%, rgba(11, 12, 14, 0.55) 100%); }
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.title {
+  font-size: clamp(56px, 11vw, 148px);
+  font-weight: 200;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em; /* optically recenter tracked type */
+  line-height: 1;
+  text-align: center;
+}
+
+.title .thin { font-weight: 100; color: var(--ink-dim); }
+
+.subtitle {
+  font-size: 13px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.prompt {
+  margin-top: 26px;
+  padding: 16px 34px;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.35s ease, color 0.35s ease;
+}
+.prompt:hover { border-color: rgba(155, 232, 255, 0.5); color: var(--accent); }
+.prompt .key { color: var(--accent); }
+
+.controls-hint {
+  display: flex;
+  gap: 34px;
+  margin-top: 14px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.controls-hint b { color: var(--ink-dim); font-weight: 400; }
+
+/* ---------- HUD ---------- */
+.hud { position: absolute; inset: 0; pointer-events: none; }
+
+.hud__level {
+  position: absolute;
+  top: 34px;
+  left: 40px;
+  padding: 14px 22px;
+}
+.hud__level .num {
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 6px;
+}
+.hud__level .name {
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hud__timer {
+  position: absolute;
+  top: 34px;
+  right: 40px;
+  padding: 14px 22px;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud__keys {
+  position: absolute;
+  bottom: 30px;
+  right: 40px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.hud__toast {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 13px 30px;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* ---------- pause / complete panels ---------- */
+.panel {
+  padding: 54px 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.panel__title {
+  font-size: clamp(30px, 4.6vw, 54px);
+  font-weight: 200;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.panel__meta {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.btn-row { display: flex; gap: 18px; margin-top: 16px; }
+
+.btn {
+  padding: 14px 36px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease, background 0.3s ease;
+}
+.btn:hover { border-color: rgba(248, 229, 146, 0.55); color: var(--ink); background: rgba(155, 232, 255, 0.06); }
+.btn--primary { border-color: rgba(155, 232, 255, 0.35); color: var(--accent); }
+
+/* ---------- letterbox bars for cinematics ---------- */
+.bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0; /* GSAP animates height */
+  background: #08090a;
+  pointer-events: none;
+}
+.bar--top { top: 0; }
+.bar--bottom { bottom: 0; }
+
+/* ---------- fade veil for level transitions ---------- */
+.veil {
+  position: absolute;
+  inset: 0;
+  background: #0b0c0e;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- vignette (pure CSS, no images) ---------- */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(130% 100% at 50% 45%, transparent 55%, rgba(5, 6, 8, 0.5) 100%);
+}
+
+
+.game-link {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03));
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  color: var(--color-soft);
+  opacity: 0;
+  transition: border-color 0.5s var(--ease-cinematic), box-shadow 0.5s var(--ease-cinematic),
+    color 0.5s var(--ease-cinematic);
+}
+.game-link:hover {
+  border-color: rgb(255 255 255 / 0.4);
+  box-shadow: 0 0 30px -8px rgb(255 255 255 / 0.35);
+  color: #fff;
+}
+.game-link svg {
+  opacity: 0.75;
+  transition: opacity 0.4s ease;
+}
+.game-link:hover svg {
+  opacity: 1;
+}
