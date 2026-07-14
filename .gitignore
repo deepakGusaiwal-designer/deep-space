@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw source asset — 497MB, exceeds GitHub limits; optimized copy is cyberpunk_env.glb
+game/assets/cyberpunk.glb

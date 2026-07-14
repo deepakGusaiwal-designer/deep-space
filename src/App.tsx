@@ -35,7 +35,7 @@ export default function App() {
       <AudioToggle />
       <GameLink />
 
-      <main className="relative">
+      <main className="relative overflow-x-hidden">
         <Hero />
         <History />
         <Interlude />

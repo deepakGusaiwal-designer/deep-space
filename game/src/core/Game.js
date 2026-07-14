@@ -9,6 +9,7 @@ import { Physics } from './Physics.js';
 import { SETTINGS } from '../config/settings.js';
 import { Materials } from '../materials/Materials.js';
 import { World } from '../world/World.js';
+import { Environment } from '../world/Environment.js';
 import { Player } from '../player/Player.js';
 import { CameraRig } from '../camera/CameraRig.js';
 import { Lighting } from '../lighting/Lighting.js';
@@ -31,6 +32,7 @@ export class Game {
     this.materials = new Materials();
     this.physics = new Physics(SETTINGS.physics);
     this.world = new World(this.engine.scene, this.physics, this.materials);
+    this.environment = new Environment(this.engine.scene);
     this.input = new Input(canvas);
     this.player = new Player({
       scene: this.engine.scene,
