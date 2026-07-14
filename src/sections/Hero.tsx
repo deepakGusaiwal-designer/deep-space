@@ -58,11 +58,11 @@ export default function Hero() {
     <section
       ref={root}
       id="top"
-      className="pointer-events-none relative z-10 flex min-h-[130vh] items-center"
+      className="pointer-events-none relative z-10 flex md:min-h-[130vh] min-h-screen md:items-center md:pt-0 pt-30"
     >
       <div className="mx-auto w-full px-6 md:px-12">
         <h1
-          className="text-2xl font-display font-medium leading-[1.05] text-white md:text-2xl lg:text-4xl"
+          className="text-xl font-display font-medium leading-[1.05] text-white md:text-2xl lg:text-4xl text-shadow-sm"
           style={{ perspective: '800px' }}
         >
           {heroLines.map((line, li) => (

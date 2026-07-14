@@ -13,6 +13,7 @@ const uiRoot = document.getElementById('ui-root');
 
 const game = new Game(canvas, uiRoot);
 game.boot();
+window.__game = game; // dev/testing hook
 
 // dev/testing hook: /game/?autostart skips the start screen
 if (new URLSearchParams(location.search).has('autostart')) {

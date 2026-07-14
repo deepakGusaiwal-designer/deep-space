@@ -1,19 +1,21 @@
 /**
- * Player — a polished chrome sphere with momentum-based movement,
- * coyote-time jumps, rolling animation, landing squash and a soft
- * contact shadow that grounds it visually.
+ * Player — a cute astronaut with momentum-based movement, coyote-time
+ * jumps, procedural walk/idle/air animation (the GLB is a static mesh,
+ * so all motion is code-driven), landing squash and a soft contact
+ * shadow that grounds it visually. Physics is still a sphere.
  */
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { SETTINGS } from '../config/settings.js';
-import { damp } from '../utils/math.js';
+import { clamp, damp, dampAngle } from '../utils/math.js';
 
 const P = SETTINGS.player;
 
+const ASTRONAUT_URL = new URL('../../assets/cute_astronaut.glb', import.meta.url).href;
+const MODEL_HEIGHT = P.radius * 2.3; // a touch taller than the collider sphere
+
 const _dir = new THREE.Vector3();
-const _axis = new THREE.Vector3();
-const _q = new THREE.Quaternion();
-const _up = new THREE.Vector3(0, 1, 0);
 const _down = new THREE.Vector3(0, -1, 0);
 
 export class Player {
@@ -49,12 +51,27 @@ export class Player {
     this._fallSpeed = 0;
 
     // --- visuals -----------------------------------------------------
-    this.mesh = new THREE.Mesh(
+    // mesh: anchor group at the physics position (Game.js tweens its scale)
+    // visual: child group carrying facing yaw + walk bob/lean/waddle
+    this.mesh = new THREE.Group();
+    scene.add(this.mesh);
+    this.visual = new THREE.Group();
+    this.visual.rotation.order = 'YXZ'; // yaw first, then lean/waddle in the facing frame
+    this.mesh.add(this.visual);
+
+    this._facing = 0;
+    this._walkPhase = 0;
+    this._time = 0;
+
+    // chrome sphere stands in until the astronaut finishes loading
+    this._placeholder = new THREE.Mesh(
       new THREE.SphereGeometry(P.radius, 48, 32),
       materials.chrome(),
     );
-    this.mesh.castShadow = true;
-    scene.add(this.mesh);
+    this._placeholder.castShadow = true;
+    this.visual.add(this._placeholder);
+
+    new GLTFLoader().load(ASTRONAUT_URL, (gltf) => this._setupModel(gltf.scene));
 
     this.shadowBlob = new THREE.Mesh(
       new THREE.PlaneGeometry(P.radius * 4.4, P.radius * 4.4),
@@ -75,6 +92,32 @@ export class Player {
 
   setSpawn(v) { this.spawn.copy(v); }
 
+  /** Normalize the loaded astronaut (Y-up, facing +Z): feet at the collider bottom. */
+  _setupModel(model) {
+    const wrapper = new THREE.Group();
+    wrapper.add(model);
+    wrapper.updateWorldMatrix(true, true);
+
+    const box = new THREE.Box3().setFromObject(wrapper);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const s = MODEL_HEIGHT / size.y;
+    wrapper.scale.setScalar(s);
+    wrapper.position.set(-center.x * s, -box.min.y * s - P.radius, -center.z * s);
+
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = false;
+      }
+    });
+
+    this.visual.remove(this._placeholder);
+    this._placeholder.geometry.dispose();
+    this._placeholder = null;
+    this.visual.add(wrapper);
+  }
+
   respawn() {
     this.body.position.copy(this.spawn);
     this.body.velocity.set(0, 0, 0);
@@ -89,6 +132,7 @@ export class Player {
   /** @param {THREE.Object3D} solids world group used for the shadow raycast */
   update(dt, solids) {
     const b = this.body;
+    this._time += dt;
 
     // ---------------- steering ---------------------------------------
     if (!this.frozen) {
@@ -142,7 +186,7 @@ export class Player {
         this.onJump?.();
       }
     } else if (b.grounded) {
-      // menus / cinematics: bleed off momentum so the sphere settles
+      // menus / cinematics: bleed off momentum so the astronaut settles
       const f = Math.max(0, 1 - P.groundFriction * dt);
       b.velocity.x *= f;
       b.velocity.z *= f;
@@ -160,7 +204,7 @@ export class Player {
         { x: 1, y: 1, z: 1, duration: 0.45, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
       this.onLand?.(this._fallSpeed);
 
-      // restitution: hard impacts rebound like a real steel ball
+      // restitution: hard impacts still rebound a little
       if (this._fallSpeed > P.bounceMin && !this.frozen) {
         b.velocity.y = Math.max(b.velocity.y, this._fallSpeed * P.restitution);
         b.grounded = false;
@@ -170,19 +214,48 @@ export class Player {
 
     // ---------------- visuals ----------------------------------------
     this.mesh.position.copy(b.position);
-
-    // rolling: rotate around axis perpendicular to velocity
-    const speed = Math.hypot(b.velocity.x, b.velocity.z);
-    if (speed > 0.05) {
-      _dir.set(b.velocity.x, 0, b.velocity.z).normalize();
-      _axis.crossVectors(_up, _dir).normalize();
-      // note: rolling direction — sphere rolls forward, so negative axis angle
-      _q.setFromAxisAngle(_axis, (-speed * dt) / P.radius);
-      this.mesh.quaternion.premultiply(_q);
-    }
+    this._animate(dt);
 
     this._updateShadow(solids);
     if (fell && !this.frozen) this.onFall?.();
+  }
+
+  /** Procedural character animation: facing, walk cycle, air pose, idle. */
+  _animate(dt) {
+    const b = this.body;
+    const speed = Math.hypot(b.velocity.x, b.velocity.z);
+    const run = clamp(speed / P.maxSpeed, 0, 1.35); // >1 while sprinting
+
+    // turn toward the direction of travel
+    if (speed > 0.35) {
+      this._facing = dampAngle(this._facing, Math.atan2(b.velocity.x, b.velocity.z), 11, dt);
+    }
+    this.visual.rotation.y = this._facing;
+
+    let bobY = 0;
+    let pitch = 0; // + leans forward
+    let roll = 0;
+
+    if (b.grounded && speed > 0.4) {
+      // walk cycle: little hops, side-to-side waddle, forward lean
+      this._walkPhase += dt * (5 + speed * 2.1);
+      bobY = Math.abs(Math.sin(this._walkPhase)) * 0.055 * run;
+      roll = Math.sin(this._walkPhase) * 0.085 * run;
+      pitch = 0.12 * run;
+    } else if (!b.grounded) {
+      // air pose: lean back on the way up, forward on the way down
+      pitch = clamp(-b.velocity.y * 0.02, -0.28, 0.34);
+      this._walkPhase = 0;
+    } else {
+      // idle: gentle breathing float
+      bobY = Math.sin(this._time * 2.2) * 0.014;
+      this._walkPhase = 0;
+    }
+
+    const k = damp(10, dt);
+    this.visual.position.y += (bobY - this.visual.position.y) * k;
+    this.visual.rotation.x += (pitch - this.visual.rotation.x) * k;
+    this.visual.rotation.z += (roll - this.visual.rotation.z) * k;
   }
 
   /** Project the contact-shadow blob onto whatever is below. */

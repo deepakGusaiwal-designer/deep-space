@@ -53,8 +53,8 @@ export class Lighting {
     this.skyDome.frustumCulled = false;
     scene.add(this.skyDome);
 
-    // --- fog: warm smoky haze, denser for the cinematic depth ----------
-    scene.fog = new THREE.FogExp2(0x080605, 0.008);
+    // --- fog: warm smoky haze — thin enough that the city ring reads ---
+    scene.fog = new THREE.FogExp2(0x080605, 0.0055);
 
     this._buildEnvironment();
   }
