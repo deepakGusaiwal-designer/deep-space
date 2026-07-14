@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const ENV_URL = new URL('../../assets/cyberpunk_env.glb', import.meta.url).href;
+const ENV_URL = new URL('../../assets/Format6.glb', import.meta.url).href;
 
 const CITY_SPAN = 420;   // footprint of the main city below the course
 const CITY_CENTER = { x: 15, z: -45 }; // middle of the play space
