@@ -62,6 +62,10 @@ export class Player {
     this._facing = 0;
     this._walkPhase = 0;
     this._time = 0;
+    
+    // leg references for animation
+    this.leftLeg = null;
+    this.rightLeg = null;
 
     // chrome sphere stands in until the astronaut finishes loading
     this._placeholder = new THREE.Mesh(
@@ -109,6 +113,16 @@ export class Player {
       if (o.isMesh) {
         o.castShadow = true;
         o.receiveShadow = false;
+      }
+      
+      // Find and store leg references by name
+      const name = o.name.toLowerCase();
+      if (name.includes('leg') || name.includes('foot')) {
+        if (name.includes('left')) {
+          this.leftLeg = o;
+        } else if (name.includes('right')) {
+          this.rightLeg = o;
+        }
       }
     });
 
@@ -256,6 +270,27 @@ export class Player {
     this.visual.position.y += (bobY - this.visual.position.y) * k;
     this.visual.rotation.x += (pitch - this.visual.rotation.x) * k;
     this.visual.rotation.z += (roll - this.visual.rotation.z) * k;
+    
+    // animate legs based on walk phase
+    this._animateLegs(run);
+  }
+
+  /** Animate the legs during walk/run cycles. */
+  _animateLegs(run) {
+    if (!this.leftLeg || !this.rightLeg) return;
+
+    // Oscillating leg rotation for walking motion
+    const legSwing = Math.sin(this._walkPhase) * 0.4 * run; // swing amplitude increases with speed
+
+    // Left leg swings forward when sin is positive
+    if (this.leftLeg.rotation) {
+      this.leftLeg.rotation.z = legSwing;
+    }
+
+    // Right leg swings opposite (out of phase)
+    if (this.rightLeg.rotation) {
+      this.rightLeg.rotation.z = -legSwing;
+    }
   }
 
   /** Project the contact-shadow blob onto whatever is below. */

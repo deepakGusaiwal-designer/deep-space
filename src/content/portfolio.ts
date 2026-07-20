@@ -5,6 +5,9 @@
  * ─────────────────────────────────────────────────────────────
  */
 
+import herozoneImg from '../assets/image/herozone.png';
+import bloomImg from '../assets/image/bloom.png';
+
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
   name: 'Deepak Gusaiwal',
@@ -16,6 +19,7 @@ export const site = {
 export const nav = [
   { label: 'History', href: '#Work' },
   { label: 'Skill', href: '#Skill' },
+  { label: 'Playground', href: '#Playground' },
   { label: 'Testimonials', href: '#Testimonial' },
   { label: 'Contact', href: '#Contact' },
 ] as const;
@@ -96,6 +100,59 @@ export const disciplines: Discipline[] = [
     tools: ['GSAP', 'Three.js', 'React Three Fiber', 'Framer Motion', 'WebGL Shaders', 'Lenis'],
     hue: '#cbb8e8', emissive: '#d9c8ff',
     radius: 1.1, orbit: 15.2, speed: 0.05, tilt: 0.26,
+  },
+];
+
+export interface PlaygroundItem {
+  title: string;
+  tag: string;
+  blurb: string;
+  /** where the card links — omit for an empty "coming soon" slot */
+  href?: string;
+  /** thumbnail accent tint — used behind the generated plate, and while the
+   *  image (if any) is still pixelating in */
+  hue: string;
+  /** a real screenshot/photo — swaps the plate's icon for this image, with
+   *  the pixel-dissolve hover effect. Omit to keep the generated plate. */
+  image?: string;
+}
+
+/**
+ * "Playground" — new section, not part of the original site. Not client
+ * work: weekend builds, game jams, things made because it was Sunday.
+ * GRAVITY is real (it lives at /game/, see GameLink.tsx); the rest are
+ * open slots, left honest as "coming soon" rather than invented projects.
+ * Swap them for real builds as they happen.
+ */
+export const playground: PlaygroundItem[] = [
+  {
+    title: 'GRAVITY',
+    tag: 'mini game',
+    blurb: 'A tiny gravity-well platformer, hidden inside this very universe.',
+    href: '/game/',
+    hue: '#CB152F',
+  },
+  {
+    title: 'Herozone',
+    tag: 'herozone',
+    blurb: 'Interactive herozone ',
+    href: 'https://deepg.netlify.app/',
+    hue: '#565b63',
+    image: herozoneImg,
+  },
+  {
+    title: 'Bloom 2026',
+    tag: 'Plant',
+    blurb: 'Interactive plant-based experience ',
+    href: 'https://bloom-2026.vercel.app/',
+    hue: '#565b63',
+    image: bloomImg,
+  },
+  {
+    title: 'Next Build',
+    tag: 'coming soon',
+    blurb: 'Another empty orbit, waiting on something worth shipping.',
+    hue: '#565b63',
   },
 ];
 
