@@ -11,6 +11,7 @@ import Hero from './sections/Hero';
 import History from './sections/History';
 import Interlude from './sections/Interlude';
 import WhatIDo from './sections/WhatIDo';
+import Playground from './sections/Playground';
 import Testimonials from './sections/Testimonials';
 import Contact from './sections/Contact';
 import { useReducedMotionSync } from './hooks/useReducedMotion';
@@ -40,6 +41,7 @@ export default function App() {
         <History />
         <Interlude />
         <WhatIDo />
+        <Playground />
         <Testimonials />
         <Contact />
       </main>
