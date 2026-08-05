@@ -7,6 +7,7 @@
 
 import herozoneImg from '../assets/image/herozone.png';
 import bloomImg from '../assets/image/bloom.png';
+import AIImage from '../assets/image/AI.png';
 
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
@@ -147,6 +148,14 @@ export const playground: PlaygroundItem[] = [
     href: 'https://bloom-2026.vercel.app/',
     hue: '#565b63',
     image: bloomImg,
+  },
+  {
+    title: 'Evolution of AI',
+    tag: 'Interactive Experience',
+    blurb: 'A cinematic WebGL journey exploring how Artificial Intelligence evolved from rule-based systems to Generative AI through immersive Three.js, GSAP, shaders, and particle-driven storytelling.',
+    href: 'https://ai-evolution-2026.vercel.app/',
+    hue: '#5B8CFF',
+    image: AIImage,
   },
   {
     title: 'Next Build',
