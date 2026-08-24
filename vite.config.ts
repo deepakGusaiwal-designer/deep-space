@@ -29,6 +29,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         game: fileURLToPath(new URL('./game/index.html', import.meta.url)),
+        blog: fileURLToPath(new URL('./blog/index.html', import.meta.url)),
         blogs: fileURLToPath(new URL('./blogs/index.html', import.meta.url)),
       },
       output: {
