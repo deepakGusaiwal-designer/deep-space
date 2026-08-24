@@ -1,10 +1,27 @@
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
+function blogRewritePlugin(): Plugin {
+  return {
+    name: 'blog-rewrite-plugin',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url) {
+          const path = req.url.split('?')[0];
+          if (/^\/(?:blog|blogs)(?:\/.*)?$/.test(path) && !path.includes('.')) {
+            req.url = '/blogs/index.html';
+          }
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), blogRewritePlugin()],
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 1200,

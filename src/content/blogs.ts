@@ -5,6 +5,7 @@ export interface BlogPost {
   subtitle?: string;
   excerpt: string;
   content: string[];
+  contentHtml?: string;
   date: string;
   readTime: string;
   category: '3D & WebGL' | 'UI/UX Design' | 'Creative Dev' | 'Case Study';
@@ -86,3 +87,81 @@ export const BLOG_POSTS: BlogPost[] = [
   //   ]
   // }
 ];
+
+const STORAGE_KEY = 'deep_space_custom_blogs';
+
+/** Get custom posts stored in browser localStorage */
+export function getStoredCustomPosts(): BlogPost[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error('Error loading custom blog posts from storage:', e);
+    return [];
+  }
+}
+
+/** Get all blog posts (custom localStorage posts merged with built-in code posts) */
+export function getAllBlogPosts(): BlogPost[] {
+  const custom = getStoredCustomPosts();
+  const builtInSlugs = new Set(custom.map((p) => p.slug));
+  const filteredBuiltIn = BLOG_POSTS.filter((p) => !builtInSlugs.has(p.slug));
+  return [...custom, ...filteredBuiltIn];
+}
+
+/** Save or update a custom blog post */
+export function saveCustomPost(post: BlogPost): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getStoredCustomPosts();
+    const existingIndex = current.findIndex((p) => p.id === post.id || p.slug === post.slug);
+    let updated: BlogPost[];
+    if (existingIndex >= 0) {
+      updated = [...current];
+      updated[existingIndex] = post;
+    } else {
+      updated = [post, ...current];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error('Error saving custom post:', e);
+  }
+}
+
+/** Delete a custom blog post */
+export function deleteCustomPost(id: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getStoredCustomPosts();
+    const filtered = current.filter((p) => p.id !== id && p.slug !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  } catch (e) {
+    console.error('Error deleting custom post:', e);
+  }
+}
+
+/** Generate formatted TypeScript code for src/content/blogs.ts */
+export function generateExportCode(posts: BlogPost[]): string {
+  return `export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  excerpt: string;
+  content: string[];
+  contentHtml?: string;
+  date: string;
+  readTime: string;
+  category: '3D & WebGL' | 'UI/UX Design' | 'Creative Dev' | 'Case Study';
+  tags: string[];
+  featured?: boolean;
+}
+
+export const BLOG_CATEGORIES = ['All', '3D & WebGL', 'UI/UX Design', 'Creative Dev', 'Case Study'] as const;
+
+export const BLOG_POSTS: BlogPost[] = ${JSON.stringify(posts, null, 2)};
+`;
+}
