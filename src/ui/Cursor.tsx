@@ -1,85 +1,184 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useUniverse } from '../store/useUniverse';
 
 /**
  * The cursor becomes an energy particle: a hot core that snaps to the
  * pointer and a charged halo that trails with momentum. It flares over
- * anything interactive. Desktop / fine pointers only.
+ * anything interactive. Works across all mouse/pointer devices.
  */
 export default function Cursor() {
-  const core = useRef<HTMLDivElement>(null);
-  const halo = useRef<HTMLDivElement>(null);
+  const coreRef = useRef<HTMLDivElement>(null);
+  const haloRef = useRef<HTMLDivElement>(null);
+  const haloInnerRef = useRef<HTMLDivElement>(null);
+  const coreInnerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
   const setMouse = useUniverse((s) => s.setMouse);
 
   useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-    const c = core.current;
-    const h = halo.current;
-    if (!c || !h) return;
+    const core = coreRef.current;
+    const halo = haloRef.current;
+    const haloInner = haloInnerRef.current;
+    const coreInner = coreInnerRef.current;
+    if (!core || !halo || !haloInner || !coreInner) return;
 
-    c.style.opacity = '1';
-    h.style.opacity = '1';
+    let isVisible = false;
 
-    const xCore = gsap.quickTo(c, 'x', { duration: 0.08, ease: 'power3' });
-    const yCore = gsap.quickTo(c, 'y', { duration: 0.08, ease: 'power3' });
-    const xHalo = gsap.quickTo(h, 'x', { duration: 0.45, ease: 'power3' });
-    const yHalo = gsap.quickTo(h, 'y', { duration: 0.45, ease: 'power3' });
+    // Set initial position off-screen
+    gsap.set([core, halo], { x: -100, y: -100, opacity: 0 });
 
-    // world-space parallax (camera, starfield, black hole) reacts to the
-    // same pointer, but scaled well down from the cursor's own 1:1 tracking —
-    // full-strength -1..1 made the universe swing around too fast on hover
+    const xCore = gsap.quickTo(core, 'x', { duration: 0.04, ease: 'power3' });
+    const yCore = gsap.quickTo(core, 'y', { duration: 0.04, ease: 'power3' });
+    const xHalo = gsap.quickTo(halo, 'x', { duration: 0.22, ease: 'power3' });
+    const yHalo = gsap.quickTo(halo, 'y', { duration: 0.22, ease: 'power3' });
+
     const WORLD_SENSITIVITY = 0.42;
 
-    const move = (e: PointerEvent) => {
+    const showCursor = () => {
+      if (!isVisible) {
+        isVisible = true;
+        setVisible(true);
+        document.body.classList.add('custom-cursor-active');
+        gsap.to([core, halo], { opacity: 1, duration: 0.25, overwrite: 'auto' });
+      }
+    };
+
+    const hideCursor = () => {
+      if (isVisible) {
+        isVisible = false;
+        setVisible(false);
+        document.body.classList.remove('custom-cursor-active');
+        gsap.to([core, halo], { opacity: 0, duration: 0.25, overwrite: 'auto' });
+      }
+    };
+
+    const onPointerMove = (e: PointerEvent | MouseEvent) => {
+      // Don't show custom cursor for pure touch taps
+      if ('pointerType' in e && e.pointerType === 'touch') {
+        hideCursor();
+        return;
+      }
+
+      showCursor();
+
       xCore(e.clientX);
       yCore(e.clientY);
       xHalo(e.clientX);
       yHalo(e.clientY);
+
       setMouse(
         ((e.clientX / window.innerWidth) * 2 - 1) * WORLD_SENSITIVITY,
         ((e.clientY / window.innerHeight) * 2 - 1) * WORLD_SENSITIVITY,
       );
     };
 
-    const overInteractive = (e: PointerEvent) => {
-      const hot = (e.target as HTMLElement).closest(
-        'a, button, [role="button"], input, textarea, [data-magnetic]',
+    const onPointerOver = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const hot = target.closest(
+        'a, button, [role="button"], input, textarea, label, [data-magnetic], .play-card, .holo, .game-link, .audio-toggle',
       );
-      gsap.to(h, { scale: hot ? 2.1 : 1, opacity: hot ? 0.9 : 0.55, duration: 0.4, ease: 'power3.out' });
-      gsap.to(c, { scale: hot ? 0.4 : 1, duration: 0.4, ease: 'power3.out' });
+      if (hot) {
+        gsap.to(haloInner, {
+          scale: 1.8,
+          opacity: 0.95,
+          borderColor: 'rgba(255, 255, 255, 0.85)',
+          backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+        gsap.to(coreInner, {
+          scale: 0.5,
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+      } else {
+        gsap.to(haloInner, {
+          scale: 1,
+          opacity: 0.6,
+          borderColor: 'rgba(255, 255, 255, 0.45)',
+          backgroundColor: 'transparent',
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+        gsap.to(coreInner, {
+          scale: 1,
+          duration: 0.35,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+      }
     };
 
-    const down = () => gsap.to(h, { scale: 0.7, duration: 0.2 });
-    const up = () => gsap.to(h, { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+    const onPointerDown = () => {
+      gsap.to(haloInner, { scale: 0.7, duration: 0.15, overwrite: 'auto' });
+      gsap.to(coreInner, { scale: 1.5, duration: 0.15, overwrite: 'auto' });
+    };
 
-    window.addEventListener('pointermove', move, { passive: true });
-    window.addEventListener('pointerover', overInteractive, { passive: true });
-    window.addEventListener('pointerdown', down);
-    window.addEventListener('pointerup', up);
+    const onPointerUp = () => {
+      gsap.to(haloInner, { scale: 1, duration: 0.45, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
+      gsap.to(coreInner, { scale: 1, duration: 0.45, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('mousemove', onPointerMove, { passive: true });
+    document.addEventListener('pointerover', onPointerOver, { passive: true });
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('pointerup', onPointerUp);
+    document.documentElement.addEventListener('mouseleave', hideCursor);
+    document.documentElement.addEventListener('mouseenter', showCursor);
+
     return () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerover', overInteractive);
-      window.removeEventListener('pointerdown', down);
-      window.removeEventListener('pointerup', up);
+      document.body.classList.remove('custom-cursor-active');
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('mousemove', onPointerMove);
+      document.removeEventListener('pointerover', onPointerOver);
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.documentElement.removeEventListener('mouseleave', hideCursor);
+      document.documentElement.removeEventListener('mouseenter', showCursor);
     };
   }, [setMouse]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[100] hidden md:block" aria-hidden="true">
+    <div
+      className="pointer-events-none fixed inset-0 z-[99999] overflow-hidden"
+      style={{ display: visible ? 'block' : 'none' }}
+      aria-hidden="true"
+    >
+      {/* Outer Halo */}
       <div
-        ref={halo}
-        className="absolute -top-5 -left-5 h-10 w-10 rounded-full opacity-0"
-        style={{
-          border: '1px solid rgba(255,255,255,0.45)',
-          boxShadow: '0 0 24px rgba(232,176,106,0.25), inset 0 0 12px rgba(232,176,106,0.15)',
-        }}
-      />
+        ref={haloRef}
+        className="pointer-events-none absolute top-0 left-0 will-change-transform"
+      >
+        <div
+          ref={haloInnerRef}
+          className="h-10 w-10 rounded-full border border-white/45"
+          style={{
+            marginLeft: '-20px',
+            marginTop: '-20px',
+            boxShadow: '0 0 24px rgba(255, 255, 255, 0.25), inset 0 0 12px rgba(255, 255, 255, 0.15)',
+          }}
+        />
+      </div>
+
+      {/* Center Core */}
       <div
-        ref={core}
-        className="absolute -top-[3px] -left-[3px] h-1.5 w-1.5 rounded-full opacity-0"
-        style={{ background: '#ffffff', boxShadow: '0 0 12px 3px rgba(255,255,255,0.85)' }}
-      />
+        ref={coreRef}
+        className="pointer-events-none absolute top-0 left-0 will-change-transform"
+      >
+        <div
+          ref={coreInnerRef}
+          className="h-2 w-2 rounded-full bg-white shadow-[0_0_12px_3px_rgba(255,255,255,0.9)]"
+          style={{
+            marginLeft: '-4px',
+            marginTop: '-4px',
+          }}
+        />
+      </div>
     </div>
   );
 }
