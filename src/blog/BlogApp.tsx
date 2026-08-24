@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { BlogPost } from '../content/blogs';
 import { BLOG_CATEGORIES, getAllBlogPosts } from '../content/blogs';
+import { fetchGlobalBlogPosts } from '../services/blogService';
 import BlogNav from './components/BlogNav';
 import BlogCard from './components/BlogCard';
 import BlogDetail from './components/BlogDetail';
@@ -28,9 +29,15 @@ export default function BlogApp() {
   const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(getSlugFromLocation());
   const [isAdminAuthed, setIsAdminAuthed] = useState<boolean>(() => isAdminAuthenticated());
 
-  const refreshPosts = useCallback(() => {
-    setAllPosts(getAllBlogPosts());
+  const refreshPosts = useCallback(async () => {
+    const updated = await fetchGlobalBlogPosts();
+    setAllPosts(updated);
   }, []);
+
+  // Fetch latest cloud posts on mount
+  useEffect(() => {
+    refreshPosts();
+  }, [refreshPosts]);
 
   const isAdminRoute = selectedPostSlug === 'admin';
 
