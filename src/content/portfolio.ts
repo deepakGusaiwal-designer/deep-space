@@ -6,6 +6,7 @@
  */
 
 import herozoneImg from '../assets/image/herozone.png';
+import ludoImg from '../assets/image/ludo.jpg';
 import bloomImg from '../assets/image/bloom.png';
 import AIImage from '../assets/image/AI.png';
 
@@ -126,6 +127,14 @@ export interface PlaygroundItem {
  * Swap them for real builds as they happen.
  */
 export const playground: PlaygroundItem[] = [
+  {
+    title: '3D Ludo Game',
+    tag: 'mini game',
+    blurb: 'Play an immersive 3D Ludo game directly in your browser.',
+    href: 'https://ludo-2026-3d.vercel.app/',
+    hue: '#CB152F',
+    image: ludoImg,
+  },
   {
     title: 'GRAVITY',
     tag: 'mini game',
