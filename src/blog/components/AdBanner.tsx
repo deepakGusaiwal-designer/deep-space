@@ -50,7 +50,7 @@ export default function AdBanner({
           ref={adRef}
           className="adsbygoogle block w-full"
           style={{ display: 'block', minHeight: '90px' }}
-          data-ad-client="ca-pub-7740852325110950"
+          data-ad-client="ca-pub-4525663149790883"
           data-ad-slot={slot}
           data-ad-format={format}
           data-full-width-responsive={responsive ? 'true' : 'false'}
@@ -60,7 +60,7 @@ export default function AdBanner({
         {isDev && (
           <div className="flex flex-col items-center justify-center py-4 text-xs text-white/40">
             <span className="font-mono text-goldlight/70 text-[11px]">[ AdSense Unit: {slot} ]</span>
-            <span className="mt-1 text-[10px] text-dim">Client: ca-pub-7740852325110950 · Live on production domain</span>
+            <span className="mt-1 text-[10px] text-dim">Client: ca-pub-4525663149790883 · Live on production domain</span>
           </div>
         )}
       </div>
