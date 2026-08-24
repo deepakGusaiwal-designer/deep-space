@@ -29,7 +29,7 @@ export default function BlogDetail({ post, onBack, onSelectPost }: BlogDetailPro
   const related = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 2);
 
   return (
-    <article className="mx-auto max-w-4xl px-6 py-12 md:px-10 md:py-16">
+    <article className="mx-auto max-w-4xl py-12 md:px-10 md:py-16">
       {/* Back button */}
       <button
         type="button"
@@ -93,18 +93,25 @@ export default function BlogDetail({ post, onBack, onSelectPost }: BlogDetailPro
       <AdBanner slot="article-top-banner" label="Advertisement" />
 
       {/* Article Body Content */}
-      <div className="prose prose-invert max-w-none my-10 space-y-6 text-base leading-relaxed text-slate-200 md:text-lg">
-        {post.content.map((paragraph, idx) => (
-          <div key={idx}>
-            <p className="leading-relaxed">{paragraph}</p>
+      {post.contentHtml ? (
+        <div
+          className="prose prose-invert max-w-none my-10 space-y-5 text-base leading-relaxed text-slate-200 md:text-lg [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-soft [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-soft [&_blockquote]:border-l-2 [&_blockquote]:border-white/40 [&_blockquote]:bg-white/[0.03] [&_blockquote]:py-2 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-300 [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-white/15 [&_pre]:bg-black/80 [&_pre]:p-4 [&_pre]:font-mono [&_pre]:text-sm"
+          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+        />
+      ) : (
+        <div className="prose prose-invert max-w-none my-10 space-y-6 text-base leading-relaxed text-slate-200 md:text-lg">
+          {post.content.map((paragraph, idx) => (
+            <div key={idx}>
+              <p className="leading-relaxed">{paragraph}</p>
 
-            {/* In-Article AdSense Banner midway through the article */}
-            {idx === 2 && (
-              <AdBanner slot="in-article-middle" label="Sponsored Context" className="my-10" />
-            )}
-          </div>
-        ))}
-      </div>
+              {/* In-Article AdSense Banner midway through the article */}
+              {idx === 2 && (
+                <AdBanner slot="in-article-middle" label="Sponsored Context" className="my-10" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Article Tags */}
       <div className="my-10 flex flex-wrap gap-2 border-t border-white/10 pt-6">

@@ -1,49 +1,88 @@
-import { useState, useEffect, useMemo } from 'react';
-import { BLOG_POSTS, BLOG_CATEGORIES } from '../content/blogs';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import type { BlogPost } from '../content/blogs';
+import { BLOG_CATEGORIES, getAllBlogPosts } from '../content/blogs';
 import BlogNav from './components/BlogNav';
 import BlogCard from './components/BlogCard';
 import BlogDetail from './components/BlogDetail';
 import AdBanner from './components/AdBanner';
+import BlogStudio from './admin/BlogStudio';
+import AdminAuth, { isAdminAuthenticated } from './admin/AdminAuth';
 import { Search, BookOpen } from 'lucide-react';
 
+function getSlugFromLocation(): string | null {
+  if (typeof window === 'undefined') return null;
+  const pathname = window.location.pathname;
+  const match = pathname.match(/^\/(?:blog|blogs)\/([^/]+)/i);
+  if (match && match[1] && match[1] !== 'index.html') {
+    return decodeURIComponent(match[1]);
+  }
+  const hash = window.location.hash.replace('#', '');
+  if (hash) return decodeURIComponent(hash);
+  return null;
+}
+
 export default function BlogApp() {
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(() => getAllBlogPosts());
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
+  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(getSlugFromLocation());
+  const [isAdminAuthed, setIsAdminAuthed] = useState<boolean>(() => isAdminAuthenticated());
 
-  // Sync with URL hash for direct links (e.g. /blogs/#slug)
+  const refreshPosts = useCallback(() => {
+    setAllPosts(getAllBlogPosts());
+  }, []);
+
+  const isAdminRoute = selectedPostSlug === 'admin';
+
+  // Listen to browser Back / Forward buttons & initial URL path
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash) {
-      const match = BLOG_POSTS.find((p) => p.slug === hash);
-      if (match) setSelectedPostSlug(match.slug);
-    }
+    const handleLocationChange = () => {
+      const slug = getSlugFromLocation();
+      setSelectedPostSlug(slug);
+      setIsAdminAuthed(isAdminAuthenticated());
 
-    const onHashChange = () => {
-      const h = window.location.hash.replace('#', '');
-      if (h) {
-        const match = BLOG_POSTS.find((p) => p.slug === h);
-        if (match) setSelectedPostSlug(match.slug);
+      if (slug === 'admin') {
+        document.title = 'Author Studio — Deepak Gusaiwal';
+      } else if (slug) {
+        const post = allPosts.find((p) => p.slug === slug);
+        if (post) {
+          document.title = `${post.title} — Deepak Gusaiwal`;
+        }
       } else {
-        setSelectedPostSlug(null);
+        document.title = 'Thoughts & Articles — Deepak Gusaiwal | UI/UX & Interactive Developer';
       }
     };
 
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
+    handleLocationChange();
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, [allPosts]);
 
   const handleSelectPost = (slug: string | null) => {
     setSelectedPostSlug(slug);
     if (slug) {
-      window.location.hash = slug;
+      window.history.pushState({ slug }, '', `/blog/${slug}`);
+      if (slug === 'admin') {
+        document.title = 'Author Studio — Deepak Gusaiwal';
+      } else {
+        const post = allPosts.find((p) => p.slug === slug);
+        if (post) {
+          document.title = `${post.title} — Deepak Gusaiwal`;
+        }
+      }
     } else {
-      window.history.pushState('', document.title, window.location.pathname);
+      window.history.pushState({}, '', '/blog/');
+      document.title = 'Thoughts & Articles — Deepak Gusaiwal | UI/UX & Interactive Developer';
     }
   };
 
   const filteredPosts = useMemo(() => {
-    return BLOG_POSTS.filter((post) => {
+    return allPosts.filter((post) => {
       const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -53,11 +92,39 @@ export default function BlogApp() {
         post.tags.some((t) => t.toLowerCase().includes(q));
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [allPosts, selectedCategory, searchQuery]);
 
   const currentPost = useMemo(() => {
-    return BLOG_POSTS.find((p) => p.slug === selectedPostSlug) || null;
-  }, [selectedPostSlug]);
+    if (isAdminRoute) return null;
+    return allPosts.find((p) => p.slug === selectedPostSlug) || null;
+  }, [allPosts, selectedPostSlug, isAdminRoute]);
+
+  // Admin Studio Route View
+  if (isAdminRoute) {
+    if (!isAdminAuthed) {
+      return (
+        <div className="min-h-screen bg-[#07080a] text-[#f5f3ee]">
+          <header className="border-b border-white/10 px-6 py-4">
+            <button
+              type="button"
+              onClick={() => handleSelectPost(null)}
+              className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-dim hover:text-soft"
+            >
+              ← Return to Blog
+            </button>
+          </header>
+          <AdminAuth onAuthenticated={() => setIsAdminAuthed(true)} />
+        </div>
+      );
+    }
+
+    return (
+      <BlogStudio
+        onExit={() => handleSelectPost(null)}
+        onPostUpdated={refreshPosts}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-[#f5f3ee] selection:bg-[#CB152F]/30 selection:text-white">
@@ -78,13 +145,13 @@ export default function BlogApp() {
             <div className="mb-12 text-center md:mb-16">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-widest text-soft uppercase">
                 <BookOpen className="size-3.5" />
-                Thoughts & Engineering Notes
+                My Thoughts & Perspectives
               </div>
               <h1 className="h-display mt-6 text-4xl font-extrabold text-white md:text-6xl">
-                Articles & Insights
+                Thoughts & Articles
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 md:text-base">
-                Exploring the bleeding edge of UI/UX design, real-time 3D WebGL graphics, GSAP animation, and creative development.
+                Reflections on UI/UX design, interactive experiences, 3D WebGL graphics, and creative development.
               </p>
             </div>
 
