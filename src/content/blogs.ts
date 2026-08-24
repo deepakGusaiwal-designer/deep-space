@@ -35,57 +35,57 @@ export const BLOG_POSTS: BlogPost[] = [
       'By decoupling text paint from the Canvas mount via React 19 lazy loading and code splitting, visitors experience instant typography rendering while the WebGL universe boots smoothly in the background.'
     ]
   },
-  // {
-  //   id: '2',
-  //   slug: 'future-of-micro-interactions-gsap-lenis-react',
-  //   title: 'Fluid Motion: Syncing GSAP ScrollTrigger with Lenis in React',
-  //   subtitle: 'Creating momentum-driven camera flights and tactile UI feedback without frame drops.',
-  //   excerpt: 'A technical guide on orchestrating buttery-smooth scrolling with Lenis, GSAP tickers, and React 19 component lifecycles.',
-  //   category: 'Creative Dev',
-  //   date: 'July 2026',
-  //   readTime: '5 min read',
-  //   tags: ['GSAP', 'Lenis', 'React 19', 'Web Animation', 'UX'],
-  //   content: [
-  //     'High-end interactive websites often suffer from jittery scrolling when multiple animation engines fight for requestAnimationFrame control.',
-  //     'In our architecture, Lenis acts as the single source of truth for physical scroll position, publishing a normalized progress float from 0.0 to 1.0 into a lightweight Zustand store.',
-  //     'By binding Lenis to the GSAP Ticker via `gsap.ticker.add((time) => lenis.raf(time * 1000))` with `lagSmoothing(0)`, we eliminate frame drift between DOM reveals and Three.js camera transforms.',
-  //     'Furthermore, the Catmull-Rom spline camera interpolator samples this progress float with frame-rate independent damping (`1 - Math.exp(-lambda * dt)`), giving users tactile weight when passing through high-gravity zones.'
-  //   ]
-  // },
-  // {
-  //   id: '3',
-  //   slug: 'procedural-pbr-textures-vs-image-downloads',
-  //   title: 'Why Procedural Textures Beat Image Downloads for Web Performance',
-  //   subtitle: 'How 2D Offscreen Canvas noise generation creates infinite detail with zero download weight.',
-  //   excerpt: 'Explore how procedural noise generation on HTML5 Offscreen Canvases replaces megabytes of diffuse and bump maps.',
-  //   category: '3D & WebGL',
-  //   date: 'June 2026',
-  //   readTime: '4 min read',
-  //   tags: ['Performance', 'Canvas API', 'PBR', 'Optimization'],
-  //   content: [
-  //     'In traditional 3D web experiences, loading high-resolution 2K/4K planet textures and bump maps can easily consume 20MB+ of network bandwidth, leading to slow mobile loads and high bounce rates.',
-  //     'Instead of downloading static JPG/PNG textures, we generate planetary surfaces, terrain bump maps, and cloud bands dynamically on 2D Offscreen Canvases during application boot.',
-  //     'Using layered Fractional Brownian Motion (fBm) and Simplex Noise algorithms, each planet receives a unique, crystal-clear procedural texture rendered directly on the client machine in less than 15 milliseconds.',
-  //     'This reduces asset payload to zero bytes for textures while maintaining sharp detail even when the camera zooms intimately close.'
-  //   ]
-  // },
-  // {
-  //   id: '4',
-  //   slug: 'crafting-empathic-ui-ux-design-systems',
-  //   title: 'Crafting Empathic UI/UX: Beyond Sterile Component Libraries',
-  //   subtitle: 'Design tokens, spatial hierarchy, and sensory design that connects with users on an emotional level.',
-  //   excerpt: 'Why modern digital design must balance structured usability with atmospheric storytelling and personality.',
-  //   category: 'UI/UX Design',
-  //   date: 'May 2026',
-  //   readTime: '5 min read',
-  //   tags: ['Design Systems', 'UI/UX', 'Product Design', 'Accessibility'],
-  //   content: [
-  //     'The modern web has become increasingly homogenous — sterile white boxes, identical card grids, and cookie-cutter templates.',
-  //     'True digital craftsmanship lies at the intersection of unwavering usability and unforgettable atmospheric identity.',
-  //     'By utilizing subtle depth cues, glassmorphism, responsive ambient audio, and magnetic focal points, we can guide the user\'s curiosity rather than demanding their attention.',
-  //     'Crucially, strong aesthetic identity must never compromise accessibility. Automatic detection of `prefers-reduced-motion`, clean keyboard navigation, and semantic DOM fallbacks ensure that everyone can experience the story regardless of device or input capability.'
-  //   ]
-  // }
+  {
+    id: '2',
+    slug: 'future-of-micro-interactions-gsap-lenis-react',
+    title: 'Fluid Motion: Syncing GSAP ScrollTrigger with Lenis in React',
+    subtitle: 'Creating momentum-driven camera flights and tactile UI feedback without frame drops.',
+    excerpt: 'A technical guide on orchestrating buttery-smooth scrolling with Lenis, GSAP tickers, and React 19 component lifecycles.',
+    category: 'Creative Dev',
+    date: 'July 2026',
+    readTime: '5 min read',
+    tags: ['GSAP', 'Lenis', 'React 19', 'Web Animation', 'UX'],
+    content: [
+      'High-end interactive websites often suffer from jittery scrolling when multiple animation engines fight for requestAnimationFrame control.',
+      'In our architecture, Lenis acts as the single source of truth for physical scroll position, publishing a normalized progress float from 0.0 to 1.0 into a lightweight Zustand store.',
+      'By binding Lenis to the GSAP Ticker via `gsap.ticker.add((time) => lenis.raf(time * 1000))` with `lagSmoothing(0)`, we eliminate frame drift between DOM reveals and Three.js camera transforms.',
+      'Furthermore, the Catmull-Rom spline camera interpolator samples this progress float with frame-rate independent damping (`1 - Math.exp(-lambda * dt)`), giving users tactile weight when passing through high-gravity zones.'
+    ]
+  },
+  {
+    id: '3',
+    slug: 'procedural-pbr-textures-vs-image-downloads',
+    title: 'Why Procedural Textures Beat Image Downloads for Web Performance',
+    subtitle: 'How 2D Offscreen Canvas noise generation creates infinite detail with zero download weight.',
+    excerpt: 'Explore how procedural noise generation on HTML5 Offscreen Canvases replaces megabytes of diffuse and bump maps.',
+    category: '3D & WebGL',
+    date: 'June 2026',
+    readTime: '4 min read',
+    tags: ['Performance', 'Canvas API', 'PBR', 'Optimization'],
+    content: [
+      'In traditional 3D web experiences, loading high-resolution 2K/4K planet textures and bump maps can easily consume 20MB+ of network bandwidth, leading to slow mobile loads and high bounce rates.',
+      'Instead of downloading static JPG/PNG textures, we generate planetary surfaces, terrain bump maps, and cloud bands dynamically on 2D Offscreen Canvases during application boot.',
+      'Using layered Fractional Brownian Motion (fBm) and Simplex Noise algorithms, each planet receives a unique, crystal-clear procedural texture rendered directly on the client machine in less than 15 milliseconds.',
+      'This reduces asset payload to zero bytes for textures while maintaining sharp detail even when the camera zooms intimately close.'
+    ]
+  },
+  {
+    id: '4',
+    slug: 'crafting-empathic-ui-ux-design-systems',
+    title: 'Crafting Empathic UI/UX: Beyond Sterile Component Libraries',
+    subtitle: 'Design tokens, spatial hierarchy, and sensory design that connects with users on an emotional level.',
+    excerpt: 'Why modern digital design must balance structured usability with atmospheric storytelling and personality.',
+    category: 'UI/UX Design',
+    date: 'May 2026',
+    readTime: '5 min read',
+    tags: ['Design Systems', 'UI/UX', 'Product Design', 'Accessibility'],
+    content: [
+      'The modern web has become increasingly homogenous — sterile white boxes, identical card grids, and cookie-cutter templates.',
+      'True digital craftsmanship lies at the intersection of unwavering usability and unforgettable atmospheric identity.',
+      'By utilizing subtle depth cues, glassmorphism, responsive ambient audio, and magnetic focal points, we can guide the user\'s curiosity rather than demanding their attention.',
+      'Crucially, strong aesthetic identity must never compromise accessibility. Automatic detection of `prefers-reduced-motion`, clean keyboard navigation, and semantic DOM fallbacks ensure that everyone can experience the story regardless of device or input capability.'
+    ]
+  }
 ];
 
 const STORAGE_KEY = 'deep_space_custom_blogs';

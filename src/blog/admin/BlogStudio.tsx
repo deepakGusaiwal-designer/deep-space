@@ -1,12 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { BlogPost } from '../../content/blogs';
 import {
   BLOG_CATEGORIES,
   getAllBlogPosts,
-  saveCustomPost,
-  deleteCustomPost,
   generateExportCode,
 } from '../../content/blogs';
+import {
+  fetchGlobalBlogPosts,
+  saveGlobalBlogPost,
+  deleteGlobalBlogPost,
+} from '../../services/blogService';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import BlogDetail from '../components/BlogDetail';
 import BlogLexicalEditor from './lexical/BlogLexicalEditor';
 import { clearAdminAuth } from './AdminAuth';
@@ -25,6 +29,8 @@ import {
   FileText,
   List,
   Sparkles,
+  Cloud,
+  CloudOff,
 } from 'lucide-react';
 
 interface BlogStudioProps {
@@ -101,7 +107,13 @@ export default function BlogStudio({ onExit, onPostUpdated }: BlogStudioProps) {
     };
   }, [editingId, slug, title, subtitle, paragraphs, contentHtml, category, tagsInput, featured]);
 
-  const handlePublish = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchGlobalBlogPosts().then((updated) => setPosts(updated));
+  }, []);
+
+  const isCloudActive = isSupabaseConfigured();
+
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       showToast('⚠️ Please enter an article title');
@@ -118,11 +130,20 @@ export default function BlogStudio({ onExit, onPostUpdated }: BlogStudioProps) {
       slug: slugify(slug),
     };
 
-    saveCustomPost(postToSave);
-    const updated = getAllBlogPosts();
+    const res = await saveGlobalBlogPost(postToSave);
+    const updated = await fetchGlobalBlogPosts();
     setPosts(updated);
     onPostUpdated?.();
-    showToast('✨ Article published successfully!');
+
+    if (res.success) {
+      showToast(
+        isCloudActive
+          ? '☁️ Published to Supabase Cloud! Visible on all devices.'
+          : '✨ Published to local browser. Configure Supabase for cloud sync.',
+      );
+    } else {
+      showToast(`⚠️ Saved locally, cloud error: ${res.error}`);
+    }
 
     // Reset form
     setEditingId(null);
@@ -149,10 +170,10 @@ export default function BlogStudio({ onExit, onPostUpdated }: BlogStudioProps) {
     showToast(`Editing "${post.title}"`);
   };
 
-  const handleDelete = (id: string, titleStr: string) => {
+  const handleDelete = async (id: string, titleStr: string) => {
     if (window.confirm(`Are you sure you want to delete "${titleStr}"?`)) {
-      deleteCustomPost(id);
-      const updated = getAllBlogPosts();
+      await deleteGlobalBlogPost(id);
+      const updated = await fetchGlobalBlogPosts();
       setPosts(updated);
       onPostUpdated?.();
       showToast('🗑️ Article deleted');
@@ -160,6 +181,7 @@ export default function BlogStudio({ onExit, onPostUpdated }: BlogStudioProps) {
         setEditingId(null);
         setTitle('');
         setParagraphs(['']);
+        setContentHtml('');
       }
     }
   };
@@ -213,6 +235,17 @@ export default function BlogStudio({ onExit, onPostUpdated }: BlogStudioProps) {
               <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-400">
                 Logged In
               </span>
+              {isCloudActive ? (
+                <span className="flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-sky-300">
+                  <Cloud className="size-3" />
+                  Cloud Synced
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-amber-300" title="Connect Supabase in .env for multi-device sync">
+                  <CloudOff className="size-3" />
+                  Local Mode
+                </span>
+              )}
             </div>
           </div>
 
