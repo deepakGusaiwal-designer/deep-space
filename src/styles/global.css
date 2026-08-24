@@ -49,13 +49,15 @@ body {
   color: var(--color-soft);
 }
 
-@media (pointer: fine) {
-  body {
-    cursor: none;
-  }
-  a, button, [role='button'], input, textarea, label {
-    cursor: none;
-  }
+body.custom-cursor-active,
+body.custom-cursor-active a,
+body.custom-cursor-active button,
+body.custom-cursor-active [role='button'],
+body.custom-cursor-active input,
+body.custom-cursor-active textarea,
+body.custom-cursor-active label,
+body.custom-cursor-active select {
+  cursor: none !important;
 }
 
 /* ───────────────────────── Utilities ───────────────────────── */
