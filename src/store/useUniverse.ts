@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+export type GraphicsQuality = 'auto' | 'high' | 'medium' | 'low';
+
 interface UniverseState {
   /** 0 → 1 across the whole journey (Lenis-driven) */
   progress: number;
@@ -18,6 +20,7 @@ interface UniverseState {
   ready: boolean;
   reducedMotion: boolean;
   audioOn: boolean;
+  graphicsQuality: GraphicsQuality;
   contactCollapsed: boolean;
   setProgress: (p: number) => void;
   setVelocity: (v: number) => void;
@@ -29,8 +32,17 @@ interface UniverseState {
   setReady: (r: boolean) => void;
   setReducedMotion: (r: boolean) => void;
   setAudioOn: (a: boolean) => void;
+  setGraphicsQuality: (q: GraphicsQuality) => void;
   setContactCollapsed: (c: boolean) => void;
 }
+
+const getInitialQuality = (): GraphicsQuality => {
+  if (typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem('deep_space_graphics_quality') as GraphicsQuality | null;
+    if (saved === 'auto' || saved === 'high' || saved === 'medium' || saved === 'low') return saved;
+  }
+  return 'auto';
+};
 
 export const useUniverse = create<UniverseState>((set) => ({
   progress: 0,
@@ -43,6 +55,7 @@ export const useUniverse = create<UniverseState>((set) => ({
   ready: false,
   reducedMotion: false,
   audioOn: false,
+  graphicsQuality: getInitialQuality(),
   contactCollapsed: false,
   setProgress: (progress) => set({ progress }),
   setVelocity: (velocity) => set({ velocity }),
@@ -54,5 +67,11 @@ export const useUniverse = create<UniverseState>((set) => ({
   setReady: (ready) => set({ ready }),
   setReducedMotion: (reducedMotion) => set({ reducedMotion }),
   setAudioOn: (audioOn) => set({ audioOn }),
+  setGraphicsQuality: (graphicsQuality) => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('deep_space_graphics_quality', graphicsQuality);
+    }
+    set({ graphicsQuality });
+  },
   setContactCollapsed: (contactCollapsed) => set({ contactCollapsed }),
 }));

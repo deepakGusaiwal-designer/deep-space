@@ -69,13 +69,14 @@ export class Engine {
   }
 
   _frame() {
-    const dt = Math.min(this.clock.getDelta(), SETTINGS.physics.maxDelta);
+    const rawDt = this.clock.getDelta();
+    const dt = Math.min(rawDt, SETTINGS.physics.maxDelta);
     this.elapsed += dt;
 
     for (const fn of this.updaters) fn(dt, this.elapsed);
 
     this.composer.render();
-    this._adapt(dt);
+    this._adapt(rawDt);
   }
 
   /** Drop internal resolution when the frame budget is blown, restore when healthy. */

@@ -58,15 +58,15 @@ export default function Hero() {
     <section
       ref={root}
       id="top"
-      className="pointer-events-none relative z-10 flex md:min-h-[130vh] min-h-screen md:items-center md:pt-0 pt-30"
+      className="pointer-events-none relative z-10 flex min-h-screen md:min-h-[130vh] items-center pt-24 md:pt-0"
     >
       <div className="mx-auto w-full px-6 md:px-12">
         <h1
-          className="text-xl font-display font-medium leading-[1.05] text-white md:text-2xl lg:text-4xl text-shadow-sm"
+          className="text-base sm:text-xl md:text-2xl lg:text-4xl font-display font-medium leading-relaxed sm:leading-normal text-white text-shadow-sm"
           style={{ perspective: '800px' }}
         >
           {heroLines.map((line, li) => (
-            <span key={li} className="block mb-2">
+            <span key={li} className="block mb-1.5 sm:mb-2">
               {line.split(' ').map((word, wi) => (
                 <span key={`${li}-${wi}`} className="inline-block overflow-visible">
                   <span data-word className="inline-block will-change-transform">
@@ -79,7 +79,7 @@ export default function Hero() {
           ))}
         </h1>
 
-        <div className="mt-12 flex flex-wrap items-center gap-5">
+        <div className="mt-8 sm:mt-12 flex flex-wrap items-center gap-3 sm:gap-5">
           <Magnetic>
             <a data-cta href="#Work" className="grav-btn pointer-events-auto inline-block">
               Cross the horizon

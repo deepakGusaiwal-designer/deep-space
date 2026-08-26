@@ -29,7 +29,7 @@ export const blackHoleFragment = /* glsl */ `
   #define HORIZON   1.0
   #define DISK_IN   2.35
   #define DISK_OUT  7.4
-  #define STEPS     110
+  #define STEPS     48
 
   float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
@@ -76,12 +76,14 @@ export const blackHoleFragment = /* glsl */ `
     bool escaped = false;
 
     for (int i = 0; i < STEPS; i++) {
+      if (alpha >= 0.98) break;
+
       float r2 = dot(p, p);
       float r = sqrt(r2);
 
       if (r > 46.0 && dot(p, v) > 0.0) { escaped = true; break; }
 
-      float dt = clamp(r * 0.16, 0.045, 0.65);
+      float dt = clamp(r * 0.22, 0.065, 0.85);
 
       // photon geodesic approximation: a = -3/2 h^2 r / |r|^5
       vec3 acc = -1.5 * h2 * p / (r2 * r2 * r);

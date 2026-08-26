@@ -150,14 +150,14 @@ export default function BlogApp() {
           <div>
             {/* Hero Banner */}
             <div className="mb-12 text-center md:mb-16">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold tracking-widest text-soft uppercase">
-                <BookOpen className="size-3.5" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs sm:text-sm font-semibold tracking-widest text-soft uppercase">
+                <BookOpen className="size-4" />
                 My Thoughts & Perspectives
               </div>
-              <h1 className="h-display mt-6 text-4xl font-extrabold text-white md:text-6xl">
+              <h1 className="h-display mt-6 text-4xl sm:text-5xl md:text-6xl font-extrabold text-white">
                 Thoughts & Articles
               </h1>
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 md:text-base">
+              <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-200">
                 Reflections on UI/UX design, interactive experiences, 3D WebGL graphics, and creative development.
               </p>
             </div>
@@ -174,7 +174,7 @@ export default function BlogApp() {
                     key={cat}
                     type="button"
                     onClick={() => setSelectedCategory(cat)}
-                    className={`cursor-pointer rounded-full px-4 py-2 text-xs font-semibold tracking-wider uppercase transition-all duration-300 ${
+                    className={`cursor-pointer rounded-full px-4 py-2 text-xs sm:text-sm font-semibold tracking-wider uppercase transition-all duration-300 ${
                       selectedCategory === cat
                         ? 'border border-white/40 bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]'
                         : 'border border-white/10 bg-white/5 text-soft hover:border-white/20 hover:bg-white/10'
@@ -193,7 +193,7 @@ export default function BlogApp() {
                   placeholder="Search articles or tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-full border border-white/15 bg-white/5 py-2 pl-10 pr-4 text-xs text-soft placeholder:text-dim backdrop-blur-md transition-all focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20"
+                  className="w-full rounded-full border border-white/15 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-dim backdrop-blur-md transition-all focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20"
                 />
               </div>
             </div>

@@ -16,16 +16,16 @@ function StationPanel({ entry, index }: { entry: HistoryEntry; index: number }) 
     <article
       ref={ref}
       data-reveal
-      className={`holo pointer-events-auto relative w-full max-w-xl p-8 md:p-10 ${side}`}
+      className={`holo pointer-events-auto relative w-full max-w-xl p-6 sm:p-8 md:p-10 ${side}`}
     >
-      <div className="flex items-baseline justify-between gap-6">
-        <span className="h-display text-4xl text-white md:text-5xl">{entry.year}</span>
-        <span className="eyebrow">station {String(index + 1).padStart(2, '0')} / 04 <Satellite className="inline size-5" /></span>
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="h-display text-3xl text-white md:text-5xl">{entry.year}</span>
+        <span className="eyebrow text-[10px] sm:text-xs">station {String(index + 1).padStart(2, '0')} / 04 <Satellite className="inline size-4 sm:size-5" /></span>
       </div>
-      <div className="grav-line my-6" />
-      <p className="text-[0.7rem] tracking-[0.3em] text-slate-100 uppercase">{entry.role}</p>
-      <h3 className="mt-3 text-2xl text-soft font-semibold md:text-3xl">{entry.title}</h3>
-      <p className="mt-4 text-sm tracking-[0.14em] text-slate-100 uppercase">{entry.company}</p>
+      <div className="grav-line my-4 sm:my-6" />
+      <p className="text-[0.65rem] sm:text-[0.7rem] tracking-[0.25em] sm:tracking-[0.3em] text-slate-100 uppercase">{entry.role}</p>
+      <h3 className="mt-2.5 text-lg font-semibold text-soft sm:text-2xl md:text-3xl">{entry.title}</h3>
+      <p className="mt-3 text-xs sm:text-sm tracking-[0.12em] sm:tracking-[0.14em] text-slate-200 uppercase">{entry.company}</p>
     </article>
   );
 }
@@ -42,12 +42,12 @@ export default function History() {
 
   return (
     <div ref={root}>
-      <SectionShell id="Work" eyebrow="flight log · descent through time" className="py-[16vh]">
-        <h2 data-reveal className="h-display mb-20 text-5xl text-soft md:text-7xl flex items-center">
-          <SquareStack className="mr-3 inline md:size-15 size-8" />
+      <SectionShell id="Work" eyebrow="flight log · descent through time" className="py-[12vh] sm:py-[16vh]">
+        <h2 data-reveal className="h-display mb-10 sm:mb-16 md:mb-20 text-3xl sm:text-5xl md:text-7xl text-soft flex items-center">
+          <SquareStack className="mr-2.5 sm:mr-3 inline size-7 sm:size-10 md:size-14" />
           History
         </h2>
-        <div className="flex flex-col gap-[22vh]">
+        <div className="flex flex-col gap-[14vh] sm:gap-[18vh] md:gap-[22vh]">
           {history.map((entry, i) => (
             <StationPanel key={entry.company} entry={entry} index={i} />
           ))}

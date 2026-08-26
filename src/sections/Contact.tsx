@@ -20,36 +20,35 @@ export default function Contact() {
 
   return (
     <div ref={root}>
-      <SectionShell id="Contact" className="flex min-h-[140vh] flex-col items-center justify-center py-[18vh]">
-        <p data-reveal className="eyebrow mb-6 text-center">
+      <SectionShell id="Contact" className="flex min-h-[120vh] sm:min-h-[140vh] flex-col items-center justify-center py-[12vh] sm:py-[18vh]">
+        <p data-reveal className="eyebrow mb-4 sm:mb-6 text-center">
           the far singularity · transmission
         </p>
-        <h2 data-reveal className="h-display text-center text-5xl text-soft md:text-7xl flex items-center">
-          <Rocket className="mr-3 inline md:size-15 size-8" />
+        <h2 data-reveal className="h-display text-center text-3xl sm:text-5xl md:text-7xl text-soft flex items-center">
+          <Rocket className="mr-2.5 sm:mr-3 inline size-7 sm:size-10 md:size-14" />
           Contact
         </h2>
 
         {/* original contact links — preserved */}
-        <ul data-reveal className="mt-16 flex items-center gap-10">
+        <ul data-reveal className="mt-12 sm:mt-16 flex items-center gap-6 sm:gap-10">
           <li>
             <Magnetic>
-              <a href={`mailto:${site.email}`} className="lumen-link pointer-events-auto font-semibold text-xs tracking-[0.3em] uppercase">
+              <a href={`mailto:${site.email}`} className="lumen-link pointer-events-auto font-semibold text-[11px] sm:text-xs tracking-[0.22em] sm:tracking-[0.3em] uppercase">
                 Email
               </a>
             </Magnetic>
           </li>
           <li>
             <Magnetic>
-              <a href={site.linkedin} target="_blank" rel="noreferrer" className="lumen-link pointer-events-auto font-semibold text-xs tracking-[0.3em] uppercase">
+              <a href={site.linkedin} target="_blank" rel="noreferrer" className="lumen-link pointer-events-auto font-semibold text-[11px] sm:text-xs tracking-[0.22em] sm:tracking-[0.3em] uppercase">
                 Linkedin
               </a>
             </Magnetic>
           </li>
         </ul>
 
-        <footer className="mt-[15vh] text-center">
-          <p className="text-md text-shadow-xl tracking-[0.34em] text-slate-100 font-bold uppercase animate-pulse">
-            {/* {site.name} · Indore ·  */}
+        <footer className="mt-[10vh] sm:mt-[15vh] text-center">
+          <p className="text-xs sm:text-sm md:text-base text-shadow-xl tracking-[0.25em] sm:tracking-[0.34em] text-slate-100 font-bold uppercase animate-pulse">
             Sic mundus creatus est
           </p>
         </footer>
