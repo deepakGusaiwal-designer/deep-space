@@ -54,7 +54,7 @@ function PlayCard({ item }: { item: PlaygroundItem }) {
       <Plate item={item} />
       <div className="grav-line my-5" />
       <div className="flex items-start justify-between gap-3">
-        <h3 className="h-display text-xl text-soft md:text-2xl">{item.title}</h3>
+        <h3 className="h-display text-base sm:text-xl md:text-2xl text-soft">{item.title}</h3>
         {item.href && (
           <ArrowUpRight
             className="mt-1 size-4 shrink-0 text-dim transition-colors group-hover:text-goldlight"
@@ -63,7 +63,7 @@ function PlayCard({ item }: { item: PlaygroundItem }) {
           />
         )}
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-slate-100">{item.blurb}</p>
+      <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-relaxed text-slate-200">{item.blurb}</p>
     </>
   );
 
@@ -104,16 +104,16 @@ export default function Playground() {
 
   return (
     <div ref={root}>
-      <SectionShell id="Playground" eyebrow="off the clock · things built for fun" className="py-[16vh]">
-        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl flex items-center">
-          <FlaskConical className="mr-3 inline md:size-15 size-8" />
+      <SectionShell id="Playground" eyebrow="off the clock · things built for fun" className="py-[12vh] sm:py-[16vh]">
+        <h2 data-reveal className="h-display text-3xl sm:text-5xl md:text-7xl text-soft flex items-center">
+          <FlaskConical className="mr-2.5 sm:mr-3 inline size-7 sm:size-10 md:size-14" />
           Playground
         </h2>
-        <p data-reveal className="mt-2 max-w-lg text-sm leading-relaxed text-slate-100">
+        <p data-reveal className="mt-2 max-w-lg text-xs sm:text-sm leading-relaxed text-slate-100">
           Not client work — the stuff that happens between projects, just to see what breaks.
         </p>
 
-        <ul className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+        <ul className="mt-12 sm:mt-16 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-2">
           {playground.map((item) => (
             <li key={item.title + item.tag}>
               <PlayCard item={item} />

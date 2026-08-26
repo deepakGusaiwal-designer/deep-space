@@ -4,12 +4,12 @@
  */
 export const SETTINGS = {
   renderer: {
-    maxPixelRatio: 2,          // capped for 4K stability
-    shadowMapSize: 2048,
-    bloom: { strength: 0.55, radius: 0.75, threshold: 0.82 },
+    maxPixelRatio: 1.25,       // capped for smooth 60 FPS on integrated GPUs
+    shadowMapSize: 1024,       // lightweight soft shadows
+    bloom: { strength: 0.45, radius: 0.7, threshold: 0.85 },
     adaptive: {                // dynamic-resolution guard rails
-      targetFPS: 58,
-      minScale: 0.65,
+      targetFPS: 56,
+      minScale: 0.6,
       maxScale: 1.0,
     },
   },

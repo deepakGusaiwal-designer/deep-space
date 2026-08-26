@@ -87,15 +87,15 @@ export default function Testimonials() {
 
   return (
     <div ref={root}>
-      <SectionShell id="Testimonial" eyebrow="signals received · three transmissions" className="py-[16vh]">
-        <h2 data-reveal className="h-display text-5xl text-soft md:text-7xl flex items-center">
-          <Radio className="mr-3 inline md:size-15 size-8" />
+      <SectionShell id="Testimonial" eyebrow="signals received · three transmissions" className="py-[12vh] sm:py-[16vh]">
+        <h2 data-reveal className="h-display text-3xl sm:text-5xl md:text-7xl text-soft flex items-center">
+          <Radio className="mr-2.5 sm:mr-3 inline size-7 sm:size-10 md:size-14" />
           Testimonials
         </h2>
 
         <div
           ref={ring}
-          className="pointer-events-auto relative mx-auto mt-16 h-[30rem] w-full max-w-4xl touch-pan-y select-none md:h-[26rem]"
+          className="pointer-events-auto relative mx-auto mt-12 sm:mt-16 h-[26rem] sm:h-[30rem] w-full max-w-4xl touch-pan-y select-none md:h-[26rem]"
           style={{ perspective: '1200px' }}
           role="group"
           aria-label="Testimonials orbit — drag to rotate"
@@ -103,7 +103,7 @@ export default function Testimonials() {
           {/* the central star */}
           <div
             aria-hidden="true"
-            className="absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="absolute top-1/2 left-1/2 h-2.5 w-2.5 sm:h-3 sm:w-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
               background: '#ffffff',
               boxShadow: '0 0 40px 14px rgba(232,176,106,0.45), 0 0 120px 50px rgba(232,176,106,0.12)',
@@ -113,19 +113,19 @@ export default function Testimonials() {
             <figure
               key={t.name}
               data-orbit
-              className="holo absolute top-1/2 left-1/2 w-[19rem] p-7 will-change-transform md:w-[23rem]"
+              className="holo absolute top-1/2 left-1/2 w-[16.5rem] p-5 sm:w-[19rem] sm:p-7 will-change-transform md:w-[23rem]"
             >
-              <blockquote className="text-sm leading-relaxed text-white">“{t.quote}”</blockquote>
-              <figcaption className="mt-6">
-                <p className="h-display text-base text-goldlight">{t.name}</p>
-                <p className="mt-1 font-mono text-[0.62rem] tracking-[0.18em] text-white uppercase">
+              <blockquote className="text-xs sm:text-sm leading-relaxed text-white">“{t.quote}”</blockquote>
+              <figcaption className="mt-4 sm:mt-6">
+                <p className="h-display text-sm sm:text-base text-goldlight">{t.name}</p>
+                <p className="mt-1 font-mono text-[0.58rem] sm:text-[0.62rem] tracking-[0.16em] sm:tracking-[0.18em] text-white uppercase">
                   {t.position}
                 </p>
               </figcaption>
             </figure>
           ))}
         </div>
-        <p data-reveal className="mt-8 text-center font-mono text-[0.62rem] tracking-[0.34em] text-dim uppercase">
+        <p data-reveal className="mt-6 sm:mt-8 text-center font-mono text-[0.58rem] sm:text-[0.62rem] tracking-[0.3em] sm:tracking-[0.34em] text-dim uppercase">
           drag to change orbit
         </p>
       </SectionShell>

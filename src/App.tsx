@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import SmoothScroll from './scroll/SmoothScroll';
 import AudioToggle from './ui/AudioToggle';
+import GraphicsToggle from './ui/GraphicsToggle';
 import GameLink from './ui/GameLink';
 import Cursor from './ui/Cursor';
 import Nav from './ui/Nav';
@@ -33,6 +34,7 @@ export default function App() {
       <Cursor />
       <Nav />
       <ScrollHint />
+      <GraphicsToggle />
       <AudioToggle />
       <GameLink />
 

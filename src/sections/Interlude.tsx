@@ -57,7 +57,7 @@ export default function Interlude() {
       className="pointer-events-none relative z-10 flex min-h-[160vh] items-center justify-center"
       aria-label={`${interlude.from} ${interlude.a} ${interlude.to} ${interlude.b}`}
     >
-      <h2 className="h-display px-6 text-center text-4xl leading-tight uppercase text-soft sm:text-6xl md:text-8xl">
+      <h2 className="h-display px-6 text-center text-2xl sm:text-5xl md:text-7xl lg:text-8xl leading-tight uppercase text-soft">
         <span data-stretch className="block text-white">
           {interlude.from}
         </span>

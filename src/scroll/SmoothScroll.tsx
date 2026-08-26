@@ -18,11 +18,11 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: reducedMotion ? 0 : 3.2,
-      easing: (t: number) => 1 - Math.pow(1 - t, 4),
+      duration: reducedMotion ? 0 : 1.1,
+      easing: (t: number) => 1 - Math.pow(1 - t, 3),
       smoothWheel: !reducedMotion,
-      wheelMultiplier: 0.42,
-      touchMultiplier: 0.85,
+      wheelMultiplier: 1.15,
+      touchMultiplier: 1.5,
     });
 
     lenis.on('scroll', (e: Lenis) => {
@@ -30,12 +30,12 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       const limit = Math.max(1, e.limit);
       setProgress(e.scroll / limit);
       // normalized flight speed — the starfield reads this to draw trails
-      setVelocity(Math.max(-1, Math.min(1, e.velocity / 42)));
+      setVelocity(Math.max(-1, Math.min(1, e.velocity / 26)));
     });
 
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500, 33);
 
     // Anchor navigation flies through space instead of jumping
     const onClick = (ev: MouseEvent) => {
@@ -46,7 +46,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       const target = document.querySelector(id);
       if (!target) return;
       ev.preventDefault();
-      lenis.scrollTo(target as HTMLElement, { duration: 2.2, easing: (t) => 1 - Math.pow(1 - t, 4) });
+      lenis.scrollTo(target as HTMLElement, { duration: 1.4, easing: (t) => 1 - Math.pow(1 - t, 3) });
     };
     document.addEventListener('click', onClick);
 
