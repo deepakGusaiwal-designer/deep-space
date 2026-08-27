@@ -191,3 +191,242 @@ export class AmbientMotes {
     this.material.uniforms.uCenter.value.copy(center);
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Thruster Plasma Particles — Long realistic supersonic exhaust trail */
+/* ------------------------------------------------------------------ */
+const THRUST_VERT = /* glsl */ `
+  attribute vec3 aVelocity;
+  attribute float aSpawnTime;
+  attribute float aLife;
+  attribute float aSize;
+  attribute vec3 aColor;
+  uniform float uTime;
+  varying float vFade;
+  varying vec3 vColor;
+  void main() {
+    float age = uTime - aSpawnTime;
+    float t = clamp(age / max(aLife, 0.001), 0.0, 1.0);
+    vFade = pow(1.0 - t, 1.3) * step(0.0, age) * step(age, aLife);
+    
+    // Core starts bright hot white, transitioning to vivid plasma color then soft tail
+    vColor = mix(vec3(1.0, 1.0, 0.95), aColor, clamp(t * 2.5, 0.0, 1.0));
+
+    // Particle slows down and expands along the supersonic trail
+    vec3 pos = position + aVelocity * age * (1.0 - t * 0.35);
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    gl_PointSize = aSize * (0.85 + t * 3.0) * (140.0 / max(-mv.z, 0.1));
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+
+const THRUST_FRAG = /* glsl */ `
+  varying float vFade;
+  varying vec3 vColor;
+  void main() {
+    vec2 c = gl_PointCoord - 0.5;
+    float d = length(c) * 2.0;
+    float a = pow(smoothstep(1.0, 0.0, d), 1.5) * vFade;
+    gl_FragColor = vec4(vColor, a * 0.95);
+  }
+`;
+
+export class ThrusterParticles {
+  constructor(scene, capacity = 1600) {
+    this.capacity = capacity;
+    this.cursor = 0;
+
+    const geo = new THREE.BufferGeometry();
+    const zero3 = new Float32Array(capacity * 3);
+    geo.setAttribute('position', new THREE.BufferAttribute(zero3.slice(), 3));
+    geo.setAttribute('aVelocity', new THREE.BufferAttribute(zero3.slice(), 3));
+    geo.setAttribute('aColor', new THREE.BufferAttribute(zero3.slice(), 3));
+    geo.setAttribute('aSpawnTime', new THREE.BufferAttribute(new Float32Array(capacity).fill(-1e3), 1));
+    geo.setAttribute('aLife', new THREE.BufferAttribute(new Float32Array(capacity).fill(1), 1));
+    geo.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(capacity).fill(1), 1));
+
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: THRUST_VERT,
+      fragmentShader: THRUST_FRAG,
+      uniforms: { uTime: { value: 0 } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    this.points = new THREE.Points(geo, this.material);
+    this.points.frustumCulled = false;
+    scene.add(this.points);
+  }
+
+  emit(pos, velocity, color, count = 3, size = 2.0, life = 0.8) {
+    const geo = this.points.geometry;
+    const pAttr = geo.attributes.position;
+    const vAttr = geo.attributes.aVelocity;
+    const cAttr = geo.attributes.aColor;
+    const sAttr = geo.attributes.aSpawnTime;
+    const lAttr = geo.attributes.aLife;
+    const zAttr = geo.attributes.aSize;
+    const now = this.material.uniforms.uTime.value;
+
+    for (let n = 0; n < count; n++) {
+      const i = this.cursor;
+      this.cursor = (this.cursor + 1) % this.capacity;
+
+      const spread = 0.06;
+      const rx = (Math.random() - 0.5) * spread;
+      const ry = (Math.random() - 0.5) * spread;
+      const rz = (Math.random() - 0.5) * spread;
+
+      pAttr.setXYZ(i, pos.x + rx, pos.y + ry, pos.z + rz);
+      vAttr.setXYZ(
+        i,
+        velocity.x + (Math.random() - 0.5) * 1.2,
+        velocity.y + (Math.random() - 0.5) * 1.2,
+        velocity.z + (Math.random() - 0.5) * 1.2,
+      );
+      cAttr.setXYZ(i, color.r, color.g, color.b);
+      sAttr.setX(i, now);
+      lAttr.setX(i, life * (0.85 + Math.random() * 0.3));
+      zAttr.setX(i, size * (0.85 + Math.random() * 0.3));
+    }
+
+    pAttr.needsUpdate = true;
+    vAttr.needsUpdate = true;
+    cAttr.needsUpdate = true;
+    sAttr.needsUpdate = true;
+    lAttr.needsUpdate = true;
+    zAttr.needsUpdate = true;
+  }
+
+  update(elapsed) { this.material.uniforms.uTime.value = elapsed; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hyperspace Speed of Light Slipstream — Subtle & Centered on player  */
+/* ------------------------------------------------------------------ */
+const WARP_VERT = /* glsl */ `
+  attribute vec3 aLocalOffset;
+  attribute float aLength;
+  attribute float aSpeed;
+  uniform float uTime;
+  uniform float uWarp;
+  uniform vec3 uCenter;
+  uniform vec3 uVelocity;
+  varying float vAlpha;
+  varying vec3 vColor;
+
+  void main() {
+    float velMag = length(uVelocity);
+    vec3 travelDir = velMag > 0.1 ? normalize(uVelocity) : vec3(0.0, 0.0, -1.0);
+    
+    // Construct local coordinate frame oriented with travel direction
+    vec3 up = abs(travelDir.y) < 0.99 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 right = normalize(cross(travelDir, up));
+    vec3 localUp = cross(right, travelDir);
+
+    // Subtle slipstream lines orbiting the astronaut symmetrically
+    vec3 radialPos = right * aLocalOffset.x + localUp * aLocalOffset.y;
+    
+    // Animate along travel axis
+    float travelZ = fract(aLocalOffset.z - uTime * (0.6 + aSpeed * uWarp * 2.5));
+    vec3 alongZ = travelDir * (travelZ - 0.5) * 32.0;
+
+    // Stretch line segments subtly with warp
+    float stretch = 0.5 + uWarp * (aLength * 4.5 + velMag * 0.2);
+    vec3 worldPos = uCenter + radialPos + alongZ + travelDir * (position.z * stretch);
+
+    vec4 mv = modelViewMatrix * vec4(worldPos, 1.0);
+    gl_Position = projectionMatrix * mv;
+
+    // Soft subtle opacity centered around astronaut, zero noise
+    vAlpha = smoothstep(12.0, 1.5, length(radialPos)) * (uWarp * 0.45);
+    vColor = mix(vec3(0.35, 0.75, 1.0), vec3(1.0, 1.0, 0.95), position.z * 0.5 + 0.5);
+  }
+`;
+
+const WARP_FRAG = /* glsl */ `
+  varying float vAlpha;
+  varying vec3 vColor;
+  void main() {
+    gl_FragColor = vec4(vColor, vAlpha);
+  }
+`;
+
+export class HyperspaceStreaks {
+  constructor(scene, count = 80) {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 2 * 3); // 2 vertices per line
+    const localOffsets = new Float32Array(count * 2 * 3);
+    const lengths = new Float32Array(count * 2);
+    const speeds = new Float32Array(count * 2);
+
+    for (let i = 0; i < count; i++) {
+      // Hollow cylindrical slipstream directly surrounding the astronaut
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 1.8 + Math.random() * 5.5;
+      const lx = Math.cos(angle) * radius;
+      const ly = Math.sin(angle) * radius;
+      const lz = Math.random();
+
+      const len = 0.6 + Math.random() * 1.4;
+      const spd = 0.8 + Math.random() * 1.2;
+
+      const idx = i * 2;
+      // Head
+      positions[idx * 3] = 0;
+      positions[idx * 3 + 1] = 0;
+      positions[idx * 3 + 2] = 0.5;
+      localOffsets[idx * 3] = lx;
+      localOffsets[idx * 3 + 1] = ly;
+      localOffsets[idx * 3 + 2] = lz;
+      lengths[idx] = len;
+      speeds[idx] = spd;
+
+      // Tail
+      positions[(idx + 1) * 3] = 0;
+      positions[(idx + 1) * 3 + 1] = 0;
+      positions[(idx + 1) * 3 + 2] = -0.5;
+      localOffsets[(idx + 1) * 3] = lx;
+      localOffsets[(idx + 1) * 3 + 1] = ly;
+      localOffsets[(idx + 1) * 3 + 2] = lz;
+      lengths[idx + 1] = len;
+      speeds[idx + 1] = spd;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('aLocalOffset', new THREE.BufferAttribute(localOffsets, 3));
+    geo.setAttribute('aLength', new THREE.BufferAttribute(lengths, 1));
+    geo.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
+
+    this.material = new THREE.ShaderMaterial({
+      vertexShader: WARP_VERT,
+      fragmentShader: WARP_FRAG,
+      uniforms: {
+        uTime: { value: 0 },
+        uWarp: { value: 0 },
+        uCenter: { value: new THREE.Vector3() },
+        uVelocity: { value: new THREE.Vector3() },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    this.lines = new THREE.LineSegments(geo, this.material);
+    this.lines.frustumCulled = false;
+    this.lines.visible = false;
+    scene.add(this.lines);
+  }
+
+  update(elapsed, center, velocity, warpIntensity) {
+    const isWarping = warpIntensity > 0.02;
+    this.lines.visible = isWarping;
+    if (!isWarping) return;
+
+    this.material.uniforms.uTime.value = elapsed;
+    this.material.uniforms.uCenter.value.copy(center);
+    this.material.uniforms.uVelocity.value.copy(velocity);
+    this.material.uniforms.uWarp.value = warpIntensity;
+  }
+}

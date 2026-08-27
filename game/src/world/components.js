@@ -65,23 +65,38 @@ export const builders = {
     const mat = def.mat ?? 'concrete';
     pushStaticBox(ctx, mat, def.pos, def.size, def.rot);
     addStaticCollider(ctx, def.pos, def.size, def.rot);
+    
+    const [w, h, d] = def.size;
+
     if (def.skirt !== false) {
-      // tapered basalt underpinning — pure decoration, sells the "monument" look
-      const [w, , d] = def.size;
-      const h = def.skirtDepth ?? 5;
+      // High-tech modular station underpinning with heavy support struts
+      const skirtH = def.skirtDepth ?? 5;
       pushStaticBox(ctx, 'basalt',
-        [def.pos[0], def.pos[1] - def.size[1] / 2 - h / 2 + 0.05, def.pos[2]],
-        [w * 0.55, h, d * 0.55], [0, 0, 0], 0.04);
+        [def.pos[0], def.pos[1] - h / 2 - skirtH / 2 + 0.05, def.pos[2]],
+        [w * 0.65, skirtH, d * 0.65], [0, 0, 0], 0.08);
+
+      // Industrial metal support struts
+      if (w >= 6 && d >= 6) {
+        const legW = 0.5;
+        const lx = w * 0.38;
+        const lz = d * 0.38;
+        const ly = def.pos[1] - h / 2 - skirtH / 2;
+        pushStaticBox(ctx, 'metal', [def.pos[0] + lx, ly, def.pos[2] + lz], [legW, skirtH, legW]);
+        pushStaticBox(ctx, 'metal', [def.pos[0] - lx, ly, def.pos[2] + lz], [legW, skirtH, legW]);
+        pushStaticBox(ctx, 'metal', [def.pos[0] + lx, ly, def.pos[2] - lz], [legW, skirtH, legW]);
+        pushStaticBox(ctx, 'metal', [def.pos[0] - lx, ly, def.pos[2] - lz], [legW, skirtH, legW]);
+      }
     }
-    // recessed gold rim lighting under the deck edge (axis-aligned only)
+
+    // Glowing cyan/gold aerospace docking runway strips along deck edges
     if (def.glow !== false && !def.rot) {
-      const [w, h, d] = def.size;
-      const y = def.pos[1] - h / 2 + 0.12;
-      const t = 0.07;
-      pushStaticBox(ctx, 'gold', [def.pos[0], y, def.pos[2] + d / 2 - 0.1], [w - 0.3, t, t], [0, 0, 0], 0.02);
-      pushStaticBox(ctx, 'gold', [def.pos[0], y, def.pos[2] - d / 2 + 0.1], [w - 0.3, t, t], [0, 0, 0], 0.02);
-      pushStaticBox(ctx, 'gold', [def.pos[0] + w / 2 - 0.1, y, def.pos[2]], [t, t, d - 0.3], [0, 0, 0], 0.02);
-      pushStaticBox(ctx, 'gold', [def.pos[0] - w / 2 + 0.1, y, def.pos[2]], [t, t, d - 0.3], [0, 0, 0], 0.02);
+      const topY = def.pos[1] + h / 2 + 0.02;
+      const t = 0.12;
+      const hStrip = 0.03;
+      pushStaticBox(ctx, 'gold', [def.pos[0], topY, def.pos[2] + d / 2 - 0.2], [w - 0.6, hStrip, t], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0], topY, def.pos[2] - d / 2 + 0.2], [w - 0.6, hStrip, t], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0] + w / 2 - 0.2, topY, def.pos[2]], [t, hStrip, d - 0.6], [0, 0, 0], 0.02);
+      pushStaticBox(ctx, 'gold', [def.pos[0] - w / 2 + 0.2, topY, def.pos[2]], [t, hStrip, d - 0.6], [0, 0, 0], 0.02);
     }
   },
 
@@ -278,11 +293,6 @@ export const builders = {
     halo.scale.y = 0.28;
     anchor.add(halo);
 
-    ctx.tweens.push(gsap.to(anchor.rotation, { y: Math.PI * 2, duration: 11, ease: 'none', repeat: -1 }));
-    ctx.tweens.push(gsap.to(anchor.position, {
-      y: p.y + 1.75, duration: 2.4, ease: 'sine.inOut', repeat: -1, yoyo: true,
-    }));
-
     ctx.physics.addTrigger(new Trigger(p, 1.5, () => {
       // claimed: the vortex ignites in the level accent
       const c = new THREE.Color(ctx.accent);
@@ -315,19 +325,12 @@ export const builders = {
     disk.position.z = 0.01;
     g.add(disk);
 
-    // photon ring — bloom bait
+    // photon ring — static sleek frame
     const photon = new THREE.Mesh(
       new THREE.TorusGeometry(1.95, 0.05, 12, 64),
       new THREE.MeshBasicMaterial({ color: 0xfff3dc }),
     );
     g.add(photon);
-
-    // counter-rotating gyroscope ring
-    const gyro = new THREE.Mesh(
-      new THREE.TorusGeometry(2.2, 0.05, 10, 64),
-      ctx.materials.metal(),
-    );
-    g.add(gyro);
 
     const halo = new THREE.Mesh(
       new THREE.SphereGeometry(2.0, 32, 20),
@@ -335,9 +338,6 @@ export const builders = {
     );
     halo.scale.z = 0.3;
     g.add(halo);
-
-    ctx.tweens.push(gsap.to(gyro.rotation, { x: Math.PI * 2, duration: 7, ease: 'none', repeat: -1 }));
-    ctx.tweens.push(gsap.to(photon.rotation, { z: -Math.PI * 2, duration: 12, ease: 'none', repeat: -1 }));
 
     ctx.physics.addTrigger(new Trigger(p, 1.5, () => ctx.world.onPortal?.(p)));
     ctx.portalPos = p;
@@ -491,18 +491,11 @@ export const builders = {
       ctx.group.add(g);
 
       const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(1.55, 0.14, 16, 56),
+        new THREE.TorusGeometry(1.55, 0.12, 16, 56),
         ctx.materials.chrome(),
       );
       ring.castShadow = true;
       g.add(ring);
-
-      // gyroscope ring — counter-rotating for an unstable, exotic feel
-      const gyro = new THREE.Mesh(
-        new THREE.TorusGeometry(1.85, 0.05, 10, 56),
-        ctx.materials.metal(),
-      );
-      g.add(gyro);
 
       const disc = new THREE.Mesh(
         new THREE.CircleGeometry(1.45, 44),
@@ -511,14 +504,12 @@ export const builders = {
       g.add(disc);
 
       const halo = new THREE.Mesh(
-        new THREE.SphereGeometry(1.7, 32, 20),
+        new THREE.SphereGeometry(1.65, 32, 20),
         ctx.materials.halo(color),
       );
       halo.scale.z = 0.35;
       g.add(halo);
 
-      ctx.tweens.push(gsap.to(ring.rotation, { z: Math.PI * 2, duration: 9, ease: 'none', repeat: -1 }));
-      ctx.tweens.push(gsap.to(gyro.rotation, { x: Math.PI * 2, duration: 5.5, ease: 'none', repeat: -1 }));
       return g;
     };
 

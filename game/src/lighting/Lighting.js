@@ -13,8 +13,8 @@ export class Lighting {
     this.engine = engine;
     const scene = engine.scene;
 
-    // --- sun: low warm key light, GRAVITY's golden hour ----------------
-    this.sun = new THREE.DirectionalLight(0xffc07a, 3.0);
+    // --- sun: stellar key light ---------------------------------------
+    this.sun = new THREE.DirectionalLight(0xffffff, 2.8);
     this.sun.position.set(18, 30, 12);
     this.sun.castShadow = true;
     const size = SETTINGS.renderer.shadowMapSize;
@@ -30,20 +30,20 @@ export class Lighting {
     this.sun.shadow.normalBias = 0.03;
     scene.add(this.sun, this.sun.target);
 
-    // --- fill: warm dusk from above, near-black void below -------------
-    this.hemi = new THREE.HemisphereLight(0x4a3d2c, 0x070605, 0.55);
+    // --- fill: clean deep space stellar fill, pure black void below -----
+    this.hemi = new THREE.HemisphereLight(0x222a36, 0x010204, 0.65);
     scene.add(this.hemi);
 
-    // --- sky dome ----------------------------------------------------
+    // --- sky dome: pure black deep space vacuum with silver stars -----
     this.skyMat = new THREE.ShaderMaterial({
       vertexShader: SkyShader.vertex,
       fragmentShader: SkyShader.fragment,
       uniforms: {
-        uTop: { value: new THREE.Color(0x14110c) },     // upper vault tint
-        uHorizon: { value: new THREE.Color(0x8a5a24) }, // warm dust haze
-        uGround: { value: new THREE.Color(0x030202) },  // void below
+        uTop: { value: new THREE.Color(0x000000) },     // pure black
+        uHorizon: { value: new THREE.Color(0x020306) }, // faint cold silver depth
+        uGround: { value: new THREE.Color(0x000000) },  // pure black
         uSunDir: { value: this.sun.position.clone().normalize() },
-        uSunColor: { value: new THREE.Color(0xffc07a) },
+        uSunColor: { value: new THREE.Color(0xffffff) },
       },
       side: THREE.BackSide,
       depthWrite: false,
@@ -53,8 +53,8 @@ export class Lighting {
     this.skyDome.frustumCulled = false;
     scene.add(this.skyDome);
 
-    // --- fog: warm smoky haze — thin enough that the city ring reads ---
-    scene.fog = new THREE.FogExp2(0x080605, 0.0055);
+    // --- fog: deep space vacuum (pitch black) --------------------------
+    scene.fog = new THREE.FogExp2(0x000002, 0.0004);
 
     this._buildEnvironment();
   }
@@ -87,9 +87,22 @@ export class Lighting {
     if (sunColor) targets.push([u.uSunColor.value, sunColor]);
     for (const [colorObj, hex] of targets) {
       const c = new THREE.Color(hex);
-      gsap.to(colorObj, { r: c.r, g: c.g, b: c.b, duration, ease: 'sine.inOut', overwrite: 'auto' });
+      if (duration === 0) {
+        colorObj.copy(c);
+      } else {
+        gsap.to(colorObj, { r: c.r, g: c.g, b: c.b, duration, ease: 'sine.inOut', overwrite: 'auto' });
+      }
     }
-    gsap.to(this.sun, { intensity: sunIntensity, duration, ease: 'sine.inOut', overwrite: 'auto' });
+    if (duration === 0) {
+      this.sun.intensity = sunIntensity;
+    } else {
+      gsap.to(this.sun, { intensity: sunIntensity, duration, ease: 'sine.inOut', overwrite: 'auto' });
+    }
+  }
+
+  applyTheme(theme, instant = false) {
+    if (!theme) return;
+    this.transitionTo(theme, instant ? 0 : 1.6);
   }
 
   /** Keep the shadow frustum and sky dome centred on the player. */

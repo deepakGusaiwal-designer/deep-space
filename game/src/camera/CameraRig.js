@@ -22,7 +22,7 @@ export class CameraRig {
     this.input = input;
 
     this.yaw = 0;
-    this.pitch = 0.42;
+    this.pitch = 0.20;
     this.distance = C.distance;
     this.cinematic = false;          // while true, GSAP owns the camera
 
@@ -34,9 +34,24 @@ export class CameraRig {
 
   snapTo(playerPos, yaw = 0) {
     this.yaw = yaw;
-    this.pitch = 0.42;
+    this.pitch = 0.20;
     this.focus.copy(playerPos);
     this._place(playerPos, null, 1);
+  }
+
+  shake(amount = 0.6, duration = 0.45) {
+    const shakeObj = { val: amount };
+    gsap.to(shakeObj, {
+      val: 0,
+      duration,
+      ease: 'power2.out',
+      onUpdate: () => {
+        const sx = (Math.random() - 0.5) * shakeObj.val;
+        const sy = (Math.random() - 0.5) * shakeObj.val;
+        this.camera.position.x += sx;
+        this.camera.position.y += sy;
+      },
+    });
   }
 
   /**
@@ -59,18 +74,27 @@ export class CameraRig {
     const speedT = clamp(speed / SETTINGS.player.sprintSpeed, 0, 1);
     this._zoom += (speedT * C.zoomBySpeed - this._zoom) * damp(2.5, dt);
 
-    // dynamic FOV on sprint
-    const wantFov = this.input.sprinting && speedT > 0.6 ? C.sprintFov : C.fov;
+    // dynamic FOV on sprint, jetpack flight, or Speed of Light hyperdrive
+    const isLightSpeed = player.isLightSpeed || (player.warpIntensity > 0.4);
+    const isFlightBoosting = player.jetpackActive && (this.input.sprinting || speedT > 0.7);
+    const wantFov = isLightSpeed
+      ? (C.warpFov ?? 92)
+      : isFlightBoosting
+      ? (C.flightFov ?? 76)
+      : this.input.sprinting && speedT > 0.6
+      ? C.sprintFov
+      : C.fov;
+
     if (Math.abs(this.camera.fov - wantFov) > 0.1 && !this._fovTween?.isActive()) {
       this._fovTween = gsap.to(this.camera, {
-        fov: wantFov, duration: 0.7, ease: 'sine.out', overwrite: 'auto',
+        fov: wantFov, duration: isLightSpeed ? 0.4 : 0.7, ease: 'sine.out', overwrite: 'auto',
         onUpdate: () => this.camera.updateProjectionMatrix(),
       });
     }
 
     _lookTarget.copy(this.focus);
     if (speed > 0.5) {
-      _offset.set(player.velocity.x, 0, player.velocity.z)
+      _offset.set(player.velocity.x, player.velocity.y * 0.4, player.velocity.z)
         .normalize()
         .multiplyScalar(C.lookAhead * speedT);
       _lookTarget.add(_offset);
@@ -78,6 +102,7 @@ export class CameraRig {
 
     this._place(_lookTarget, solids, damp(12, dt));
     player.cameraYaw = this.yaw;
+    player.cameraPitch = this.pitch;
   }
 
   _place(target, solids, lerpK) {
@@ -89,25 +114,28 @@ export class CameraRig {
     ).multiplyScalar(dist);
 
     _desired.copy(target).add(_offset);
-    _desired.y += C.height * 0.25;
+    _desired.y += (C.height || 3.4);
 
-    // --- collision: pull the camera in front of any obstruction ------
+    // --- camera collision: only pull in if a true obstacle blocks view ---
     if (solids) {
       _rayDir.copy(_desired).sub(target);
       const len = _rayDir.length();
       _rayDir.divideScalar(len);
-      this._raycaster.set(target, _rayDir);
+
+      const rayStart = target.clone();
+      rayStart.y += 1.4; // elevated above ground to avoid platform collision
+      this._raycaster.set(rayStart, _rayDir);
       this._raycaster.far = len;
       const hits = this._raycaster.intersectObject(solids, true);
-      if (hits.length) {
-        const d = Math.max(1.2, hits[0].distance - C.collisionRadius);
-        _desired.copy(target).addScaledVector(_rayDir, d);
+      if (hits.length && hits[0].distance > 3.5 && hits[0].distance < len) {
+        const d = Math.max(4.0, hits[0].distance - (C.collisionRadius || 0.4));
+        _desired.copy(rayStart).addScaledVector(_rayDir, d);
       }
     }
 
     this.camera.position.lerp(_desired, lerpK);
     _lookTarget.copy(target);
-    _lookTarget.y += C.height * 0.35;
+    _lookTarget.y += 1.2;
     this.camera.lookAt(_lookTarget);
   }
 

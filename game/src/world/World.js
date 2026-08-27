@@ -36,6 +36,10 @@ export class World {
     this.onWormhole = null;
   }
 
+  build(level) {
+    return this.load(level);
+  }
+
   load(level) {
     this.clear();
     this.accent = level.accent ?? 0x9be8ff;
@@ -82,7 +86,6 @@ export class World {
     for (const t of this.tweens) t.kill();
     this.tweens.length = 0;
     this.actions.clear();
-    this.physics.clear();
     this.portalPos = null;
     this.wormholeMouths.length = 0;
 

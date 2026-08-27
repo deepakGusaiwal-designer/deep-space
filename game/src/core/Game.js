@@ -1,6 +1,8 @@
 /**
- * Game — the state machine that owns every subsystem and the flow:
- * START → INTRO → PLAY ⇄ PAUSE → COMPLETE → (next level) → END
+ * Game — Master Open-World Zero-G Deep-Space Game
+ * Manages 3D Zero-G Player, Planets, Space Stations, Glowing Platforms,
+ * Space Shuttles, Wrecked Starships, Asteroid Belts, Black Holes,
+ * Continuous Collision Physics, Radar, Scanner, and Mission Systems.
  */
 import * as THREE from 'three';
 import gsap from 'gsap';
@@ -14,10 +16,25 @@ import { Player } from '../player/Player.js';
 import { CameraRig } from '../camera/CameraRig.js';
 import { Lighting } from '../lighting/Lighting.js';
 import { Input } from '../controls/Input.js';
-import { BurstParticles, AmbientMotes } from '../particles/Particles.js';
+import { BurstParticles, AmbientMotes, ThrusterParticles, HyperspaceStreaks } from '../particles/Particles.js';
 import { GameAudio } from '../audio/Audio.js';
 import { UI } from '../ui/UI.js';
 import { LEVELS } from '../levels/levels.js';
+import { Universe } from '../world/Universe.js';
+
+// Gameplay Subsystems
+import { Progression } from '../gameplay/Progression.js';
+import { Scanner } from '../gameplay/Scanner.js';
+import { ResourceManager } from '../gameplay/ResourceManager.js';
+import { MissionSystem, MISSION_STEPS } from '../gameplay/MissionSystem.js';
+import { HazardSystem } from '../gameplay/HazardSystem.js';
+import { Drone } from '../gameplay/Drone.js';
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
 
 export class Game {
   constructor(canvas, uiRoot) {
@@ -25,52 +42,78 @@ export class Game {
     this.levelIndex = 0;
     this.levelTime = 0;
     this.totalTime = 0;
-    this.energy = 100; // sprint fuel — drains while sprinting, regenerates
+    this._warpCooldown = 0;
 
-    // --- subsystems ---------------------------------------------------
+    // --- Subsystems ---------------------------------------------------
     this.engine = new Engine(canvas);
     this.materials = new Materials();
     this.physics = new Physics(SETTINGS.physics);
     this.world = new World(this.engine.scene, this.physics, this.materials);
     this.environment = new Environment(this.engine.scene);
     this.input = new Input(canvas);
+    this.bursts = new BurstParticles(this.engine.scene);
+    this.thrusters = new ThrusterParticles(this.engine.scene);
+    this.hyperspace = new HyperspaceStreaks(this.engine.scene);
+    this.motes = new AmbientMotes(this.engine.scene, SETTINGS.fx.ambientMotes);
+    this.audio = new GameAudio();
+
     this.player = new Player({
       scene: this.engine.scene,
       physics: this.physics,
       input: this.input,
       materials: this.materials,
+      thrusters: this.thrusters,
     });
     this.rig = new CameraRig(this.engine.camera, this.input);
     this.lighting = new Lighting(this.engine);
-    this.bursts = new BurstParticles(this.engine.scene);
-    this.motes = new AmbientMotes(this.engine.scene, SETTINGS.fx.ambientMotes);
-    this.audio = new GameAudio();
+
+    // Deep-Space Universe with Solid Celestial Bodies & Structures
+    this.universe = new Universe({
+      scene: this.engine.scene,
+      physics: this.physics,
+      materials: this.materials,
+      bursts: this.bursts,
+      audio: this.audio,
+    });
+
+    // Deep Space Gameplay Frameworks
+    this.progression = new Progression();
+    this.progression.applyUpgrades(this.player.stats);
+
+    this.scanner = new Scanner(this.engine.scene, this.audio);
+    this.resources = new ResourceManager(this.engine.scene, this.bursts, this.audio);
+    this.missions = new MissionSystem(this.engine.scene, this.bursts, this.audio);
+    this.hazards = new HazardSystem(this.engine.scene, this.bursts, this.audio);
+    this.drone = new Drone(this.engine.scene, this.bursts, this.audio, new THREE.Vector3(25, 18, -340));
+
     this.ui = new UI(uiRoot);
 
+    this._spawnInitialResources();
     this._wireEvents();
     this.engine.onTick((dt, elapsed) => this._tick(dt, elapsed));
   }
 
-  /** Boot: build level 1 as the start-screen backdrop and begin rendering. */
+  _spawnInitialResources() {
+    // Empty canvas ready for custom resources
+  }
+
+  /** Boot: build backdrop and begin rendering. */
   boot() {
     this._loadLevel(0, { instant: true });
     this.player.frozen = true;
-    // wide idle orbit as the menu backdrop
     this.rig.orbit(this.player.position, { dist: 16, h: 8 });
     this.ui.showStart();
     this.engine.start();
   }
 
-  /** Public entry — same as pressing ENTER on the start screen. */
   start() {
     if (this.state === 'start') this._begin();
   }
 
-  /* ------------------------------------------------------------------ */
-
+  /* ---------------- Event Wiring ------------------------------------- */
   _wireEvents() {
-    // gameplay feedback
     this.player.onJump = () => this.audio.jump();
+    this.player.onJetpack = (active, intensity) => this.audio.updateJetpack(active, intensity);
     this.player.onLand = (speed) => {
       const intensity = Math.min(1, speed / 22);
       this.audio.land(intensity);
@@ -81,10 +124,8 @@ export class Game {
       );
     };
     this.player.onFall = () => {
-      // the void takes you — the checkpoint wormhole spits you back out
       this.audio.fall();
-      this.ui.toast('Warped to checkpoint');
-      this.energy = Math.max(0, this.energy - 8);
+      this.ui.toast('Warped to beacon');
       this.player.respawn();
       this.audio.warp();
       this.bursts.emit(this.player.spawn, 20, {
@@ -93,12 +134,15 @@ export class Game {
       this.rig.snapTo(this.player.position, this.rig.yaw);
     };
 
-    // world events
+    // World Events
     this.world.onCheckpoint = (pos) => {
       this.player.setSpawn(pos);
+      this.player.stats.replenishAll();
+      this.progression.addXP(50, (lvl) => this.ui.toast(`🎉 LEVEL UP: LVL ${lvl}!`));
+      this.progression.addCredits(150);
       this.audio.checkpoint();
-      this.ui.toast('Checkpoint');
-      this.bursts.emit(pos, 16, { color: new THREE.Color(0xffd9a0), speed: 2.2, up: 3, life: 1.1 });
+      this.bursts.emit(pos, 24, { color: new THREE.Color(0x00d4ff), speed: 3.5, up: 1.5, life: 1.0 });
+      this.ui.toast('✦ Beacon Linked // Supplies Replenished (+CR 150)');
     };
     this.world.onPad = (pos) => {
       this.audio.pad();
@@ -106,72 +150,321 @@ export class Game {
     };
     this.world.onGateOpen = (pos) => {
       this.audio.gate();
-      this.ui.toast('Gate unlocked');
-      this.bursts.emit(pos, 24, { color: new THREE.Color(this.world.accent), speed: 3.4, up: 1.6, spread: 2, life: 1.2 });
+      this.ui.toast('Sector Gate Unlocked');
     };
-    this.world.onPortal = () => this._completeLevel();
+    this.world.onPortal = () => {
+      this.audio.boost();
+      this.player.stats.replenishAll();
+      this.progression.addCredits(500);
+      this.progression.addXP(200, (lvl) => this.ui.toast(`🎉 LEVEL UP: LVL ${lvl}!`));
+      this.bursts.emit(this.player.position, 40, { color: new THREE.Color(0x00d4ff), speed: 8.0, up: 2.0, life: 1.4 });
+      this.player.body.velocity.add(new THREE.Vector3(0, 6, -20));
+      this.player.warpIntensity = 1.0;
+      this.ui.toast('⚡ SECTOR PORTAL ACTIVATED // WARP SPEED ENGAGED (+CR 500)');
+    };
     this.world.onWormhole = ({ pos, from }) => this._warp(pos, from);
 
-    // input events
+    // Physics Zero-G Impact & Atmospheric Callbacks
+    this.physics.onImpact = ({ speed, normal, collider, damage }) => {
+      if (damage > 0) {
+        this.player.stats.suitIntegrity = Math.max(0, this.player.stats.suitIntegrity - damage);
+        this.ui.toast(`⚠ IMPACT: -${Math.round(damage)}% SUIT INTEGRITY (${collider.name || 'Obstacle'})`);
+      }
+      this.rig.shake(Math.min(1.2, speed * 0.05));
+      this.audio.land(Math.min(1, speed / 20));
+      this.bursts.emit(this.player.position, Math.round(10 + speed * 1.5), {
+        color: new THREE.Color(0xffbb44),
+        speed: 4.5,
+        up: 1.2,
+        life: 0.8,
+      });
+    };
+
+    this.physics.onAtmosphereEnter = (atmo) => {
+      if (Math.random() < 0.02) {
+        this.ui.toast(`Atmospheric Entry: ${atmo.name} (Alt: ${Math.round(atmo.altitude)}m)`);
+      }
+    };
+
+    this.physics.onGravityWell = (name, dist, factor) => {
+      if (factor > 0.55 && Math.random() < 0.02) {
+        this.ui.toast(`⚠ GRAVITATIONAL DISTURBANCE: ${name.toUpperCase()}`);
+      }
+    };
+
+    // Gameplay Input Events
+    this.input.on('scanner', () => this._handleScanner());
+    this.input.on('map', () => this.ui.sectorMap.toggle());
+    this.input.on('interact', () => this._handleInteract());
+    this.input.on('upgrades', () => this._toggleUpgrades());
+
     this.input.on('confirm', () => {
       if (this.state === 'start') this._begin();
-      else if (this.state === 'complete') this._continue();
-      else if (this.state === 'end') this._replay();
+      else if (this.state === 'gameover') this._handleRespawn();
+      else if (this.state === 'complete') this._toMainMenu();
+    });
+    this.input.on('jump', () => {
+      if (this.state === 'gameover') this._handleRespawn();
     });
     this.input.on('pause', () => {
-      if (this.state === 'pause') this._resume();
-    });
-    this.input.on('unlock', () => {
-      if (this.state === 'play') this._pause();
-    });
-    this.input.on('restart', () => {
-      if (this.state === 'play') this._restartLevel();
-    });
-    this.input.on('mute', () => {
-      const muted = this.audio.toggleMute();
-      if (muted !== undefined) {
-        this.ui.setAudioLabel(muted);
-        this.ui.toast(muted ? 'Audio muted' : 'Audio on');
+      if (this.ui.isUpgradesOpen) {
+        this._closeUpgrades();
+      } else if (this.ui.sectorMap.visible) {
+        this.ui.sectorMap.hide();
+      } else if (this.state === 'play') {
+        this._pause();
+      } else if (this.state === 'pause') {
+        this._unpause();
       }
     });
 
-    // UI buttons
-    this.ui.onClick('begin', () => this.state === 'start' && this._begin());
-    this.ui.onClick('resume', () => this._resume());
-    this.ui.onClick('restartLevel', () => { this.ui.hidePause(); this._restartLevel(); });
-    this.ui.onClick('continue', () => this.state === 'complete' && this._continue());
-    this.ui.onClick('again', () => this.state === 'end' && this._replay());
-    this.ui.onClick('mainMenu', () => this.state === 'pause' && this._toMainMenu());
-    this.ui.onClick('settingsAudio', () => {
+    // UI callbacks
+    this.ui.onUpgradeBuy = (type) => this._handleUpgradePurchase(type);
+    this.ui.el.begin?.addEventListener('click', () => this._begin());
+    this.ui.el.resume?.addEventListener('click', () => this._unpause());
+    this.ui.el.respawnBtn?.addEventListener('click', () => this._handleRespawn());
+    this.ui.el.openUpgrades?.addEventListener('click', () => this._openUpgrades());
+    this.ui.el.closeUpgrades?.addEventListener('click', () => this._closeUpgrades());
+    this.ui.el.closeUpgradesX?.addEventListener('click', () => this._closeUpgrades());
+    this.ui.el.restartLevel?.addEventListener('click', () => this._restartLevel());
+    this.ui.el.mainMenu?.addEventListener('click', () => this._toMainMenu());
+    this.ui.el.settingsAudio?.addEventListener('click', () => {
       const muted = this.audio.toggleMute();
-      if (muted !== undefined) this.ui.setAudioLabel(muted);
-    });
-    this.ui.onClick('fullscreen', () => {
-      if (document.fullscreenElement) document.exitFullscreen?.();
-      else document.documentElement.requestFullscreen?.();
-    });
-
-    // clicking the canvas re-locks the pointer during play
-    this.engine.canvas.addEventListener('click', () => {
-      if (this.state === 'play') this.input.lockPointer();
+      this.ui.el.settingsAudio.textContent = `Audio — ${muted ? 'Off' : 'On'}`;
     });
   }
 
-  /* ---------------- state transitions -------------------------------- */
+  _handleRespawn() {
+    this.ui.hideGameOver();
+    this.player.stats.replenishAll();
+    this.player.respawn();
+    this._enterPlay();
+    this.ui.showHUD();
+    this.ui.toast('✦ Life Support Restored // Respawned at Beacon');
+  }
 
-  async _begin() {
-    this.state = 'intro';
+  _handleUpgradePurchase(type) {
+    const success = this.progression.purchaseUpgrade(type, (newTier, totalCredits) => {
+      this.progression.applyUpgrades(this.player.stats);
+      this.ui.toast(`✦ Upgraded to Tier ${newTier}!`);
+      this.audio.checkpoint();
+      this.ui.updateUpgradeTerminal(this.progression);
+      this.ui.setProgression(this.progression);
+    });
+
+    if (!success) {
+      this.ui.toast('⚠ Insufficient Credits');
+      this.audio.fall();
+    }
+  }
+
+  _openUpgrades() {
+    this.player.paused = true;
+    this.input.unlockPointer();
+    this.ui.showUpgrades(this.progression);
+  }
+
+  _closeUpgrades() {
+    this.ui.hideUpgrades();
+    if (this.state === 'play') {
+      this.player.paused = false;
+      this.input.lockPointer();
+      this.ui.showHUD();
+    } else if (this.state === 'pause') {
+      const meta = `Sector ${String(this.levelIndex + 1).padStart(2, '0')} · ${formatTime(this.levelTime)}`;
+      this.ui.showPause(meta);
+    }
+  }
+
+  _toggleUpgrades() {
+    if (this.ui.isUpgradesOpen) {
+      this._closeUpgrades();
+    } else {
+      this._openUpgrades();
+    }
+  }
+
+  _handleScanner() {
+    if (this.state !== 'play') return;
+    const targets = this._getAllSurroundingTargets();
+    this.scanner.trigger(this.player.position, targets, (results) => {
+      if (results.length > 0) {
+        this.ui.showScanCard(results[0]);
+        setTimeout(() => this.ui.showScanCard(null), 4000);
+      }
+    });
+  }
+
+  _handleInteract() {
+    if (this.state !== 'play') return;
+    const pPos = this.player.position;
+
+    // 1. Check Discovery Shuttle Docking & Refuel
+    const shuttlePos = new THREE.Vector3(12, -4.6, 6);
+    if (pPos.distanceTo(shuttlePos) < 18.0) {
+      this.player.stats.replenishAll();
+      this.progression.addCredits(200);
+      this.progression.addXP(100, (lvl) => this.ui.toast(`🎉 LEVEL UP: LVL ${lvl}!`));
+      this.audio.checkpoint();
+      this.bursts.emit(this.player.position, 30, {
+        color: new THREE.Color(0x00e5ff),
+        speed: 5.0,
+        up: 1.5,
+        life: 1.0,
+      });
+      this.ui.toast('🚀 Discovery Shuttle Docked // Oxygen & Fuel 100% (+CR 200)');
+      return;
+    }
+
+    // 2. Check Alien Relic collection
+    for (const r of this.universe.relics) {
+      if (!r.collected && pPos.distanceTo(r.position) < 8.0) {
+        r.collected = true;
+        r.mesh.visible = false;
+        this.progression.relicsFound++;
+        this.progression.addXP(250, (lvl) => this.ui.toast(`🎉 LEVEL UP: LVL ${lvl}!`));
+        this.progression.addCredits(600);
+        this.audio.relic();
+        this.bursts.emit(r.position, 40, {
+          color: new THREE.Color(0x00f0ff),
+          speed: 6.0,
+          up: 1.5,
+          life: 1.2,
+        });
+        this.ui.toast(`✦ ALIEN RELIC EXTRACTED! (+CR 600, +250 XP)`);
+        return;
+      }
+    }
+
+    // 3. Check Stargate Hyperspace Catapult
+    for (const g of this.universe.stargates) {
+      if (pPos.distanceTo(g.position) < 24.0) {
+        this.audio.warp();
+        this.audio.boost();
+        const fwd = g.forward.clone().normalize();
+        this.player.body.velocity.copy(fwd).multiplyScalar(SETTINGS.jetpack.speedOfLight);
+        this.player.warpIntensity = 1.0;
+        this.player.isLightSpeed = true;
+        this.bursts.emit(g.position, 50, {
+          color: new THREE.Color(0x00e5ff),
+          speed: 10.0,
+          up: 0,
+          life: 1.4,
+        });
+        this.ui.toast('⚡ HYPERSPACE LIGHT SPEED ENGAGED! ⚡');
+        return;
+      }
+    }
+
+    // 4. Station Scan / Mission interaction
+    this.missions.scanStationInteraction(this.player.position, (msg) => {
+      this.ui.toast(msg, 3.0);
+      this.progression.addXP(150);
+    });
+  }
+
+  _getAllSurroundingTargets() {
+    const targets = [];
+
+    // 1. Celestial Planets & Moons
+    for (const p of this.universe.planets) {
+      targets.push({
+        id: `planet_${p.name.toLowerCase()}`,
+        type: 'PLANET',
+        name: `Planet ${p.name}`,
+        position: p.position,
+        radius: p.radius,
+      });
+    }
+
+    // 2. Space Stations & Glowing Platforms
+    for (const st of this.universe.stations) {
+      targets.push({
+        id: `station_${st.name}`,
+        type: 'STATION',
+        name: st.name,
+        position: st.position,
+      });
+    }
+    for (const plt of this.universe.platforms) {
+      targets.push({
+        id: `platform_${plt.name}`,
+        type: 'STATION',
+        name: plt.name,
+        position: plt.position,
+      });
+    }
+
+    // 3. Realistic Spaceships & Space Shuttles
+    for (const shp of this.universe.spaceships) {
+      targets.push({
+        id: `ship_${shp.name}`,
+        type: 'SATELLITE',
+        name: shp.name,
+        position: shp.position,
+      });
+    }
+
+    // 4. Wrecked Starships
+    for (const w of this.universe.wrecks) {
+      targets.push({
+        id: `wreck_${w.name}`,
+        type: 'WRECK',
+        name: w.name,
+        position: w.position,
+      });
+    }
+
+    // 5. Satellites
+    for (const s of this.universe.satellites) {
+      targets.push({
+        id: `sat_${s.name}`,
+        type: 'SATELLITE',
+        name: s.name,
+        position: s.position,
+      });
+    }
+
+    // 6. Stargates
+    for (const g of this.universe.stargates) {
+      targets.push({
+        id: `gate_${g.trigger.name}`,
+        type: 'PORTAL',
+        name: g.trigger.name,
+        position: g.position,
+      });
+    }
+
+    // 7. Relics
+    for (const r of this.universe.relics) {
+      if (!r.collected) {
+        targets.push({
+          id: `relic_${r.trigger.name}`,
+          type: 'RELIC',
+          name: r.trigger.name,
+          position: r.position,
+        });
+      }
+    }
+
+    // 8. Missions & Resources
+    targets.push(...this.missions.getTargets());
+    targets.push(...this.resources.getTargets());
+
+    return targets;
+  }
+
+  /* ---------------- State Transitions -------------------------------- */
+  _begin() {
+    if (this.state === 'play') return;
     this.audio.init();
     this.audio.click();
     this.ui.hideStart();
-    this.ui.letterbox(true);
 
     this.rig.endOrbit();
-    await this.rig.intro(this.player.position);
-
-    this.ui.letterbox(false);
     this._enterPlay();
-    this.ui.showHUD(this.levelIndex, LEVELS.length, LEVELS[this.levelIndex].name);
+    this.ui.showHUD();
+    this.ui.toast('✦ OPEN SPACE // 3D Zero-G Flight Active');
   }
 
   _enterPlay() {
@@ -184,187 +477,184 @@ export class Game {
   }
 
   _pause() {
-    this.state = 'pause';
-    this.player.frozen = true;
-    this.player.paused = true;
-    this.input.enabled = false;
-    this.input.unlockPointer();
-    for (const t of this.world.tweens) t.pause();
-    this.ui.showPause(`Level ${this.levelIndex + 1} — ${LEVELS[this.levelIndex].name}`);
-  }
-
-  _resume() {
-    if (this.state !== 'pause') return;
-    this.audio.click();
-    this.ui.hidePause();
-    for (const t of this.world.tweens) t.resume();
-    this._enterPlay();
-  }
-
-  async _restartLevel() {
-    this.audio.click();
-    this.state = 'transition';
-    this.input.enabled = false;
-    await this.ui.veilTransition(() => {
-      this.energy = 100;
-      this._loadLevel(this.levelIndex, { instant: true });
-    });
-    this._enterPlay();
-  }
-
-  /** Wormhole traversal: teleport, keep momentum, snap the camera. */
-  _warp(pos, from) {
-    if (this.state !== 'play' || this._warpBlocked) return;
-    this._warpBlocked = true; // released once clear of every mouth
-
-    this.audio.warp();
-    const c = new THREE.Color(0xffce8a);
-    this.bursts.emit(from, 22, { color: c, speed: 3.5, up: 2, spread: 1.6, life: 1.1 });
-
-    this.player.body.position.copy(pos);
-    this.player.mesh.position.copy(pos);
-    this.rig.snapTo(pos, this.rig.yaw);
-    this.lighting.follow(pos);
-
-    this.bursts.emit(pos, 22, { color: c, speed: 3.5, up: 2, spread: 1.6, life: 1.1 });
-    gsap.fromTo(this.player.mesh.scale, { x: 0.3, y: 0.3, z: 0.3 },
-      { x: 1, y: 1, z: 1, duration: 0.5, ease: 'back.out(2)', overwrite: 'auto' });
-  }
-
-  _completeLevel() {
     if (this.state !== 'play') return;
-    this.state = 'complete';
-    this.totalTime += this.levelTime;
-    this.player.frozen = true;
-    this.input.enabled = false;
+    this.state = 'pause';
+    this.player.paused = true;
     this.input.unlockPointer();
-    this.audio.portal();
-    this.ui.hideHUD();
-    this.ui.letterbox(true);
-    this.rig.orbit(this.player.position);
-
-    if (this.world.portalPos) {
-      this.bursts.emit(this.world.portalPos, 40, {
-        color: new THREE.Color(this.world.accent), speed: 4, up: 2.5, spread: 2, life: 1.6,
-      });
-    }
-
-    const last = this.levelIndex >= LEVELS.length - 1;
-    if (last) {
-      this.state = 'end';
-      this.ui.showEnd(this.totalTime);
-    } else {
-      this.ui.showComplete(LEVELS[this.levelIndex].name, this.levelTime, this.energy);
-    }
+    const meta = `Sector ${String(this.levelIndex + 1).padStart(2, '0')} · ${formatTime(this.levelTime)}`;
+    this.ui.showPause(meta);
   }
 
-  /** Leave the run and return to the title screen. */
-  async _toMainMenu() {
-    this.audio.click();
-    this.state = 'transition';
-    this.input.enabled = false;
+  _unpause() {
+    if (this.state !== 'pause') return;
     this.ui.hidePause();
-    this.ui.hideHUD();
+    this.state = 'play';
+    this.player.paused = false;
+    this.input.lockPointer();
+  }
 
-    await this.ui.veilTransition(() => {
-      this.totalTime = 0;
-      this.energy = 100;
-      this._loadLevel(0, { instant: true });
-    });
+  _togglePause() {
+    if (this.state === 'play') this._pause();
+    else if (this.state === 'pause') this._unpause();
+  }
 
+  _restartLevel() {
+    this.ui.hidePause();
+    this.player.stats.replenishAll();
+    this.player.respawn();
+    this._enterPlay();
+  }
+
+  _toMainMenu() {
     this.state = 'start';
     this.player.frozen = true;
     this.player.paused = false;
-    this.rig.endOrbit();
-    this.rig.orbit(this.player.position, { dist: 16, h: 8 });
-    this.ui.showStart();
-  }
-
-  async _continue() {
-    this.audio.click();
-    this.state = 'transition';
+    this.input.unlockPointer();
+    this.ui.hidePause();
     this.ui.hideComplete();
-    this.rig.endOrbit();
-
-    await this.ui.veilTransition(() => {
-      this._loadLevel(this.levelIndex + 1, { instant: true });
-    });
-
-    this.ui.letterbox(true);
-    await this.rig.intro(this.player.position);
-    this.ui.letterbox(false);
-    this._enterPlay();
-    this.ui.showHUD(this.levelIndex, LEVELS.length, LEVELS[this.levelIndex].name);
+    this.ui.showStart();
+    this.rig.orbit(this.player.position, { dist: 16, h: 8 });
   }
 
-  async _replay() {
-    this.audio.click();
-    this.state = 'transition';
-    this.ui.hideEnd();
-    this.rig.endOrbit();
-    this.totalTime = 0;
-    this.energy = 100;
-
-    await this.ui.veilTransition(() => {
-      this._loadLevel(0, { instant: true });
-    });
-
-    this.ui.letterbox(true);
-    await this.rig.intro(this.player.position);
-    this.ui.letterbox(false);
-    this._enterPlay();
-    this.ui.showHUD(this.levelIndex, LEVELS.length, LEVELS[this.levelIndex].name);
-  }
-
-  _loadLevel(index, { instant = false } = {}) {
+  _loadLevel(index, opts = {}) {
     this.levelIndex = index;
-    this.levelTime = 0;
-    const level = LEVELS[index];
-    const { spawn } = this.world.load(level);
-    this.player.setSpawn(spawn);
+    const def = LEVELS[index] ?? LEVELS[0];
+    this.world.build(def);
+    if (this.lighting?.applyTheme) {
+      this.lighting.applyTheme(this.world.theme, opts.instant);
+    } else if (this.lighting?.transitionTo) {
+      this.lighting.transitionTo(this.world.theme, opts.instant ? 0 : 1.6);
+    }
+    this.player.setSpawn(def.spawn);
     this.player.respawn();
-    this.lighting.transitionTo(level.palette, instant ? 0.01 : 1.6);
-    this.lighting.follow(this.player.position);
+    this.levelTime = 0;
   }
 
-  /* ---------------- per-frame ---------------------------------------- */
-
+  /* ---------------- Main Tick Loop ----------------------------------- */
   _tick(dt, elapsed) {
-    const playing = this.state === 'play';
-    if (playing) {
+    const pPos = this.player.position;
+    const v = this.player.velocity;
+
+    if (this.state === 'play') {
       this.levelTime += dt;
-      this.ui.setTimer(this.levelTime);
+      this.totalTime += dt;
 
-      // --- energy: sprint drains it, easing off restores it ------------
-      const v = this.player.velocity;
-      const speed = Math.hypot(v.x, v.z);
-      const sprinting = this.input.sprinting && speed > 2 && this.player.sprintAllowed;
-      this.energy = Math.min(100, Math.max(0, this.energy + (sprinting ? -7 : 3.2) * dt));
-      this.player.sprintAllowed = this.energy > 1;
-      this.ui.setEnergy(this.energy);
-      this.ui.setSpeed(speed * 3.6);
-    }
+      // Check player survival death
+      if (this.player.stats.isDead) {
+        this.state = 'gameover';
+        this.input.unlockPointer();
+        this.audio.explosion();
+        this.ui.showGameOver(() => this._handleRespawn());
+        return;
+      }
 
-    // re-arm wormholes only after the player rolls clear of every mouth
-    if (this._warpBlocked) {
-      this._warpBlocked = this.world.wormholeMouths.some(
-        (m) => m.distanceToSquared(this.player.position) < 2.2 * 2.2,
+      // Open World telemetry HUD updates
+      this.ui.setSurvivalStats(this.player.stats);
+      this.ui.setProgression(this.progression);
+      this.ui.setSpeed(v.length() * 3.6);
+      this.ui.setWarpState(this.player.isLightSpeed, this.player.warpIntensity);
+      this.ui.setCoords(pPos.x, pPos.y, pPos.z, pPos.y);
+
+      // Mission tracker distance calculation
+      if (this.missions.currentWaypoint) {
+        this.missions.currentDistance = pPos.distanceTo(this.missions.currentWaypoint);
+      }
+      this.ui.setMission(this.missions);
+
+      // Status Beacon
+      if (this.player.isLightSpeed) {
+        this.ui.setBeacon('⚡ HYPERSPACE LIGHT SPEED ⚡');
+      } else if (this.physics.proximityWarning) {
+        this.ui.setBeacon(`⚠ ${this.physics.proximityWarning.name} (${this.physics.proximityWarning.distance}m)`);
+      } else {
+        this.ui.setBeacon('Deep Space Orbit');
+      }
+
+      // Update Proximity Hazard Alert
+      this.ui.setProximityAlert(this.physics.proximityWarning);
+
+      // Contextual [E] Key Interaction Prompt
+      let interactPrompt = null;
+      if (pPos.distanceTo(new THREE.Vector3(12, -4.6, 6)) < 18.0) {
+        interactPrompt = 'DOCK & REFUEL SHUTTLE';
+      } else {
+        for (const r of this.universe.relics) {
+          if (!r.collected && pPos.distanceTo(r.position) < 8.0) {
+            interactPrompt = 'EXTRACT ALIEN RELIC';
+            break;
+          }
+        }
+        if (!interactPrompt) {
+          for (const g of this.universe.stargates) {
+            if (pPos.distanceTo(g.position) < 24.0) {
+              interactPrompt = 'ENGAGE HYPERSPACE WARP';
+              break;
+            }
+          }
+        }
+      }
+      this.ui.setInteractPrompt(interactPrompt);
+
+      // Update Resources
+      this.resources.update(dt, this.player, (meta, inv) => {
+        this.ui.toast(`+ ${meta.name}`);
+        this.progression.addCredits(meta.value);
+        this.progression.addXP(25, (lvl) => this.ui.toast(`🎉 LEVEL UP: LVL ${lvl}!`));
+      });
+
+      // Update Missions
+      this.missions.update(
+        dt,
+        this.player,
+        (msg) => this.ui.toast(msg),
+        (compData) => this._completeMission(compData),
       );
+
+      // Trigger Meteor Storm Hazard during Step 5
+      if (this.missions.currentStep === MISSION_STEPS.SURVIVE_HAZARD && this.hazards.state === 'idle') {
+        this.hazards.triggerMeteorStorm(16, (msg) => this.ui.setHazardAlert(true, msg));
+      }
+
+      // Update Hazards
+      this.hazards.update(
+        dt,
+        this.player,
+        (msg) => this.ui.setHazardAlert(true, msg),
+        () => {
+          this.ui.setHazardAlert(false);
+          this.missions.currentStep = MISSION_STEPS.DEFEAT_DRONE;
+          this.progression.addXP(150);
+          this.ui.toast('Meteor Storm Cleared! Warning: Drone Incoming!');
+        },
+      );
+
+      // Update Hostile Drone
+      this.drone.update(dt, this.player, () => {
+        this.ui.toast('Rogue Scout Drone Destroyed! ✦');
+        this.missions.currentStep = MISSION_STEPS.EXTRACTION;
+        this.progression.addXP(250);
+        this.resources.spawn('CRYSTAL', this.drone.position.clone());
+        this.resources.spawn('SCRAP', this.drone.position.clone().add(new THREE.Vector3(1, 0, 1)));
+      });
+
+      // Update Radar & Sector Map with surrounding targets
+      const allTargets = this._getAllSurroundingTargets();
+      this.ui.updateRadar(pPos, this.player.cameraYaw, allTargets);
+      this.ui.updateSectorMap(pPos, this.player.cameraYaw, allTargets);
     }
 
+    // Visuals & Physics update
     this.materials.update(elapsed);
     this.world.update();
-    this.player.update(dt, this.world.solids);
-    this.rig.update(dt, this.player, this.world.solids);
-    this.lighting.follow(this.player.position);
+    const collisionSolids = this.universe?.group || this.world.solids;
+    this.player.update(dt, collisionSolids);
+    this.rig.update(dt, this.player, collisionSolids);
+    this.lighting.follow(pPos);
     this.bursts.update(elapsed);
-    this.motes.update(elapsed, this.player.position);
-
-    // faint ambient shimmer at the portal
-    if (this.world.portalPos && Math.random() < dt * 3) {
-      this.bursts.emit(this.world.portalPos, 1, {
-        color: new THREE.Color(this.world.accent), speed: 0.8, up: 0.8, spread: 1.6, life: 1.4, size: 1,
-      });
-    }
+    this.thrusters.update(elapsed);
+    this.hyperspace.update(elapsed, pPos, v, this.player.warpIntensity);
+    this.motes.update(elapsed, pPos);
+    this.scanner.update(dt);
+    this.universe.update(dt, pPos);
   }
 }

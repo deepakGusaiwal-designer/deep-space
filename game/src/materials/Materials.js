@@ -47,62 +47,64 @@ export class Materials {
     this.animated = []; // shader materials that need uTime updates
   }
 
-  /** Concrete — dark brutalist stone, mottled, finely speckled. */
+  /** Space Platform Hull — aerospace titanium alloy with panel grid seams and micro-scratches. */
   concrete() {
     return this._get('concrete', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0x33363b, roughness: 0.9, metalness: 0.0, envMapIntensity: 0.55,
+        color: 0x282e36, roughness: 0.38, metalness: 0.78, envMapIntensity: 1.25,
+        clearcoat: 0.3, clearcoatRoughness: 0.35,
       });
       return extendSurface(m, 'mon-concrete', /* glsl */ `
-        float patches = mFbm(wp * 0.33);
-        float speckle = mNoise(wp * 14.0);
-        float grit = mNoise(wp * 38.0);                            // fine grain
-        float pores = smoothstep(0.66, 0.95, mNoise(wp * 7.0));
-        float cracks = smoothstep(0.10, 0.015, mRidge(wp * 0.9));  // hairline cracks
-        diffuseColor.rgb *= 0.82 + patches * 0.3 + speckle * 0.08 + grit * 0.09
-                          - pores * 0.16 - cracks * 0.28;
+        // Sci-fi modular hull plating grid (2m panels)
+        vec2 grid = abs(fract(wp.xz * 0.5) - 0.5);
+        float seam = smoothstep(0.04, 0.01, min(grid.x, grid.y));
+        
+        // Hexagonal sub-tile pattern
+        float hex = mNoise(wp * 4.5);
+        float speckle = mNoise(wp * 22.0);
+        float scratches = smoothstep(0.88, 0.99, mNoise(wp * vec3(1.2, 45.0, 1.2)));
+
+        diffuseColor.rgb *= 0.88 + hex * 0.12 + speckle * 0.06 - seam * 0.45 + scratches * 0.25;
       `, /* glsl */ `
-        float grit = mNoise(wp * 38.0);
-        roughnessFactor = clamp(roughnessFactor - mFbm(wp * 0.5) * 0.12 + (grit - 0.5) * 0.2, 0.0, 1.0);
+        vec2 grid = abs(fract(wp.xz * 0.5) - 0.5);
+        float seam = smoothstep(0.04, 0.01, min(grid.x, grid.y));
+        roughnessFactor = clamp(roughnessFactor + seam * 0.4 - mFbm(wp * 1.5) * 0.1, 0.1, 0.9);
       `);
     });
   }
 
-  /** Marble — dark polished graphite stone with pale veining. */
+  /** Marble — dark polished carbon composite deck. */
   marble() {
     return this._get('marble', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0x2b2e33, roughness: 0.3, metalness: 0.0, envMapIntensity: 0.9,
-        clearcoat: 0.45, clearcoatRoughness: 0.25,
+        color: 0x1c2128, roughness: 0.25, metalness: 0.85, envMapIntensity: 1.4,
+        clearcoat: 0.6, clearcoatRoughness: 0.15,
       });
       return extendSurface(m, 'mon-marble', /* glsl */ `
-        float vein = mRidge(wp * 0.55 + mFbm(wp * 0.25) * 1.6);
-        float veins = smoothstep(0.16, 0.02, vein);
-        float tone = mFbm(wp * 0.8) * 0.04;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.5, 0.48, 0.44), veins * 0.4);
-        diffuseColor.rgb += tone;
+        vec2 grid = abs(fract(wp.xz * 0.33) - 0.5);
+        float seam = smoothstep(0.03, 0.01, min(grid.x, grid.y));
+        float carbon = mNoise(wp * vec3(28.0, 2.0, 28.0));
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.35, 0.45, 0.55), carbon * 0.15);
+        diffuseColor.rgb *= 1.0 - seam * 0.5;
       `, /* glsl */ `
-        float vv = smoothstep(0.16, 0.02, mRidge(wp * 0.55 + mFbm(wp * 0.25) * 1.6));
-        roughnessFactor = clamp(roughnessFactor + vv * 0.25, 0.0, 1.0);
+        roughnessFactor = clamp(roughnessFactor + mNoise(wp * 12.0) * 0.1, 0.1, 0.8);
       `);
     });
   }
 
-  /** Brushed metal — anisotropic-looking streaks along X. */
+  /** Heavy aerospace dark metal with brushed grain and blue sheen. */
   metal() {
     return this._get('metal', () => {
       const m = new THREE.MeshPhysicalMaterial({
-        color: 0x4a4f56, roughness: 0.36, metalness: 1.0, envMapIntensity: 1.05,
+        color: 0x3a424e, roughness: 0.32, metalness: 0.95, envMapIntensity: 1.35,
       });
       return extendSurface(m, 'mon-metal', /* glsl */ `
-        float brush = mNoise(wp * vec3(0.35, 22.0, 22.0));
-        float scratches = smoothstep(0.86, 0.99, mNoise(wp * vec3(0.9, 55.0, 55.0)));
-        float dents = mFbm(wp * 1.3);
-        diffuseColor.rgb *= 0.88 + brush * 0.14 + scratches * 0.18 + dents * 0.06;
+        float brush = mNoise(wp * vec3(0.4, 30.0, 30.0));
+        float scratches = smoothstep(0.85, 0.98, mNoise(wp * vec3(1.0, 60.0, 60.0)));
+        diffuseColor.rgb *= 0.85 + brush * 0.18 + scratches * 0.22;
       `, /* glsl */ `
-        float streak = mNoise(wp * vec3(0.35, 22.0, 22.0));
-        float dents = mFbm(wp * 1.3);
-        roughnessFactor = clamp(roughnessFactor + (streak - 0.5) * 0.26 + (dents - 0.5) * 0.18, 0.05, 1.0);
+        float streak = mNoise(wp * vec3(0.4, 30.0, 30.0));
+        roughnessFactor = clamp(roughnessFactor + (streak - 0.5) * 0.2, 0.05, 0.9);
       `);
     });
   }

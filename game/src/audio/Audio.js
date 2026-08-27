@@ -8,6 +8,10 @@ export class GameAudio {
     this.master = null;
     this.muted = false;
     this._padNodes = [];
+    this._jetGain = null;
+    this._jetFilter = null;
+    this._jetOsc = null;
+    this._jetNoise = null;
   }
 
   /** Must be called from a user gesture (browser autoplay policy). */
@@ -18,6 +22,61 @@ export class GameAudio {
     this.master.gain.value = 0.6;
     this.master.connect(this.ctx.destination);
     this._startAmbient();
+    this._initJetpackSynth();
+  }
+
+  _initJetpackSynth() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+
+    // Continuous looping white noise buffer for thruster exhaust
+    const bufferSize = this.ctx.sampleRate * 2;
+    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    this._jetNoise = this.ctx.createBufferSource();
+    this._jetNoise.buffer = noiseBuffer;
+    this._jetNoise.loop = true;
+
+    this._jetFilter = this.ctx.createBiquadFilter();
+    this._jetFilter.type = 'bandpass';
+    this._jetFilter.frequency.setValueAtTime(450, t);
+    this._jetFilter.Q.setValueAtTime(2.2, t);
+
+    // Deep sub-harmonic turbine oscillator
+    this._jetOsc = this.ctx.createOscillator();
+    this._jetOsc.type = 'sawtooth';
+    this._jetOsc.frequency.setValueAtTime(65, t);
+
+    const oscGain = this.ctx.createGain();
+    oscGain.gain.setValueAtTime(0.25, t);
+    this._jetOsc.connect(oscGain);
+
+    this._jetGain = this.ctx.createGain();
+    this._jetGain.gain.setValueAtTime(0, t);
+
+    this._jetNoise.connect(this._jetFilter);
+    this._jetFilter.connect(this._jetGain);
+    oscGain.connect(this._jetGain);
+    this._jetGain.connect(this.master);
+
+    this._jetNoise.start(t);
+    this._jetOsc.start(t);
+  }
+
+  updateJetpack(active, intensity = 1.0) {
+    if (!this.ctx || !this._jetGain || this.muted) return;
+    const t = this.ctx.currentTime;
+    const targetGain = active ? Math.min(0.28, 0.08 + intensity * 0.2) : 0;
+    const targetFreq = 400 + intensity * 600;
+    const targetOsc = 60 + intensity * 50;
+
+    this._jetGain.gain.setTargetAtTime(targetGain, t, 0.08);
+    this._jetFilter.frequency.setTargetAtTime(targetFreq, t, 0.08);
+    this._jetOsc.frequency.setTargetAtTime(targetOsc, t, 0.08);
   }
 
   toggleMute() {
@@ -112,5 +171,66 @@ export class GameAudio {
     this._blip(180, { type: 'sine', dur: 0.45, vol: 0.14, slide: 700 });
     this._noise({ dur: 0.5, vol: 0.09, freq: 1800 });
   }
+  coin() {
+    this._blip(987, { type: 'sine', dur: 0.08, vol: 0.12, slide: 300 });
+    setTimeout(() => this._blip(1318, { type: 'triangle', dur: 0.1, vol: 0.14 }), 35);
+  }
+
+  whoosh() {
+    this._noise({ dur: 0.14, vol: 0.12, freq: 800 });
+    this._blip(340, { type: 'sine', dur: 0.15, vol: 0.08, slide: 120 });
+  }
+
+  slide() {
+    this._noise({ dur: 0.35, vol: 0.16, freq: 450 });
+  }
+
+  powerup() {
+    this._blip(440, { type: 'triangle', dur: 0.12, vol: 0.14 });
+    setTimeout(() => this._blip(554, { type: 'triangle', dur: 0.12, vol: 0.14 }), 60);
+    setTimeout(() => this._blip(659, { type: 'triangle', dur: 0.14, vol: 0.16 }), 120);
+    setTimeout(() => this._blip(880, { type: 'sine', dur: 0.3, vol: 0.18 }), 180);
+  }
+
+  relic() {
+    this._blip(659, { type: 'triangle', dur: 0.25, vol: 0.12 });
+    setTimeout(() => this._blip(880, { type: 'sine', dur: 0.35, vol: 0.14 }), 80);
+    setTimeout(() => this._blip(1318, { type: 'sine', dur: 0.45, vol: 0.16 }), 160);
+  }
+
+  scanner() {
+    this._blip(980, { type: 'sine', dur: 0.35, vol: 0.12, slide: 400 });
+    setTimeout(() => this._blip(1480, { type: 'triangle', dur: 0.25, vol: 0.08 }), 120);
+  }
+
+  resource() {
+    this._blip(523, { type: 'sine', dur: 0.15, vol: 0.12 });
+    setTimeout(() => this._blip(1046, { type: 'triangle', dur: 0.22, vol: 0.14 }), 70);
+  }
+
+  alarm() {
+    this._blip(880, { type: 'sawtooth', dur: 0.3, vol: 0.16, slide: -220 });
+    setTimeout(() => this._blip(880, { type: 'sawtooth', dur: 0.3, vol: 0.16, slide: -220 }), 280);
+  }
+
+  laser() {
+    this._blip(1200, { type: 'sawtooth', dur: 0.14, vol: 0.14, slide: -800 });
+  }
+
+  impact() {
+    this._noise({ dur: 0.25, vol: 0.25, freq: 220 });
+    this._blip(120, { type: 'sine', dur: 0.3, vol: 0.2, slide: -60 });
+  }
+
+  explosion() {
+    this._noise({ dur: 0.8, vol: 0.35, freq: 160 });
+    this._blip(80, { type: 'triangle', dur: 0.9, vol: 0.3, slide: -40 });
+  }
+
+  droneAlert() {
+    this._blip(440, { type: 'sawtooth', dur: 0.2, vol: 0.14, slide: 300 });
+    setTimeout(() => this._blip(740, { type: 'sawtooth', dur: 0.25, vol: 0.16, slide: -150 }), 140);
+  }
+
   click() { this._blip(660, { dur: 0.08, vol: 0.08 }); }
 }
