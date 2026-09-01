@@ -25,9 +25,10 @@ const _leftNozzle = new THREE.Vector3();
 const _rightNozzle = new THREE.Vector3();
 const _exhaustVel = new THREE.Vector3();
 
-// Jetpack Flame Colors: Warm Orange for Normal Flight, Electric Blue for After Boost
+// Jetpack Flame Colors: Warm Orange for Normal Flight, Electric Cyan for Boost, Pure White for Light Speed
 const _normalFlameColor = new THREE.Color(SETTINGS.jetpack.normalColor ?? 0xff6600);
-const _boostFlameColor = new THREE.Color(SETTINGS.jetpack.boostColor ?? 0x00d4ff);
+const _boostFlameColor = new THREE.Color(SETTINGS.jetpack.boostColor ?? 0x00e5ff);
+const _warpFlameColor = new THREE.Color(SETTINGS.jetpack.warpColor ?? 0xffffff);
 
 export class Player {
   /**
@@ -46,7 +47,7 @@ export class Player {
       radius: P.radius,
       grounded: false,
       groundCollider: null,
-      groundNormal: null,
+      groundNormal: new THREE.Vector3(0, 1, 0),
     };
 
     this.spawn = new THREE.Vector3(0, 3, 0);
@@ -59,12 +60,15 @@ export class Player {
     this.onJump = null;
     this.onFall = null;
     this.onJetpack = null;
+    this.onWarpEngage = null;
+    this.onWarpExit = null;
 
     // Jetpack & Speed of Light Hyperdrive state
     this.jetpackActive = false;
     this.jetpackPower = 0;   // 0 to 1 smoothed
     this.warpIntensity = 0;  // 0 to 1 speed-of-light intensity
     this.isLightSpeed = false;
+    this.hyperdriveEngaged = false;
 
     this._wasGrounded = false;
     this._coyote = 0;
@@ -81,7 +85,7 @@ export class Player {
     this.mesh.add(this.visual);
 
     // Dynamic thruster point light: warm orange for normal, electric blue for boost
-    this.thrusterLight = new THREE.PointLight(0xff6600, 0, 12, 2);
+    this.thrusterLight = new THREE.PointLight(0xff6600, 0, 14, 2);
     this.thrusterLight.position.set(0, 0.2, -0.4);
     this.mesh.add(this.thrusterLight);
     this._facing = 0;
@@ -130,6 +134,18 @@ export class Player {
     this._raycaster.far = 40;
 
     input.on('jump', () => { this._jumpBuffer = P.jumpBuffer; });
+    input.on('lightspeed', () => {
+      if (!this.frozen && !this.paused && !this.stats.isJetpackOffline) {
+        this.hyperdriveEngaged = !this.hyperdriveEngaged;
+        if (this.hyperdriveEngaged) {
+          this.body.grounded = false;
+          this.body.groundCollider = null;
+          this.onWarpEngage?.();
+        } else {
+          this.onWarpExit?.();
+        }
+      }
+    });
   }
 
   get position() { return this.body.position; }
@@ -237,13 +253,20 @@ export class Player {
       const isDescending = this.input.descendHeld;
       const isBraking = this.input.brakeHeld;
       const isBackBraking = move.z < 0; // S key or Down Arrow
-      const shouldBrake = isBraking || isBackBraking;
-      
-      // Open-World 3D Zero-G Flight vs Grounded EVA Walking
-      const isThrusting = isAscending || isDescending || (move.z !== 0 || move.x !== 0);
-      const isFlying = !b.grounded || isAscending || isDescending;
+      const wantsLightSpeed = (this.input.lightSpeedHeld || this.hyperdriveEngaged) && !this.stats.isJetpackOffline;
 
-      this.stats.update(dt, isFlying ? isThrusting : false, sprint);
+      if (isBraking || (isBackBraking && this.hyperdriveEngaged)) {
+        if (this.hyperdriveEngaged) {
+          this.hyperdriveEngaged = false;
+          this.onWarpExit?.();
+        }
+      }
+
+      // Open-World 3D Zero-G Flight vs Grounded EVA Walking
+      const isThrusting = isAscending || isDescending || (move.z !== 0 || move.x !== 0) || wantsLightSpeed;
+      const isFlying = !b.grounded || isAscending || isDescending || wantsLightSpeed;
+
+      this.stats.update(dt, isFlying ? isThrusting : false, wantsLightSpeed);
 
       if (isFlying) {
         this.jetpackActive = isThrusting && !this.stats.isJetpackOffline;
@@ -251,12 +274,19 @@ export class Player {
           ? Math.min(1, this.jetpackPower + dt * 5)
           : Math.max(0, this.jetpackPower - dt * 3);
 
-        if (sprint && this.jetpackActive) {
-          this.warpIntensity = Math.min(1, this.warpIntensity + dt * 2.5);
-          this.isLightSpeed = this.warpIntensity > 0.35;
+        const wasLightSpeed = this.isLightSpeed;
+        if (wantsLightSpeed && this.jetpackActive) {
+          this.warpIntensity = Math.min(1, this.warpIntensity + dt * 3.8);
+          this.isLightSpeed = this.warpIntensity > 0.25;
+          if (!wasLightSpeed && this.isLightSpeed) {
+            this.onWarpEngage?.();
+          }
         } else {
-          this.warpIntensity = 0;
+          this.warpIntensity = Math.max(0, this.warpIntensity - dt * 2.8);
           this.isLightSpeed = false;
+          if (wasLightSpeed && !this.isLightSpeed) {
+            this.onWarpExit?.();
+          }
         }
 
         const thrustScale = this.stats.isJetpackOffline ? 0.22 : 1.0;
@@ -268,7 +298,7 @@ export class Player {
           b.groundCollider = null;
         } else if (isDescending && !this.stats.isJetpackOffline) {
           b.velocity.y -= J.upThrust * thrustScale * dt;
-        } else if (!b.grounded) {
+        } else if (!b.grounded && !wantsLightSpeed) {
           // Zero-G ambient gentle glide in deep space
           b.velocity.y *= Math.max(0, 1 - 0.7 * dt);
         }
@@ -290,19 +320,23 @@ export class Player {
 
         _dir.set(0, 0, 0);
         // Forward/Strafe directional steering
-        if (move.z > 0 || move.x !== 0) {
+        if (wantsLightSpeed) {
+          // In Light Speed, direct thrust surges straight along forward camera vector
+          _dir.copy(_forward3D);
+          if (move.x !== 0) _dir.addScaledVector(_right3D, move.x * 0.35).normalize();
+        } else if (move.z > 0 || move.x !== 0) {
           _dir.addScaledVector(_forward3D, move.z).addScaledVector(_right3D, move.x);
           if (_dir.lengthSq() > 0.001) _dir.normalize();
         }
 
         if (this.jetpackActive && _dir.lengthSq() > 0.001) {
-          const thrustMult = sprint ? (1.6 + this.warpIntensity * 1.2) : 1.0;
+          const thrustMult = wantsLightSpeed ? (3.2 + this.warpIntensity * 2.8) : 1.0;
           b.velocity.addScaledVector(_dir, J.forwardThrust * thrustMult * thrustScale * dt);
-          if (isAscending) b.grounded = false;
+          if (isAscending || wantsLightSpeed) b.grounded = false;
         }
 
-        // Speed of light warp speed limits
-        const maxFlight = sprint
+        // Speed of light warp speed limits (up to 185 m/s or 665 km/h)
+        const maxFlight = wantsLightSpeed
           ? J.maxBoostSpeed + this.warpIntensity * (J.speedOfLight - J.maxBoostSpeed)
           : J.maxFlightSpeed;
         const curSpeed = b.velocity.length();
@@ -311,7 +345,7 @@ export class Player {
         }
 
         // Smooth zero-g inertia drift: gentle dampening so drifting is pleasant and natural
-        const dragF = Math.max(0, 1 - J.flightDrag * dt * (sprint ? 0.08 : (isThrusting ? 0.25 : 0.45)));
+        const dragF = Math.max(0, 1 - J.flightDrag * dt * (wantsLightSpeed ? 0.04 : (isThrusting ? 0.25 : 0.45)));
         b.velocity.x *= dragF;
         b.velocity.z *= dragF;
 
@@ -332,29 +366,29 @@ export class Player {
           _leftNozzle.set(cx + cosF * nozzleSpread, cy, cz - sinF * nozzleSpread);
           _rightNozzle.set(cx - cosF * nozzleSpread, cy, cz + sinF * nozzleSpread);
 
-          const plumeSpeed = sprint ? (24 + this.warpIntensity * 14) : 15;
+          const plumeSpeed = wantsLightSpeed ? (32 + this.warpIntensity * 22) : 16;
           _exhaustVel.set(
             -sinF * plumeSpeed - b.velocity.x * 0.4,
             -plumeSpeed * 0.85 - b.velocity.y * 0.4,
             -cosF * plumeSpeed - b.velocity.z * 0.4,
           );
 
-          const activeColor = sprint ? _boostFlameColor : _normalFlameColor;
-          const particleCount = sprint ? 4 : 3;
-          const particleSize = sprint ? (2.6 + this.warpIntensity * 1.0) : 2.0;
-          const trailLife = sprint ? 0.95 : 0.75;
+          const activeColor = this.isLightSpeed ? _warpFlameColor : (wantsLightSpeed ? _boostFlameColor : _normalFlameColor);
+          const particleCount = this.isLightSpeed ? 6 : (wantsLightSpeed ? 4 : 3);
+          const particleSize = this.isLightSpeed ? (3.4 + this.warpIntensity * 1.5) : (wantsLightSpeed ? 2.6 : 2.0);
+          const trailLife = this.isLightSpeed ? 1.2 : 0.8;
 
           this.thrusters.emit(_leftNozzle, _exhaustVel, activeColor, particleCount, particleSize, trailLife);
           this.thrusters.emit(_rightNozzle, _exhaustVel, activeColor, particleCount, particleSize, trailLife);
         }
 
-        // Dynamic Thruster light flare (warm orange vs electric blue)
+        // Dynamic Thruster light flare (warm orange vs electric cyan vs radiant white)
         if (this.jetpackActive && isThrusting) {
-          const targetLightColor = sprint ? _boostFlameColor : _normalFlameColor;
-          this.thrusterLight.color.lerp(targetLightColor, 0.2);
+          const targetLightColor = this.isLightSpeed ? _warpFlameColor : (wantsLightSpeed ? _boostFlameColor : _normalFlameColor);
+          this.thrusterLight.color.lerp(targetLightColor, 0.25);
           this.thrusterLight.intensity = damp(
             this.thrusterLight.intensity,
-            sprint ? (3.5 + this.warpIntensity * 2.5 + Math.random() * 0.5) : (2.2 + Math.random() * 0.4),
+            this.isLightSpeed ? (6.5 + Math.random() * 1.5) : (wantsLightSpeed ? (3.5 + Math.random() * 0.5) : (2.2 + Math.random() * 0.4)),
             18,
             dt,
           );
@@ -362,7 +396,7 @@ export class Player {
           this.thrusterLight.intensity = damp(this.thrusterLight.intensity, 0, 14, dt);
         }
 
-        this.onJetpack?.(this.jetpackActive, sprint ? (1.5 + this.warpIntensity * 0.8) : 1.0);
+        this.onJetpack?.(this.jetpackActive, wantsLightSpeed ? (2.0 + this.warpIntensity * 1.5) : 1.0);
       } else {
         this.jetpackActive = false;
         this.jetpackPower = Math.max(0, this.jetpackPower - dt * 3);

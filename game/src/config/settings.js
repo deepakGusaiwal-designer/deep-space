@@ -37,16 +37,17 @@ export const SETTINGS = {
 
   jetpack: {
     upThrust: 45,              // vertical lift acceleration
-    forwardThrust: 46,         // 3D directional acceleration
-    maxFlightSpeed: 26,        // fluid flight speed (95 km/h)
-    maxBoostSpeed: 52,         // turbo boost speed (190 km/h)
-    speedOfLight: 110,         // hyperdrive warp speed
-    flightDrag: 1.2,           // smooth zero-g momentum drift
+    forwardThrust: 48,         // 3D directional acceleration
+    maxFlightSpeed: 28,        // fluid flight speed (100 km/h)
+    maxBoostSpeed: 65,         // turbo boost speed (235 km/h)
+    speedOfLight: 185,         // hyperdrive warp speed (665 km/h)
+    flightDrag: 1.1,           // smooth zero-g momentum drift
     gravityCancel: 1.0,        // full zero-g compensation
     drainRate: 0,              // continuous full fuel
     rechargeRate: 80,          // instant recovery
     normalColor: 0xff6600,     // warm orange flame for normal jetpack
-    boostColor: 0x00d4ff,      // electric blue flame for after boost
+    boostColor: 0x00e5ff,      // electric cyan hyper-plasma flame
+    warpColor: 0xffffff,       // brilliant white photon core
   },
 
   openWorld: {
@@ -58,16 +59,16 @@ export const SETTINGS = {
 
   camera: {
     fov: 55,
-    sprintFov: 68,
-    flightFov: 76,
-    warpFov: 92,               // wide hyperdrive FOV during speed of light
+    sprintFov: 70,
+    flightFov: 78,
+    warpFov: 104,              // dramatic hyperdrive FOV stretch during speed of light
     distance: 12.0,            // comfortably further back from astronaut
     height: 3.4,               // elevated third-person perspective
     minPitch: -0.85,           // expanded pitch range for looking high up in flight
     maxPitch: 1.35,            // expanded pitch range for looking down from orbit
     followLerp: 9,             // positional smoothing rate
-    lookAhead: 1.5,            // meters of velocity-based lead
-    zoomBySpeed: 2.5,          // extra distance at full flight boost
+    lookAhead: 1.8,            // meters of velocity-based lead
+    zoomBySpeed: 3.2,          // extra distance at full flight boost
     collisionRadius: 0.4,
     sensitivity: 0.0035,
   },

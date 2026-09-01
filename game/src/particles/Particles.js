@@ -339,9 +339,9 @@ const WARP_VERT = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(worldPos, 1.0);
     gl_Position = projectionMatrix * mv;
 
-    // Soft subtle opacity centered around astronaut, zero noise
-    vAlpha = smoothstep(12.0, 1.5, length(radialPos)) * (uWarp * 0.45);
-    vColor = mix(vec3(0.35, 0.75, 1.0), vec3(1.0, 1.0, 0.95), position.z * 0.5 + 0.5);
+    // Soft glowing opacity centered around astronaut with hyper-photon trails
+    vAlpha = smoothstep(18.0, 1.2, length(radialPos)) * (uWarp * 0.85);
+    vColor = mix(vec3(0.0, 0.9, 1.0), vec3(1.0, 1.0, 1.0), position.z * 0.5 + 0.5);
   }
 `;
 
@@ -354,7 +354,7 @@ const WARP_FRAG = /* glsl */ `
 `;
 
 export class HyperspaceStreaks {
-  constructor(scene, count = 80) {
+  constructor(scene, count = 160) {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 2 * 3); // 2 vertices per line
     const localOffsets = new Float32Array(count * 2 * 3);

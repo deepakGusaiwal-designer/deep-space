@@ -128,7 +128,7 @@ export class UI {
         <div class="hud__keys">
           <span class="key-chip"><b>SPACE</b> ASCEND</span>
           <span class="key-chip"><b>X</b> DESCEND</span>
-          <span class="key-chip"><b>SHIFT</b> BOOST</span>
+          <span class="key-chip"><b>F / SHIFT</b> LIGHT SPEED</span>
           <span class="key-chip"><b>B</b> BRAKE</span>
           <span class="key-chip"><b>E</b> INTERACT</span>
           <span class="key-chip"><b>Q</b> SCAN</span>
@@ -397,11 +397,17 @@ export class UI {
     }
   }
 
-  setSpeed(kmh) {
+  setSpeed(kmh, isWarp = false) {
     const skmh = Number.isFinite(kmh) ? kmh : 0;
-    this.el.speedVal.textContent = String(Math.round(skmh));
-    const pct = Math.min(1, skmh / 120);
-    this.el.speedRing.style.setProperty('--deg', `${Math.round(pct * 280)}deg`);
+    if (isWarp || skmh > 180) {
+      const warpFactor = Math.min(9.9, Math.max(1.0, skmh / 65)).toFixed(1);
+      this.el.speedVal.textContent = `WARP ${warpFactor}`;
+      this.el.speedRing.style.setProperty('--deg', '280deg');
+    } else {
+      this.el.speedVal.textContent = String(Math.round(skmh));
+      const pct = Math.min(1, skmh / 120);
+      this.el.speedRing.style.setProperty('--deg', `${Math.round(pct * 280)}deg`);
+    }
   }
 
   setWarpState(isWarp, intensity = 0) {

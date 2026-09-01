@@ -45,6 +45,7 @@ export class Input {
       if (e.code === 'KeyM' || e.key === 'm' || e.key === 'M') this._emit('map');
       if (e.code === 'KeyE' || e.key === 'e' || e.key === 'E') this._emit('interact');
       if (e.code === 'KeyU' || e.key === 'u' || e.key === 'U') this._emit('upgrades');
+      if (e.code === 'KeyF' || e.key === 'f' || e.key === 'F') this._emit('lightspeed');
       if (e.code === 'KeyR' || e.key === 'r' || e.key === 'R') this._emit('restart');
       if (e.code === 'Escape' || e.key === 'Escape') this._emit('pause');
       if (e.code === 'Enter' || e.key === 'Enter') this._emit('confirm');
@@ -148,6 +149,13 @@ export class Input {
 
   get sprinting() {
     return this.enabled && (this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || this.keys.has('shift'));
+  }
+
+  get lightSpeedHeld() {
+    return this.enabled && (
+      this.keys.has('KeyF') || this.keys.has('f') || this.keys.has('F') ||
+      this.keys.has('ShiftLeft') || this.keys.has('ShiftRight') || this.keys.has('shift')
+    );
   }
 
   get jumpHeld() {

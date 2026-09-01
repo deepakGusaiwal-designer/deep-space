@@ -227,9 +227,15 @@ export class GameAudio {
     this._blip(80, { type: 'triangle', dur: 0.9, vol: 0.3, slide: -40 });
   }
 
-  droneAlert() {
-    this._blip(440, { type: 'sawtooth', dur: 0.2, vol: 0.14, slide: 300 });
-    setTimeout(() => this._blip(740, { type: 'sawtooth', dur: 0.25, vol: 0.16, slide: -150 }), 140);
+  warpEngage() {
+    this._blip(220, { type: 'sine', dur: 0.45, vol: 0.22, slide: 880 });
+    setTimeout(() => this._blip(440, { type: 'sawtooth', dur: 0.35, vol: 0.18, slide: 1200 }), 80);
+    this._noise({ dur: 0.7, vol: 0.28, freq: 1200 });
+  }
+
+  warpExit() {
+    this._noise({ dur: 0.6, vol: 0.3, freq: 300 });
+    this._blip(600, { type: 'triangle', dur: 0.5, vol: 0.22, slide: -450 });
   }
 
   click() { this._blip(660, { dur: 0.08, vol: 0.08 }); }

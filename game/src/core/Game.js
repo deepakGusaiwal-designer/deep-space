@@ -114,6 +114,16 @@ export class Game {
   _wireEvents() {
     this.player.onJump = () => this.audio.jump();
     this.player.onJetpack = (active, intensity) => this.audio.updateJetpack(active, intensity);
+    this.player.onWarpEngage = () => {
+      this.audio.warpEngage();
+      this.rig.shake(0.4, 0.45);
+      this.ui.toast('⚡ LIGHT SPEED ENGAGED [F] // WARP 9.9 ⚡');
+    };
+    this.player.onWarpExit = () => {
+      this.audio.warpExit();
+      this.rig.shake(0.2, 0.3);
+      this.ui.toast('✦ Dropped out of Light Speed');
+    };
     this.player.onLand = (speed) => {
       const intensity = Math.min(1, speed / 22);
       this.audio.land(intensity);
@@ -551,7 +561,7 @@ export class Game {
       // Open World telemetry HUD updates
       this.ui.setSurvivalStats(this.player.stats);
       this.ui.setProgression(this.progression);
-      this.ui.setSpeed(v.length() * 3.6);
+      this.ui.setSpeed(v.length() * 3.6, this.player.isLightSpeed);
       this.ui.setWarpState(this.player.isLightSpeed, this.player.warpIntensity);
       this.ui.setCoords(pPos.x, pPos.y, pPos.z, pPos.y);
 
@@ -563,7 +573,7 @@ export class Game {
 
       // Status Beacon
       if (this.player.isLightSpeed) {
-        this.ui.setBeacon('⚡ HYPERSPACE LIGHT SPEED ⚡');
+        this.ui.setBeacon('⚡ HYPERSPACE LIGHT SPEED [F] ⚡');
       } else if (this.physics.proximityWarning) {
         this.ui.setBeacon(`⚠ ${this.physics.proximityWarning.name} (${this.physics.proximityWarning.distance}m)`);
       } else {
