@@ -35,6 +35,26 @@
     {
       "source": "/game/:path*",
       "destination": "/game/index.html"
+    },
+    {
+      "source": "/nostalgia-radio",
+      "destination": "/nostalgia-radio/index.html"
+    },
+    {
+      "source": "/nostalgia-radio/",
+      "destination": "/nostalgia-radio/index.html"
+    },
+    {
+      "source": "/nostalgia-radio/:path*",
+      "destination": "/nostalgia-radio/index.html"
+    },
+    {
+      "source": "/radio",
+      "destination": "/nostalgia-radio/index.html"
+    },
+    {
+      "source": "/radio/",
+      "destination": "/nostalgia-radio/index.html"
     }
   ]
 }

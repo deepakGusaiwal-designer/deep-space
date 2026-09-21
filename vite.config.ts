@@ -3,15 +3,17 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-function blogRewritePlugin(): Plugin {
+function routeRewritePlugin(): Plugin {
   return {
-    name: 'blog-rewrite-plugin',
+    name: 'route-rewrite-plugin',
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         if (req.url) {
           const path = req.url.split('?')[0];
           if (/^\/(?:blog|blogs)(?:\/.*)?$/.test(path) && !path.includes('.')) {
             req.url = '/blogs/index.html';
+          } else if (/^\/(?:nostalgia-radio|radio)(?:\/.*)?$/.test(path) && !path.includes('.')) {
+            req.url = '/nostalgia-radio/index.html';
           }
         }
         next();
@@ -21,7 +23,7 @@ function blogRewritePlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), blogRewritePlugin()],
+  plugins: [react(), tailwindcss(), routeRewritePlugin()],
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 1200,
@@ -31,6 +33,7 @@ export default defineConfig({
         game: fileURLToPath(new URL('./game/index.html', import.meta.url)),
         blog: fileURLToPath(new URL('./blog/index.html', import.meta.url)),
         blogs: fileURLToPath(new URL('./blogs/index.html', import.meta.url)),
+        nostalgiaRadio: fileURLToPath(new URL('./nostalgia-radio/index.html', import.meta.url)),
       },
       output: {
         manualChunks: {
