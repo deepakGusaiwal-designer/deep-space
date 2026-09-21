@@ -14,6 +14,10 @@ function routeRewritePlugin(): Plugin {
             req.url = '/blogs/index.html';
           } else if (/^\/(?:nostalgia-radio|radio)(?:\/.*)?$/.test(path) && !path.includes('.')) {
             req.url = '/nostalgia-radio/index.html';
+          } else if (/^\/(?:privacy|privacy-policy)(?:\/.*)?$/.test(path) && !path.includes('.')) {
+            req.url = '/privacy/index.html';
+          } else if (/^\/(?:terms|terms-and-conditions)(?:\/.*)?$/.test(path) && !path.includes('.')) {
+            req.url = '/terms/index.html';
           }
         }
         next();
@@ -34,6 +38,8 @@ export default defineConfig({
         blog: fileURLToPath(new URL('./blog/index.html', import.meta.url)),
         blogs: fileURLToPath(new URL('./blogs/index.html', import.meta.url)),
         nostalgiaRadio: fileURLToPath(new URL('./nostalgia-radio/index.html', import.meta.url)),
+        privacy: fileURLToPath(new URL('./privacy/index.html', import.meta.url)),
+        terms: fileURLToPath(new URL('./terms/index.html', import.meta.url)),
       },
       output: {
         manualChunks: {
