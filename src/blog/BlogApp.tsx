@@ -162,9 +162,6 @@ export default function BlogApp() {
               </p>
             </div>
 
-            {/* Top AdSense Banner */}
-            <AdBanner slot="blog-listing-header" label="Sponsored Banner" className="mb-12" />
-
             {/* Controls: Search and Category Filter Tabs */}
             <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               {/* Category Pills */}
@@ -198,19 +195,12 @@ export default function BlogApp() {
               </div>
             </div>
 
-            {/* Post Listing Grid with In-Feed AdSense */}
+            {/* Post Listing Grid */}
             {filteredPosts.length > 0 ? (
               <div className="grid gap-8 sm:grid-cols-2">
-                {filteredPosts.map((post, idx) => (
+                {filteredPosts.map((post) => (
                   <div key={post.id} className="flex flex-col">
                     <BlogCard post={post} onSelect={handleSelectPost} />
-
-                    {/* Insert In-Feed Ad Banner after the 2nd post */}
-                    {idx === 1 && (
-                      <div className="col-span-full my-4">
-                        <AdBanner slot="in-feed-grid" label="Sponsored Post / Ad" />
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -238,6 +228,13 @@ export default function BlogApp() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-12 text-center text-xs text-dim">
+        <div className="mb-4 flex flex-wrap justify-center items-center gap-6 text-xs text-soft/80">
+          <a href="/" className="hover:text-white transition-colors">Portfolio</a>
+          <a href="/blog/" className="hover:text-white transition-colors">Articles</a>
+          <a href="/privacy/" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Privacy Policy</a>
+          <a href="/terms/" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Terms of Service</a>
+          <a href="mailto:deepak.gusaiwal@outlook.com" className="hover:text-white transition-colors">Contact</a>
+        </div>
         <p>© {new Date().getFullYear()} Deepak Gusaiwal · UI/UX Designer & Interactive Developer</p>
         <p className="mt-2 font-mono text-[10px] tracking-widest uppercase">
           Sic mundus creatus est

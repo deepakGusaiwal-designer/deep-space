@@ -89,9 +89,6 @@ export default function BlogDetail({ post, onBack, onSelectPost }: BlogDetailPro
         </div>
       </header>
 
-      {/* Top Article Ad Banner */}
-      <AdBanner slot="article-top-banner" label="Advertisement" />
-
       {/* Article Body Content (Calibrated to 16px text-base) */}
       {post.contentHtml ? (
         <div
@@ -101,14 +98,7 @@ export default function BlogDetail({ post, onBack, onSelectPost }: BlogDetailPro
       ) : (
         <div className="prose prose-invert max-w-none my-8 space-y-5 text-base leading-relaxed text-slate-200">
           {post.content.map((paragraph, idx) => (
-            <div key={idx}>
-              <p className="leading-relaxed">{paragraph}</p>
-
-              {/* In-Article AdSense Banner midway through the article */}
-              {idx === 2 && (
-                <AdBanner slot="in-article-middle" label="Sponsored Context" className="my-8" />
-              )}
-            </div>
+            <p key={idx} className="leading-relaxed">{paragraph}</p>
           ))}
         </div>
       )}

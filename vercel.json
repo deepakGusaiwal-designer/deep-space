@@ -55,6 +55,38 @@
     {
       "source": "/radio/",
       "destination": "/nostalgia-radio/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/privacy/",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/terms/",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/privacy-policy/",
+      "destination": "/privacy/index.html"
+    },
+    {
+      "source": "/terms-and-conditions",
+      "destination": "/terms/index.html"
+    },
+    {
+      "source": "/terms-and-conditions/",
+      "destination": "/terms/index.html"
     }
   ]
 }
