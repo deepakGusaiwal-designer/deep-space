@@ -9,6 +9,9 @@ import herozoneImg from '../assets/image/herozone.png';
 import ludoImg from '../assets/image/ludo.jpg';
 import bloomImg from '../assets/image/bloom.png';
 import AIImage from '../assets/image/AI.png';
+import gravityImg from '../assets/image/gravity.png';
+import radioImg from '../assets/image/radio.png';
+import deepRushCityImg from '../assets/image/deep-rush-city.jpg';
 
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
@@ -142,6 +145,7 @@ export const playground: PlaygroundItem[] = [
     blurb: 'A tiny gravity-well platformer, hidden inside this very universe.',
     href: '/game/',
     hue: '#CB152F',
+    image: gravityImg,
   },
   {
     title: 'Herozone',
@@ -168,10 +172,20 @@ export const playground: PlaygroundItem[] = [
     image: AIImage,
   },
   {
-    title: 'Next Build',
-    tag: 'coming soon',
-    blurb: 'Another empty orbit, waiting on something worth shipping.',
-    hue: '#565b63',
+    title: 'Nostalgia Radio',
+    tag: '3D Audio Experience',
+    blurb: 'A memory in sound — an interactive 3D vintage wooden radio built with React Three Fiber, GSAP, and Web Audio.',
+    href: '/nostalgia-radio/',
+    hue: '#8b5b35',
+    image: radioImg,
+  },
+  {
+    title: 'Deep Rush City',
+    tag: '3D Open-World Game',
+    blurb: 'High-octane 3D multiplayer urban sandbox and arcade racing in the browser with 60 FPS Three.js physics, drifting, and jetpacks.',
+    href: 'https://deep-rush-city.vercel.app/',
+    hue: '#FF4D26',
+    image: deepRushCityImg,
   },
 ];
 
