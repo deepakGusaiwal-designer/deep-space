@@ -12,6 +12,7 @@ import AIImage from '../assets/image/AI.png';
 import gravityImg from '../assets/image/gravity.png';
 import radioImg from '../assets/image/radio.png';
 import deepRushCityImg from '../assets/image/deep-rush-city.jpg';
+import hypertextImg from '../assets/image/hypertext.png';
 
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
@@ -186,6 +187,14 @@ export const playground: PlaygroundItem[] = [
     href: 'https://deep-rush-city.vercel.app/',
     hue: '#FF4D26',
     image: deepRushCityImg,
+  },
+  {
+    title: 'Hypertext Odyssey',
+    tag: '3D Particle Experience',
+    blurb: 'From 1989 CERN to Infinite Light — a cinematic 3D particle journey through 37 years of web architecture told in 9,600 living monochrome nodes.',
+    href: 'https://hypertext-odyssey.vercel.app/',
+    hue: '#e2e8f0',
+    image: hypertextImg,
   },
 ];
 
