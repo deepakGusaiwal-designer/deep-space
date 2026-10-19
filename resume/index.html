@@ -5,267 +5,252 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Primary SEO -->
-  <title>Resume — Deepak Gusaiwal | UI/UX Designer & Interactive Developer</title>
-  <meta name="description" content="Official Resume of Deepak Gusaiwal — UI/UX Designer and Interactive Developer with 8+ years of experience in 3D WebGL, Design Systems, React 19, and Creative Engineering." />
+  <title>Deepak Gusaiwal — Resume | UI/UX Designer & Interactive Developer</title>
+  <meta name="description" content="Resume of Deepak Gusaiwal — UI/UX Designer and Interactive Developer with 8+ years of experience in 3D WebGL, Design Systems, React 19, and Creative Engineering." />
   <meta name="author" content="Deepak Gusaiwal" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://www.deepakgusaiwal.com/resume/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-  <!-- Fonts -->
+  <!-- Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
   <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: rgba(255, 255, 255, 0.02);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(255, 255, 255, 0.18);
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #CB152F;
+      --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    html {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      scroll-behavior: smooth;
+    }
+
     body {
-      background-color: #050505;
-      color: #e2e8f0;
-      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      font-family: var(--font-sans);
+      font-size: 15px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      padding: 0;
-      margin: 0;
+      color: var(--text-secondary);
+      min-height: 100vh;
     }
 
-    .font-mono {
-      font-family: 'Space Mono', monospace;
-    }
-
-    /* Top Navigation Bar */
-    .top-nav {
+    /* Top Action Bar */
+    .top-bar {
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(5, 5, 5, 0.85);
+      background: rgba(9, 9, 11, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 16px 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 24px;
     }
 
-    .top-nav-inner {
-      max-width: 960px;
+    .top-bar-inner {
+      max-width: 860px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 14px;
+      gap: 16px;
     }
 
-    .brand-link {
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-link:hover {
-      color: #f1f5f9;
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .nav-btn {
+    .back-link {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 16px;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      cursor: pointer;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #cbd5e1;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: #ffffff;
-    }
-
-    .btn-primary {
-      background: #CB152F;
-      border: 1px solid #ff4d6d;
-      color: #ffffff;
-      box-shadow: 0 0 20px rgba(203, 21, 47, 0.35);
-    }
-
-    .btn-primary:hover {
-      background: #e11d48;
-      box-shadow: 0 0 28px rgba(203, 21, 47, 0.6);
-      transform: translateY(-1px);
-    }
-
-    /* Container */
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
-    }
-
-    /* Header Profile Section */
-    .resume-header {
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-      border-radius: 20px;
-      padding: 36px 32px;
-      margin-bottom: 40px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .resume-header::before {
-      content: '';
-      position: absolute;
-      top: -120px;
-      right: -120px;
-      width: 280px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(203, 21, 47, 0.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .header-main {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 24px;
-    }
-
-    .name-title h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-
-    .name-title h2 {
-      font-size: 1.25rem;
+      font-size: 13px;
       font-weight: 500;
-      color: #cbd5e1;
-      margin-top: 6px;
-    }
-
-    .location-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-top: 10px;
-    }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px 24px;
-      margin-top: 28px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.88rem;
-      color: #cbd5e1;
+      color: var(--text-secondary);
       text-decoration: none;
       transition: color 0.2s ease;
     }
 
-    .contact-item:hover {
+    .back-link:hover {
       color: #ffffff;
     }
 
-    .contact-item span.label {
-      color: #64748b;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-family: 'Space Mono', monospace;
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--card-border-hover);
+      color: #ffffff;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #e11d48;
+      border-color: #e11d48;
+      color: #ffffff;
+    }
+
+    /* Resume Document Wrapper */
+    .resume-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    /* Print Table Layout Helper (keeps table transparent on screen, creates repeated margins in print) */
+    .print-table-layout {
+      width: 100%;
+      border-collapse: collapse;
+      border: 0;
+    }
+
+    .print-table-layout > thead,
+    .print-table-layout > tfoot {
+      display: none;
+    }
+
+    .print-table-layout > tbody,
+    .print-table-layout > tbody > tr,
+    .print-table-layout > tbody > tr > td {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+    }
+
+    /* Header Profile */
+    .resume-header {
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-name {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .header-role {
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 18px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .header-meta a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .header-meta a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .header-meta span.separator {
+      color: rgba(255, 255, 255, 0.15);
     }
 
     /* Section Styling */
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #ffffff;
+    .resume-section {
+      margin-bottom: 36px;
+    }
+
+    .section-label {
+      font-size: 13.5px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 20px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .section-title::after {
+    .section-label::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .resume-section {
-      margin-bottom: 48px;
+      background: var(--card-border);
     }
 
     /* Summary */
     .summary-text {
-      font-size: 1.05rem;
-      color: #cbd5e1;
-      line-height: 1.8;
-      border-left: 2px solid #CB152F;
-      padding-left: 18px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
     }
 
-    /* Experience Timeline */
+    .summary-text strong {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* Experience */
     .experience-list {
       display: flex;
       flex-direction: column;
       gap: 28px;
     }
 
-    .experience-card {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 16px;
-      padding: 24px 28px;
-      transition: all 0.3s ease;
-    }
-
-    .experience-card:hover {
-      border-color: rgba(255, 255, 255, 0.18);
-      background: rgba(255, 255, 255, 0.035);
+    .experience-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .exp-header {
@@ -274,365 +259,582 @@
       align-items: baseline;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 8px;
+    }
+
+    .exp-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .exp-role {
-      font-size: 1.2rem;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 600;
       color: #ffffff;
     }
 
     .exp-company {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #f43f5e;
-      margin-left: 6px;
+      font-size: 15px;
+      color: var(--text-secondary);
     }
 
     .exp-date {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 4px 10px;
-      border-radius: 9999px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      color: var(--text-muted);
     }
 
     .exp-bullets {
-      margin-top: 14px;
-      padding-left: 18px;
+      list-style-type: disc;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
     .exp-bullets li {
-      color: #cbd5e1;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
+      font-size: 14px;
       line-height: 1.6;
+      color: var(--text-secondary);
     }
 
-    /* Skills Grid */
+    /* Skills */
     .skills-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px 24px;
     }
 
-    .skill-category {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 14px;
-      padding: 20px;
+    @media (max-width: 640px) {
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    .skill-category h3 {
-      font-size: 0.95rem;
-      color: #ffffff;
-      font-weight: 700;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      letter-spacing: 0.04em;
-    }
-
-    .pill-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .skill-pill {
-      font-size: 0.8rem;
-      font-family: 'Space Mono', monospace;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e2e8f0;
-      padding: 4px 10px;
-      border-radius: 8px;
-    }
-
-    /* Projects Grid */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 18px;
-    }
-
-    .project-card {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 14px;
-      padding: 20px;
-      text-decoration: none;
-      color: inherit;
+    .skill-group {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.3s ease;
-    }
-
-    .project-card:hover {
-      border-color: rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.04);
-      transform: translateY(-2px);
-    }
-
-    .project-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .project-tag {
-      font-size: 0.75rem;
-      font-family: 'Space Mono', monospace;
-      color: #f43f5e;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    .project-desc {
-      font-size: 0.88rem;
-      color: #94a3b8;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    .project-link-text {
-      margin-top: 14px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #38bdf8;
-      display: inline-flex;
-      align-items: center;
       gap: 4px;
     }
 
-    /* Testimonials Quote Cards */
-    .testimonial-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 18px;
+    .skill-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
     }
 
-    .testimonial-card {
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 14px;
-      padding: 22px;
-      font-size: 0.9rem;
-      color: #cbd5e1;
-      line-height: 1.6;
+    .skill-group-items {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Featured Projects */
+    .projects-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .project-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .project-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--card-border-hover);
+      transform: translateX(2px);
+    }
+
+    .project-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .project-title-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .project-name {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .project-category {
+      font-size: 12px;
+      color: var(--text-muted);
       font-style: italic;
     }
 
-    .testimonial-author {
-      margin-top: 14px;
-      font-style: normal;
-      font-weight: 700;
-      color: #ffffff;
-      font-size: 0.85rem;
+    .project-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
     }
 
-    .testimonial-position {
-      font-size: 0.75rem;
-      color: #64748b;
+    .project-link-badge {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+
+    .project-row:hover .project-link-badge {
+      color: #ffffff;
+    }
+
+    /* Recommendations */
+    .recommendations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .recommendation-item {
+      padding-left: 16px;
+      border-left: 2px solid var(--card-border);
+    }
+
+    .rec-quote {
+      font-size: 13.5px;
+      font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+
+    .rec-author {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .rec-author strong {
+      color: #ffffff;
+      font-weight: 500;
     }
 
     /* Footer */
-    footer {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      margin-top: 60px;
-      padding-top: 32px;
+    .resume-footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
       text-align: center;
-      font-size: 0.85rem;
-      color: #64748b;
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
-    footer a {
-      color: #94a3b8;
+    .resume-footer a {
+      color: var(--text-secondary);
       text-decoration: none;
-      margin: 0 10px;
     }
 
-    footer a:hover {
+    .resume-footer a:hover {
       color: #ffffff;
     }
 
-    /* Print Styles */
+    /* Toast */
+    #copy-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: #18181b;
+      border: 1px solid #27272a;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 100;
+    }
+
+    #copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* =========================================================
+       PRINT / PDF STYLESHEET
+       Clean, minimal, high-contrast black & white classic PDF
+       ========================================================= */
     @media print {
-      body {
-        background: #ffffff !important;
-        color: #111827 !important;
+      @page {
+        size: A4;
+        margin: 0;
       }
 
-      .top-nav, footer, .no-print {
+      *, *::before, *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+        background: transparent !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+      }
+
+      html, body {
+        background: #ffffff !important;
+        color: #111827 !important;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 9.5pt !important;
+        line-height: 1.45 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      .top-bar, .resume-footer, #copy-toast, .no-print {
         display: none !important;
       }
 
-      .container {
-        padding: 0 !important;
+      .resume-wrapper {
         max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 16mm !important;
+      }
+
+      .print-table-layout {
+        display: table !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      .print-table-layout > thead {
+        display: table-header-group !important;
+      }
+
+      .print-table-layout > tfoot {
+        display: table-footer-group !important;
+      }
+
+      .print-table-layout > tbody {
+        display: table-row-group !important;
+      }
+
+      .print-table-layout > tbody > tr {
+        display: table-row !important;
+      }
+
+      .print-table-layout > tbody > tr > td {
+        display: table-cell !important;
+        padding: 0 !important;
+      }
+
+      .print-page-margin-top {
+        display: table-cell !important;
+        height: 14mm !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+
+      .print-page-margin-bottom {
+        display: table-cell !important;
+        height: 14mm !important;
+        padding: 0 !important;
+        border: none !important;
       }
 
       .resume-header {
-        border: none !important;
-        background: none !important;
-        padding: 0 0 20px 0 !important;
-        border-bottom: 2px solid #111827 !important;
-        margin-bottom: 24px !important;
+        margin-bottom: 16pt !important;
+        padding-bottom: 12pt !important;
+        border-bottom: 1.5pt solid #000000 !important;
       }
 
-      .name-title h1 {
-        color: #111827 !important;
-        font-size: 2rem !important;
+      .header-name {
+        font-size: 20pt !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+        margin-bottom: 2pt !important;
       }
 
-      .name-title h2 {
+      .header-role {
+        font-size: 11pt !important;
+        font-weight: 400 !important;
         color: #374151 !important;
-        font-size: 1.1rem !important;
+        margin-bottom: 6pt !important;
       }
 
-      .contact-grid {
-        border-top: 1px solid #e5e7eb !important;
-        margin-top: 16px !important;
-        padding-top: 12px !important;
+      .header-meta {
+        font-size: 8.5pt !important;
+        font-weight: 400 !important;
+        color: #4b5563 !important;
+        gap: 4pt 12pt !important;
       }
 
-      .contact-item, .contact-item span.label {
-        color: #374151 !important;
+      .header-meta a {
+        color: #000000 !important;
+        text-decoration: none !important;
       }
 
-      .section-title {
-        color: #111827 !important;
-        border-bottom: 1px solid #d1d5db !important;
-        padding-bottom: 4px !important;
-        font-size: 1.05rem !important;
+      .header-meta span.separator {
+        color: #9ca3af !important;
       }
 
-      .section-title::after {
-        display: none !important;
+      .resume-section {
+        margin-bottom: 14pt !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .section-label {
+        font-size: 11pt !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+        margin-bottom: 8pt !important;
+        letter-spacing: 0.06em !important;
+      }
+
+      .section-label::after {
+        background: #000000 !important;
       }
 
       .summary-text {
+        font-size: 9pt !important;
+        font-weight: 400 !important;
+        line-height: 1.5 !important;
+        color: #1f2937 !important;
+      }
+
+      .summary-text strong {
+        font-weight: 600 !important;
+        color: #000000 !important;
+      }
+
+      .experience-list {
+        gap: 12pt !important;
+      }
+
+      .experience-item {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .exp-header {
+        margin-bottom: 2pt !important;
+      }
+
+      .exp-role {
+        font-size: 9.8pt !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+      }
+
+      .exp-company {
+        font-size: 9.5pt !important;
+        font-weight: 400 !important;
         color: #374151 !important;
-        border-left: 2px solid #111827 !important;
       }
 
-      .experience-card, .skill-category, .project-card, .testimonial-card {
-        border: 1px solid #e5e7eb !important;
-        background: #ffffff !important;
-        color: #111827 !important;
-        page-break-inside: avoid;
-        box-shadow: none !important;
+      .exp-date {
+        font-size: 8.5pt !important;
+        font-weight: 500 !important;
+        color: #4b5563 !important;
       }
 
-      .exp-role, .project-title, .testimonial-author {
-        color: #111827 !important;
+      .exp-bullets {
+        padding-left: 14pt !important;
+        gap: 2pt !important;
       }
 
-      .exp-company, .project-tag {
-        color: #b91c1c !important;
+      .exp-bullets li {
+        font-size: 8.8pt !important;
+        font-weight: 400 !important;
+        line-height: 1.4 !important;
+        color: #262626 !important;
       }
 
-      .exp-date, .skill-pill {
-        background: #f3f4f6 !important;
-        border: 1px solid #e5e7eb !important;
+      .skills-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6pt 16pt !important;
+      }
+
+      .skill-group-title {
+        font-size: 9pt !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+      }
+
+      .skill-group-items {
+        font-size: 8.5pt !important;
+        font-weight: 400 !important;
         color: #374151 !important;
       }
 
-      .exp-bullets li, .project-desc, .testimonial-card {
-        color: #374151 !important;
+      .projects-list {
+        gap: 6pt !important;
+      }
+
+      .project-row {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+        margin-bottom: 4pt !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .project-name {
+        font-size: 9pt !important;
+        font-weight: 600 !important;
+        color: #000000 !important;
+      }
+
+      .project-category {
+        font-size: 8pt !important;
+        font-weight: 400 !important;
+        color: #4b5563 !important;
+      }
+
+      .project-desc {
+        font-size: 8.5pt !important;
+        font-weight: 400 !important;
+        line-height: 1.35 !important;
+        color: #262626 !important;
+      }
+
+      .project-link-badge {
+        font-size: 7.8pt !important;
+        font-weight: 400 !important;
+        color: #4b5563 !important;
+      }
+
+      .recommendation-item {
+        border-left: 2pt solid #000000 !important;
+        padding-left: 10pt !important;
+        margin-bottom: 8pt !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .rec-quote {
+        font-size: 8.5pt !important;
+        font-weight: 400 !important;
+        line-height: 1.4 !important;
+        color: #262626 !important;
+      }
+
+      .rec-author {
+        font-size: 8pt !important;
+        font-weight: 400 !important;
+        color: #4b5563 !important;
+      }
+
+      .rec-author strong {
+        font-weight: 600 !important;
+        color: #000000 !important;
       }
 
       a {
-        color: #111827 !important;
         text-decoration: none !important;
+        color: #000000 !important;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Sticky Web Navigation -->
-  <nav class="top-nav no-print" aria-label="Resume toolbar">
-    <div class="top-nav-inner">
-      <a href="/" class="brand-link font-mono">
-        <span>←</span>
+  <!-- Top Navigation Toolbar -->
+  <nav class="top-bar no-print" aria-label="Resume Toolbar">
+    <div class="top-bar-inner">
+      <a href="/" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
         <span>Deepak Gusaiwal</span>
       </a>
 
-      <div class="nav-actions">
-        <a href="/" class="nav-btn btn-secondary">Portfolio</a>
-        <a href="/blog/" class="nav-btn btn-secondary">Articles</a>
-        <button type="button" onclick="window.print()" class="nav-btn btn-primary" title="Print or save as PDF">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 6 2 18 2 18 9"></polyline>
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-            <rect x="6" y="14" width="12" height="8"></rect>
+      <div class="top-actions">
+        <button id="copy-email-btn" type="button" class="btn" title="Copy Email">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
           </svg>
-          Print / PDF
+          <span>Copy Email</span>
+        </button>
+
+        <button type="button" onclick="window.print()" class="btn btn-primary" title="Print or Save PDF">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9V2h12v7"></path>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect width="12" height="8" x="6" y="14"></rect>
+          </svg>
+          <span>Print / PDF</span>
         </button>
       </div>
     </div>
   </nav>
 
-  <main class="container">
+  <!-- Clean Resume Container -->
+  <main class="resume-wrapper">
+    <table class="print-table-layout">
+      <thead>
+        <tr>
+          <td class="print-page-margin-top"></td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
 
-    <!-- Header Section -->
+            <!-- Header Profile -->
     <header class="resume-header">
-      <div class="header-main">
-        <div class="name-title">
-          <h1>Deepak Gusaiwal</h1>
-          <h2>UI/UX Designer & Interactive Developer</h2>
-          <div class="location-badge font-mono">
-            <span>📍 Indore, India</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="contact-grid">
-        <a href="mailto:deepak.gusaiwal@outlook.com" class="contact-item">
-          <span class="label">Email:</span>
-          <strong>deepak.gusaiwal@outlook.com</strong>
-        </a>
-        <a href="https://www.linkedin.com/in/deepakgusaiwal/" target="_blank" rel="noopener noreferrer" class="contact-item">
-          <span class="label">LinkedIn:</span>
-          <strong>in/deepakgusaiwal</strong>
-        </a>
-        <a href="https://github.com/deepakGusaiwal-designer" target="_blank" rel="noopener noreferrer" class="contact-item">
-          <span class="label">GitHub:</span>
-          <strong>deepakGusaiwal-designer</strong>
-        </a>
-        <a href="https://www.deepakgusaiwal.com/" class="contact-item">
-          <span class="label">Portfolio:</span>
-          <strong>deepakgusaiwal.com</strong>
-        </a>
+      <h1 class="header-name">Deepak Gusaiwal</h1>
+      <p class="header-role">UI/UX Designer &amp; Interactive Developer</p>
+      <div class="header-meta">
+        <span>Indore, India</span>
+        <span class="separator">/</span>
+        <a href="mailto:deepak.gusaiwal@outlook.com">deepak.gusaiwal@outlook.com</a>
+        <span class="separator">/</span>
+        <a href="https://www.linkedin.com/in/deepakgusaiwal/" target="_blank" rel="noopener noreferrer">linkedin.com/in/deepakgusaiwal</a>
+        <span class="separator">/</span>
+        <a href="https://github.com/deepakGusaiwal-designer" target="_blank" rel="noopener noreferrer">github.com/deepakGusaiwal-designer</a>
+        <span class="separator">/</span>
+        <a href="https://www.deepakgusaiwal.com/">deepakgusaiwal.com</a>
       </div>
     </header>
 
-    <!-- Executive Summary -->
+    <!-- Professional Summary -->
     <section class="resume-section">
-      <h2 class="section-title">Executive Summary</h2>
+      <h2 class="section-label">Summary</h2>
       <p class="summary-text">
-        Multidisciplinary UI/UX Designer and Creative Frontend Developer with 8+ years of expertise crafting digital experiences that bridge design systems, spatial 3D interfaces, and modern web architectures. Specialized in high-performance WebGL/Three.js creative development, GSAP animation orchestration, and rigorous Figma design system design. Proven track record turning complex technical concepts into intuitive, unforgettable digital worlds that maintain rock-solid 60 FPS performance and accessibility.
+        Multidisciplinary <strong>UI/UX Designer and Creative Frontend Developer</strong> with <strong>8+ years of expertise</strong> crafting digital experiences that bridge design systems, spatial 3D interfaces, and modern web architectures. Specialized in high-performance <strong>WebGL/Three.js development</strong>, GSAP animation orchestration, and <strong>Figma design system engineering</strong>. Proven track record turning complex technical concepts into intuitive, unforgettable digital products maintaining rock-solid <strong>60 FPS performance</strong> and accessibility.
       </p>
     </section>
 
-    <!-- Work Experience -->
+    <!-- Professional Experience -->
     <section class="resume-section">
-      <h2 class="section-title">Experience</h2>
+      <h2 class="section-label">Experience</h2>
       <div class="experience-list">
 
         <!-- Linkites -->
-        <article class="experience-card">
+        <article class="experience-item">
           <div class="exp-header">
-            <div>
-              <span class="exp-role">Super UI/UX Developer</span>
+            <div class="exp-title-group">
+              <h3 class="exp-role">Super UI/UX Developer</h3>
               <span class="exp-company">@ Linkites</span>
             </div>
             <span class="exp-date">Current</span>
@@ -645,10 +847,10 @@
         </article>
 
         <!-- Videoverse -->
-        <article class="experience-card">
+        <article class="experience-item">
           <div class="exp-header">
-            <div>
-              <span class="exp-role">Advance UI/UX Developer</span>
+            <div class="exp-title-group">
+              <h3 class="exp-role">Advance UI/UX Developer</h3>
               <span class="exp-company">@ Videoverse</span>
             </div>
             <span class="exp-date">2024</span>
@@ -661,10 +863,10 @@
         </article>
 
         <!-- Exactink -->
-        <article class="experience-card">
+        <article class="experience-item">
           <div class="exp-header">
-            <div>
-              <span class="exp-role">UI/UX Designer & Developer</span>
+            <div class="exp-title-group">
+              <h3 class="exp-role">UI/UX Designer &amp; Developer</h3>
               <span class="exp-company">@ Exactink</span>
             </div>
             <span class="exp-date">2018 — 2024</span>
@@ -672,15 +874,15 @@
           <ul class="exp-bullets">
             <li>Designed and shipped end-to-end user interfaces, interactive wireframes, and design systems for enterprise and agency clients.</li>
             <li>Bridged the gap between visual design and code execution, creating high-fidelity interactive prototypes in Adobe XD, Figma, and React.</li>
-            <li>Implemented bespoke typography systems, dark-mode color palettes, and motion choreographies tailored to brand identities.</li>
+            <li>Implemented bespoke typography systems, dark-mode palettes, and motion choreographies tailored to brand identities.</li>
           </ul>
         </article>
 
         <!-- CCW -->
-        <article class="experience-card">
+        <article class="experience-item">
           <div class="exp-header">
-            <div>
-              <span class="exp-role">Web Designer</span>
+            <div class="exp-title-group">
+              <h3 class="exp-role">Web Designer</h3>
               <span class="exp-company">@ CCW</span>
             </div>
             <span class="exp-date">2016 — 2018</span>
@@ -694,66 +896,29 @@
       </div>
     </section>
 
-    <!-- Core Skills -->
+    <!-- Core Competencies & Skills -->
     <section class="resume-section">
-      <h2 class="section-title">Core Competencies & Skills</h2>
+      <h2 class="section-label">Skills &amp; Technologies</h2>
       <div class="skills-grid">
 
-        <div class="skill-category">
-          <h3>🎨 UI/UX & Product Design</h3>
-          <div class="pill-list">
-            <span class="skill-pill">Design Systems</span>
-            <span class="skill-pill">Figma</span>
-            <span class="skill-pill">Adobe XD</span>
-            <span class="skill-pill">Wireframing</span>
-            <span class="skill-pill">Interactive Prototyping</span>
-            <span class="skill-pill">Spatial UI Design</span>
-            <span class="skill-pill">Micro-Interactions</span>
-            <span class="skill-pill">User Research</span>
-            <span class="skill-pill">WCAG Accessibility</span>
-          </div>
+        <div class="skill-group">
+          <h3 class="skill-group-title">UI/UX &amp; Product Design</h3>
+          <p class="skill-group-items">Design Systems, Figma, Spatial UI, Interactive Prototyping, Wireframing, User Research, WCAG Accessibility</p>
         </div>
 
-        <div class="skill-category">
-          <h3>⚡ Creative Dev & 3D WebGL</h3>
-          <div class="pill-list">
-            <span class="skill-pill">Three.js</span>
-            <span class="skill-pill">React Three Fiber</span>
-            <span class="skill-pill">GLSL Shaders</span>
-            <span class="skill-pill">Raymarching</span>
-            <span class="skill-pill">GSAP ScrollTrigger</span>
-            <span class="skill-pill">Lenis Smooth Scroll</span>
-            <span class="skill-pill">Web Audio API</span>
-            <span class="skill-pill">Framer Motion</span>
-            <span class="skill-pill">OffscreenCanvas</span>
-          </div>
+        <div class="skill-group">
+          <h3 class="skill-group-title">Creative Tech &amp; 3D WebGL</h3>
+          <p class="skill-group-items">Three.js, React Three Fiber, GLSL Shaders, Raymarching, Procedural PBR, GSAP ScrollTrigger, Lenis Smooth Scroll, Web Audio API</p>
         </div>
 
-        <div class="skill-category">
-          <h3>💻 Frontend Engineering</h3>
-          <div class="pill-list">
-            <span class="skill-pill">React 19</span>
-            <span class="skill-pill">TypeScript</span>
-            <span class="skill-pill">JavaScript (ESNext)</span>
-            <span class="skill-pill">Tailwind CSS v4</span>
-            <span class="skill-pill">HTML5 / Modern CSS</span>
-            <span class="skill-pill">Vite</span>
-            <span class="skill-pill">Zustand</span>
-            <span class="skill-pill">Git / GitHub</span>
-            <span class="skill-pill">Performance Profiling</span>
-          </div>
+        <div class="skill-group">
+          <h3 class="skill-group-title">Frontend Engineering</h3>
+          <p class="skill-group-items">React 19, TypeScript, JavaScript (ESNext), Tailwind CSS, Vite, Zustand, HTML5 / Modern CSS, REST APIs, Git / GitHub</p>
         </div>
 
-        <div class="skill-category">
-          <h3>🛠️ Creative Tools</h3>
-          <div class="pill-list">
-            <span class="skill-pill">Adobe Photoshop</span>
-            <span class="skill-pill">Adobe Illustrator</span>
-            <span class="skill-pill">Adobe After Effects</span>
-            <span class="skill-pill">Lightroom</span>
-            <span class="skill-pill">Blender (3D Assets)</span>
-            <span class="skill-pill">Sketch</span>
-          </div>
+        <div class="skill-group">
+          <h3 class="skill-group-title">Tools &amp; Pipeline</h3>
+          <p class="skill-group-items">Adobe Creative Suite (Photoshop, Illustrator, After Effects, Premiere), Blender (3D Pipelines), Vercel, CI/CD</p>
         </div>
 
       </div>
@@ -761,128 +926,138 @@
 
     <!-- Selected Featured Works -->
     <section class="resume-section">
-      <h2 class="section-title">Selected Featured Works</h2>
-      <div class="projects-grid">
+      <h2 class="section-label">Selected Works</h2>
+      <div class="projects-list">
 
-        <a href="https://hypertext-odyssey.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Hypertext Odyssey</span>
-              <span>↗</span>
+        <a href="https://hypertext-odyssey.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Hypertext Odyssey</span>
+              <span class="project-category">3D Particle Experience</span>
             </div>
-            <div class="project-tag">3D Particle Experience</div>
-            <p class="project-desc">A cinematic 3D particle journey through 37 years of web architecture from 1989 CERN to infinite light, told in 9,600 living monochrome nodes.</p>
+            <p class="project-desc">A cinematic 3D particle voyage through 37 years of web architecture from 1989 CERN to infinite light in 9,600 living nodes.</p>
           </div>
-          <span class="project-link-text">Launch Experience →</span>
+          <span class="project-link-badge">hypertext-odyssey.vercel.app ↗</span>
         </a>
 
-        <a href="https://forever-in-bloom.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Forever in Bloom</span>
-              <span>↗</span>
+        <a href="https://forever-in-bloom.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Forever in Bloom</span>
+              <span class="project-category">3D Botanical Story</span>
             </div>
-            <div class="project-tag">3D Botanical Story</div>
-            <p class="project-desc">Interactive 3D WebGL love story featuring living botanical scroll physics, procedural rose bloom shaders, and couple destiny oracle.</p>
+            <p class="project-desc">Interactive 3D WebGL love story featuring living botanical scroll physics, procedural rose bloom shaders, and destiny oracle.</p>
           </div>
-          <span class="project-link-text">Launch Experience →</span>
+          <span class="project-link-badge">forever-in-bloom.vercel.app ↗</span>
         </a>
 
-        <a href="https://www.deepakgusaiwal.com/" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Deep Space Portfolio</span>
-              <span>↗</span>
+        <a href="https://www.deepakgusaiwal.com/" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Deep Space Portfolio</span>
+              <span class="project-category">Raymarched Singularity</span>
             </div>
-            <div class="project-tag">Raymarched Singularity</div>
-            <p class="project-desc">Real-time raymarched black hole with relativistic Doppler beaming, photon geodesics, procedural PBR planet maps, and zero raster textures.</p>
+            <p class="project-desc">Real-time raymarched black hole with relativistic Doppler beaming, photon geodesics, and procedural PBR planet maps.</p>
           </div>
-          <span class="project-link-text">Explore Portfolio →</span>
+          <span class="project-link-badge">deepakgusaiwal.com ↗</span>
         </a>
 
-        <a href="https://www.deepakgusaiwal.com/nostalgia-radio/" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Nostalgia Radio</span>
-              <span>↗</span>
+        <a href="https://www.deepakgusaiwal.com/nostalgia-radio/" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Nostalgia Radio</span>
+              <span class="project-category">Spatial 3D Audio</span>
             </div>
-            <div class="project-tag">3D Web Audio Experience</div>
-            <p class="project-desc">Tactile retro wooden radio in 3D combining physical brass dial tuning, vacuum tube overdrive simulation, and spatial Web Audio graph.</p>
+            <p class="project-desc">Tactile retro wooden radio in 3D combining physical brass dial tuning, vacuum tube overdrive simulation, and Web Audio graph.</p>
           </div>
-          <span class="project-link-text">Tune In →</span>
+          <span class="project-link-badge">deepakgusaiwal.com/nostalgia-radio/ ↗</span>
         </a>
 
-        <a href="https://deep-rush-city.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Deep Rush City</span>
-              <span>↗</span>
+        <a href="https://deep-rush-city.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Deep Rush City</span>
+              <span class="project-category">3D Arcade Game</span>
             </div>
-            <div class="project-tag">3D Multiplayer Game</div>
             <p class="project-desc">High-octane urban sandbox and arcade racing in the browser with 60 FPS Three.js physics, drifting mechanics, and jetpacks.</p>
           </div>
-          <span class="project-link-text">Play Game →</span>
+          <span class="project-link-badge">deep-rush-city.vercel.app ↗</span>
         </a>
 
-        <a href="https://ai-evolution-2026.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-card">
-          <div>
-            <div class="project-title">
-              <span>Evolution of AI</span>
-              <span>↗</span>
+        <a href="https://ai-evolution-2026.vercel.app/" target="_blank" rel="noopener noreferrer" class="project-row">
+          <div class="project-main">
+            <div class="project-title-wrap">
+              <span class="project-name">Evolution of AI</span>
+              <span class="project-category">WebGL Timeline</span>
             </div>
-            <div class="project-tag">Interactive WebGL Journey</div>
-            <p class="project-desc">Cinematic WebGL timeline exploring how Artificial Intelligence evolved from early rule systems to generative models with dynamic shaders.</p>
+            <p class="project-desc">Cinematic WebGL timeline exploring how Artificial Intelligence evolved from early rule systems to generative models.</p>
           </div>
-          <span class="project-link-text">Launch Experience →</span>
+          <span class="project-link-badge">ai-evolution-2026.vercel.app ↗</span>
         </a>
 
       </div>
     </section>
 
-    <!-- Testimonials / Peer Endorsements -->
+    <!-- Professional Recommendations -->
     <section class="resume-section">
-      <h2 class="section-title">Peer Endorsements</h2>
-      <div class="testimonial-grid">
+      <h2 class="section-label">Recommendations</h2>
+      <div class="recommendations-list">
 
-        <div class="testimonial-card">
-          <p>"Imagine pixels with feelings — Deepak speaks their language. They empathize with users, channeling their frustration into elegant solutions. Their UI isn't just user-friendly; it's user-embracing."</p>
-          <div class="testimonial-author">Kunal Khandelwal</div>
-          <div class="testimonial-position">IT Analyst @ Tata Consultancy Services</div>
+        <div class="recommendation-item">
+          <p class="rec-quote">"Imagine pixels with feelings — Deepak speaks their language. They empathize with users, channeling frustration into elegant solutions. Their UI isn't just user-friendly; it's user-embracing."</p>
+          <div class="rec-author"><strong>Kunal Khandelwal</strong> — IT Analyst @ Tata Consultancy Services</div>
         </div>
 
-        <div class="testimonial-card">
-          <p>"Deepak waves prototypes like cosmic spells. Buttons ripple, menus unfold, and transitions wrap reality. Their prototypes? Not just clickable; they're portals to alternate dimensions."</p>
-          <div class="testimonial-author">Azad Bundela</div>
-          <div class="testimonial-position">Consultant @ Infosys</div>
+        <div class="recommendation-item">
+          <p class="rec-quote">"Deepak waves prototypes like cosmic spells. Buttons ripple, menus unfold, and transitions wrap reality. Their prototypes? Not just clickable; they're portals to alternate dimensions."</p>
+          <div class="rec-author"><strong>Azad Bundela</strong> — Consultant @ Infosys</div>
         </div>
 
-        <div class="testimonial-card">
-          <p>"When UI quarks misbehave, Deepak dives into quantum solutions. They wrap time zones, align grids, and collapse frustration. Their pixels defy gravity, creating order from chaos."</p>
-          <div class="testimonial-author">Pawan Yadav</div>
-          <div class="testimonial-position">Senior Engineer @ eInfochips</div>
+        <div class="recommendation-item">
+          <p class="rec-quote">"When UI quarks misbehave, Deepak dives into quantum solutions. They wrap time zones, align grids, and collapse frustration. Their pixels defy gravity, creating order from chaos."</p>
+          <div class="rec-author"><strong>Pawan Yadav</strong> — Senior Engineer @ eInfochips</div>
         </div>
 
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="no-print">
-      <p>
-        <a href="/">Portfolio</a> ·
-        <a href="/blog/">Thoughts & Articles</a> ·
-        <a href="/privacy/">Privacy Policy</a> ·
-        <a href="/terms/">Terms of Service</a> ·
-        <a href="mailto:deepak.gusaiwal@outlook.com">Contact</a>
-      </p>
-      <p style="margin-top: 14px; font-family: 'Space Mono', monospace; font-size: 0.75rem;">
-        © <span id="year">2026</span> Deepak Gusaiwal · Sic mundus creatus est
-      </p>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td class="print-page-margin-bottom"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Minimal Footer -->
+    <footer class="resume-footer no-print">
+      <p>© <span id="year">2026</span> Deepak Gusaiwal · <a href="/">Return to Portfolio</a></p>
     </footer>
 
   </main>
 
+  <!-- Copy Toast Feedback -->
+  <div id="copy-toast" role="status" aria-live="polite">
+    <span>Email copied to clipboard</span>
+  </div>
+
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    const copyBtn = document.getElementById('copy-email-btn');
+    const toast = document.getElementById('copy-toast');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText('deepak.gusaiwal@outlook.com').then(() => {
+          toast.classList.add('show');
+          setTimeout(() => {
+            toast.classList.remove('show');
+          }, 2000);
+        });
+      });
+    }
   </script>
 </body>
 </html>
