@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import type { BlogPost } from '../../content/blogs';
 import { BLOG_POSTS } from '../../content/blogs';
-import AdBanner from './AdBanner';
 import { ArrowLeft, Clock, Calendar, Share2, Check } from 'lucide-react';
 import { useState } from 'react';
 
@@ -114,9 +113,6 @@ export default function BlogDetail({ post, onBack, onSelectPost }: BlogDetailPro
           </span>
         ))}
       </div>
-
-      {/* Bottom Article Ad Banner */}
-      <AdBanner slot="article-bottom-banner" label="Advertisement" />
 
       {/* Related Articles */}
       {related.length > 0 && (

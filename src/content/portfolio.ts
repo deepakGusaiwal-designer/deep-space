@@ -13,6 +13,7 @@ import gravityImg from '../assets/image/gravity.png';
 import radioImg from '../assets/image/radio.png';
 import deepRushCityImg from '../assets/image/deep-rush-city.jpg';
 import hypertextImg from '../assets/image/hypertext.png';
+import foreverBloomImg from '../assets/image/forever-bloom.png';
 
 export const site = {
   title: 'Deepak Gusaiwal Designer | Indore',
@@ -195,6 +196,14 @@ export const playground: PlaygroundItem[] = [
     href: 'https://hypertext-odyssey.vercel.app/',
     hue: '#e2e8f0',
     image: hypertextImg,
+  },
+  {
+    title: 'Forever in Bloom',
+    tag: '3D Botanical Story',
+    blurb: 'A cinematic, interactive 3D WebGL love story. Watch the velvet rose awaken, climb the living botanical scroller, and reveal couple destiny.',
+    href: 'https://forever-in-bloom.vercel.app/',
+    hue: '#E11D48',
+    image: foreverBloomImg,
   },
 ];
 

@@ -87,6 +87,22 @@
     {
       "source": "/terms-and-conditions/",
       "destination": "/terms/index.html"
+    },
+    {
+      "source": "/resume",
+      "destination": "/resume/index.html"
+    },
+    {
+      "source": "/resume/",
+      "destination": "/resume/index.html"
+    },
+    {
+      "source": "/cv",
+      "destination": "/resume/index.html"
+    },
+    {
+      "source": "/cv/",
+      "destination": "/resume/index.html"
     }
   ]
 }

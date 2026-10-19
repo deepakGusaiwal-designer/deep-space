@@ -5,7 +5,6 @@ import { fetchGlobalBlogPosts } from '../services/blogService';
 import BlogNav from './components/BlogNav';
 import BlogCard from './components/BlogCard';
 import BlogDetail from './components/BlogDetail';
-import AdBanner from './components/AdBanner';
 import BlogStudio from './admin/BlogStudio';
 import AdminAuth, { isAdminAuthenticated } from './admin/AdminAuth';
 import { Search, BookOpen } from 'lucide-react';
@@ -219,9 +218,6 @@ export default function BlogApp() {
                 </button>
               </div>
             )}
-
-            {/* Bottom AdSense Banner */}
-            <AdBanner slot="blog-listing-footer" label="Advertisement" className="mt-16" />
           </div>
         )}
       </main>
@@ -230,6 +226,7 @@ export default function BlogApp() {
       <footer className="border-t border-white/10 py-12 text-center text-xs text-dim">
         <div className="mb-4 flex flex-wrap justify-center items-center gap-6 text-xs text-soft/80">
           <a href="/" className="hover:text-white transition-colors">Portfolio</a>
+          <a href="/resume/" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Resume</a>
           <a href="/blog/" className="hover:text-white transition-colors">Articles</a>
           <a href="/privacy/" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Privacy Policy</a>
           <a href="/terms/" className="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Terms of Service</a>

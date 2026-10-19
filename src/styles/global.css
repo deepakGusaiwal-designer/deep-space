@@ -557,13 +557,9 @@ button:focus-visible {
   cursor: pointer;
 }
 
-/* Game link — the door into MONUMENT, twin of the audio toggle but
-   living in the opposite (bottom-left) corner */
-.game-link {
-  position: fixed;
-  left: 1rem;
-  bottom: 1rem;
-  z-index: 60;
+/* Dock links — bottom-left corner containing Game and Resume links */
+.dock-link-btn {
+  position: relative;
   display: grid;
   place-items: center;
   width: 2.5rem;
@@ -574,29 +570,37 @@ button:focus-visible {
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   backdrop-filter: blur(14px) saturate(150%);
   color: var(--color-soft);
-  opacity: 0;
-  transition: border-color 0.5s var(--ease-cinematic), box-shadow 0.5s var(--ease-cinematic),
-    color 0.5s var(--ease-cinematic);
+  transition:
+    border-color 0.4s var(--ease-cinematic),
+    box-shadow 0.4s var(--ease-cinematic),
+    color 0.4s var(--ease-cinematic),
+    transform 0.3s ease;
 }
 @media (min-width: 640px) {
-  .game-link {
-    left: 1.5rem;
-    bottom: 1.5rem;
+  .dock-link-btn {
     width: 3rem;
     height: 3rem;
   }
 }
-.game-link:hover {
-  border-color: rgb(255 255 255 / 0.4);
-  box-shadow: 0 0 30px -8px rgb(255 255 255 / 0.35);
-  color: #fff;
+.dock-link-btn svg {
+  opacity: 0.8;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.game-link svg {
-  opacity: 0.75;
-  transition: opacity 0.4s ease;
-}
-.game-link:hover svg {
+.dock-link-btn:hover svg {
   opacity: 1;
+  transform: scale(1.08);
+}
+.game-link:hover {
+  border-color: rgb(255 255 255 / 0.45);
+  box-shadow: 0 0 25px -4px rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+.resume-link:hover {
+  border-color: rgba(203, 21, 47, 0.55);
+  box-shadow: 0 0 25px -4px rgba(203, 21, 47, 0.5);
+  color: #ff6b81;
+  transform: translateY(-2px);
 }
 
 /* Graphics toggle — glass button for switching high/low graphic modes */

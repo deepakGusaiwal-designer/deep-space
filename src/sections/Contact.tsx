@@ -66,6 +66,15 @@ export default function Contact() {
         >
           <Magnetic strength={0.25}>
             <a
+              href="/resume/"
+              className="lumen-link pointer-events-auto cursor-pointer py-1 text-soft/80 hover:text-white transition-colors"
+            >
+              Resume
+            </a>
+          </Magnetic>
+          <span className="text-white/30 select-none">·</span>
+          <Magnetic strength={0.25}>
+            <a
               href="/blogs/"
               className="lumen-link pointer-events-auto cursor-pointer py-1 text-soft/80 hover:text-white transition-colors"
             >

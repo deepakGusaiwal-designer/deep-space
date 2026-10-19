@@ -18,6 +18,8 @@ function routeRewritePlugin(): Plugin {
             req.url = '/privacy/index.html';
           } else if (/^\/(?:terms|terms-and-conditions)(?:\/.*)?$/.test(path) && !path.includes('.')) {
             req.url = '/terms/index.html';
+          } else if (/^\/(?:resume|cv)(?:\/.*)?$/.test(path) && !path.includes('.')) {
+            req.url = '/resume/index.html';
           }
         }
         next();
@@ -40,6 +42,7 @@ export default defineConfig({
         nostalgiaRadio: fileURLToPath(new URL('./nostalgia-radio/index.html', import.meta.url)),
         privacy: fileURLToPath(new URL('./privacy/index.html', import.meta.url)),
         terms: fileURLToPath(new URL('./terms/index.html', import.meta.url)),
+        resume: fileURLToPath(new URL('./resume/index.html', import.meta.url)),
       },
       output: {
         manualChunks: {
